@@ -1,7 +1,3 @@
 export default function OverviewPage() {
-  return (
-    <main>
-      <h1>Overview</h1>
-    </main>
-  );
+  return <h1>Overview</h1>;
 }

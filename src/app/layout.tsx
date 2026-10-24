@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
+import { MobileNav } from '@/components/layout/MobileNav';
+import { Sidebar } from '@/components/layout/Sidebar';
+import { SkipLink } from '@/components/layout/SkipLink';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { fontVariables } from '@/lib/fonts';
 import './globals.css';
 
@@ -16,8 +18,14 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
     <html lang="en" className={fontVariables} suppressHydrationWarning>
       <body>
         <ThemeProvider>
-          <ThemeToggle />
-          {children}
+          <SkipLink />
+          <MobileNav />
+          <Sidebar />
+          <main id="main" tabIndex={-1} className="focus:outline-none lg:pl-[280px]">
+            <div className="mx-auto w-full max-w-[1100px] px-4 py-10 sm:px-6 lg:px-12 lg:py-16">
+              {children}
+            </div>
+          </main>
         </ThemeProvider>
       </body>
     </html>
