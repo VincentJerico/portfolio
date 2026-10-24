@@ -53,3 +53,18 @@ test.describe('theme without JavaScript', () => {
     expect(bg).toBe('#0b0f14');
   });
 });
+
+test.describe('theme switch appearance before hydration', () => {
+  test.use({ javaScriptEnabled: false, colorScheme: 'dark' });
+
+  test('shows the on state when the page renders dark', async ({ page }) => {
+    await page.goto('/');
+    const shift = await page.locator('aside [data-switch-knob]').evaluate((knob) => {
+      const track = knob.parentElement!.getBoundingClientRect();
+      const box = knob.getBoundingClientRect();
+      // Off: knob hugs the left edge (2px inset). On: it sits in the right half.
+      return box.left - track.left;
+    });
+    expect(shift).toBeGreaterThan(8);
+  });
+});
