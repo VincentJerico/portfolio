@@ -145,6 +145,30 @@ test.describe('mobile drawer', () => {
   });
 });
 
+test.describe('mobile drawer in a browser without invoker commands', () => {
+  test.use({ viewport: MOBILE });
+
+  test.beforeEach(async ({ page }) => {
+    // Simulate iOS < 26.2: no `command` support, and cancel the native action so only a
+    // JavaScript fallback could open or close the drawer.
+    await page.addInitScript(() => {
+      delete (HTMLButtonElement.prototype as { command?: unknown }).command;
+      document.addEventListener('command', (event) => event.preventDefault(), true);
+    });
+  });
+
+  test('menu and close buttons still work', async ({ page }) => {
+    await page.goto('/');
+    const menu = page.getByRole('button', { name: 'Menu', exact: true });
+    await menu.click();
+    await expect(page.locator('#site-drawer')).toBeVisible();
+    await expect(menu).toHaveAttribute('aria-expanded', 'true');
+    await page.getByRole('button', { name: 'Close menu' }).click();
+    await expect(page.locator('#site-drawer')).toBeHidden();
+    await expect(menu).toBeFocused();
+  });
+});
+
 test.describe('mobile drawer without JavaScript', () => {
   test.use({ viewport: MOBILE, javaScriptEnabled: false });
 

@@ -10,6 +10,13 @@ describe('parseEnv', () => {
     expect(() => parseEnv({ NEXT_PUBLIC_SITE_URL: 'not a url' })).toThrow(/NEXT_PUBLIC_SITE_URL/);
   });
 
+  it.each(['localhost:3000', 'vincentjerico.dev:443', 'javascript:alert(1)', 'ftp://x.dev'])(
+    'rejects %s because it is not an http(s) URL',
+    (value) => {
+      expect(() => parseEnv({ NEXT_PUBLIC_SITE_URL: value })).toThrow(/NEXT_PUBLIC_SITE_URL/);
+    },
+  );
+
   it('normalises surrounding whitespace and a trailing slash', () => {
     expect(parseEnv({ NEXT_PUBLIC_SITE_URL: ' https://example.dev/ ' }).NEXT_PUBLIC_SITE_URL).toBe(
       'https://example.dev',

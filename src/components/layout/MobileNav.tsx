@@ -12,6 +12,11 @@ import { ShellLinks } from './ShellLinks';
 const DRAWER_ID = 'site-drawer';
 const DESKTOP_QUERY = '(min-width: 1024px)';
 
+// iOS < 26.2 (and webviews on it) lacks invoker commands; fall back to the dialog API there.
+function supportsInvokers(): boolean {
+  return 'command' in HTMLButtonElement.prototype;
+}
+
 function focusables(root: HTMLElement): HTMLElement[] {
   return [...root.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')].filter(
     (el) => el.getClientRects().length > 0,
@@ -94,6 +99,7 @@ export function MobileNav() {
           type="button"
           commandfor={DRAWER_ID}
           command="show-modal"
+          onClick={() => supportsInvokers() || dialogRef.current?.showModal()}
           aria-controls={DRAWER_ID}
           aria-expanded={open}
           className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-chip px-3 text-sm font-medium text-ink hover:bg-surface-2"
@@ -117,6 +123,7 @@ export function MobileNav() {
               type="button"
               commandfor={DRAWER_ID}
               command="close"
+              onClick={() => supportsInvokers() || dialogRef.current?.close()}
               aria-label="Close menu"
               className="-mt-1 -mr-2 inline-flex size-11 shrink-0 items-center justify-center rounded-chip text-ink hover:bg-surface-2"
             >

@@ -4,7 +4,12 @@ const EnvSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z
     .string({ error: 'is required' })
     .trim()
-    .pipe(z.url({ error: 'must be an absolute URL, e.g. https://example.dev' }))
+    .pipe(
+      z.url({
+        protocol: /^https?$/,
+        error: 'must be an absolute http(s) URL, e.g. https://example.dev',
+      }),
+    )
     .transform((value) => new URL(value).origin),
 });
 

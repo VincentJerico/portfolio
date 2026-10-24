@@ -88,7 +88,7 @@ until supplied.
 | C11 | Theme: OS preference wins (`defaultTheme="system"`); dark is the CSS default for no-JS visitors and crawlers; the toggle stores an explicit choice | Reads "dark default, system respected" (spec 3) without one overriding the other |
 | C12 | The generated CV PDF is not committed (`public/cv/` git-ignored); CI and `pnpm cv` produce it | D1; keeps the PDF in sync with `/resume` |
 | C13 | Light `--warn` changed from spec `#9A6700` to `#956400` | Spec value is 4.34:1 on `--surface-2` (`#F2F2EE`), below 4.5:1; `#956400` is the nearest darker shade that passes (4.56:1). Caught by `tests/unit/tokens.test.ts` |
-| C10 | Default `NEXT_PUBLIC_SITE_URL` for CI test builds is `http://localhost:3000`; real URL set in Vercel and the deploy job | Build must not fail before a domain exists |
+| C10 | Default `NEXT_PUBLIC_SITE_URL` for CI test builds is `http://localhost:3210` (the Playwright server port); real URL set in Vercel and the deploy job | Build must not fail before a domain exists |
 
 ---
 
