@@ -1,0 +1,10 @@
+pnpm-lock.yaml
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+public/
+docs/
+.superpowers/
+src/generated/
