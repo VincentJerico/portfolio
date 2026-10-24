@@ -1,1 +1,109 @@
 @import 'tailwindcss';
+@import '../styles/tokens.css';
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--border);
+  --color-ink: var(--text);
+  --color-ink-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-pass: var(--pass);
+  --color-warn: var(--warn);
+  --color-fail: var(--fail);
+  --color-focus: var(--focus-ring);
+
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-display: var(--font-instrument-serif), Georgia, 'Times New Roman', serif;
+
+  --radius-card: 6px;
+  --radius-chip: 4px;
+  --shadow-card: var(--shadow);
+}
+
+@layer base {
+  html {
+    background-color: var(--bg);
+    color: var(--text);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    background-color: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 2.5rem;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+  }
+
+  h2 {
+    font-weight: 600;
+    font-size: 1.5rem;
+    line-height: 1.25;
+  }
+
+  h3 {
+    font-weight: 600;
+    font-size: 1.125rem;
+    line-height: 1.35;
+  }
+
+  @media (min-width: 1024px) {
+    body {
+      font-size: 1.0625rem;
+    }
+    h1 {
+      font-size: 4rem;
+    }
+    h2 {
+      font-size: 1.875rem;
+    }
+    h3 {
+      font-size: 1.25rem;
+    }
+  }
+
+  a {
+    color: var(--accent);
+    text-underline-offset: 0.2em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@utility label-mono {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@utility measure {
+  max-width: 68ch;
+}
