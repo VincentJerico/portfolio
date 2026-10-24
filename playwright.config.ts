@@ -26,7 +26,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `pnpm build && pnpm start -p ${PORT}`,
+    // CI downloads the build job's .next artifact, so it only starts the server.
+    command: process.env.CI ? `pnpm start -p ${PORT}` : `pnpm build && pnpm start -p ${PORT}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,

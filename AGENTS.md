@@ -32,7 +32,7 @@ All CLI credentials live in `.env.cli` at the repo root (gitignored). This repo 
 logged-in state to rely on.
 
 - Use the wrapper scripts for anything that touches Vercel: `pnpm vercel:link`, `pnpm deploy:preview`,
-  `pnpm deploy`. They load `.env.cli` for you. Calling `vercel` bare will fail on auth.
+  `pnpm deploy:prod` (`pnpm deploy` is a built-in pnpm command). They load `.env.cli` for you. Calling `vercel` bare will fail on auth.
 - Production deploys normally run from GitHub Actions after every gate passes (D1); the local scripts are
   for setup and emergencies.
 - Never run `vercel login`. A browser flow can't complete in an agent session, and any token it stored

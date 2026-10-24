@@ -12,7 +12,11 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "contrast": "tsx scripts/contrast-report.ts"
+    "contrast": "tsx scripts/contrast-report.ts",
+    "vercel:link": "dotenv -e .env.cli -- sh -c 'vercel link --yes --token \"$VERCEL_TOKEN\"'",
+    "vercel:whoami": "dotenv -e .env.cli -- sh -c 'vercel whoami --token \"$VERCEL_TOKEN\"'",
+    "deploy:preview": "dotenv -e .env.cli -- sh -c 'vercel deploy --token \"$VERCEL_TOKEN\"'",
+    "deploy:prod": "dotenv -e .env.cli -- sh -c 'vercel deploy --prod --token \"$VERCEL_TOKEN\"'"
   },
   "dependencies": {
     "lucide-react": "^1.61.0",
