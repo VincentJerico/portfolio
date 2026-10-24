@@ -1,0 +1,31 @@
+# Private source material (never published)
+docs/*.pdf
+assets-inbox/
+tests/fixtures/client-denylist.txt
+
+# Secrets and local env
+.env*.local
+.env.cli
+.vercel/
+
+# Dependencies and build output
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Generated at build time (D1, C12)
+public/cv/
+
+# Test artefacts
+playwright-report/
+test-results/
+blob-report/
+
+# Executor scratch
+.superpowers/
+
+# OS
+.DS_Store
