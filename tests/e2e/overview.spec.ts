@@ -68,3 +68,27 @@ test.describe('overview', () => {
     await expect(page.locator('body')).not.toContainText('LinkedIn');
   });
 });
+
+test.describe('hero runner block', () => {
+  test('is decorative and repeats only facts shown as text in the run summary', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const block = page.locator('[data-runner-hero]');
+    await expect(block).toHaveAttribute('aria-hidden', 'true');
+    await expect(block).toContainText('$ npx playwright test --project=vincent');
+    const values = await block.locator('[data-metric-value]').allTextContents();
+    expect(values.length).toBeGreaterThanOrEqual(4);
+    const summary = page.getByRole('region', { name: 'Run summary' });
+    for (const value of values) await expect(summary).toContainText(value);
+  });
+
+  test('is fully shown without animation under reduced motion', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    const lastLine = page.locator('[data-runner-hero] [data-line]').last();
+    await expect(lastLine).toBeVisible();
+    const clip = await lastLine.evaluate((el) => getComputedStyle(el).clipPath);
+    expect(['none', 'inset(0px)']).toContain(clip);
+  });
+});

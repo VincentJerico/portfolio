@@ -202,3 +202,23 @@
     word-break: break-all;
   }
 }
+
+/* Hero runner block: each line types in once. Under reduced motion the global rule collapses the
+   animation to its final frame, so every line is simply shown. */
+@layer components {
+  .runner-line {
+    clip-path: inset(0 100% 0 0);
+    animation: runner-type 0.5s steps(32, end) forwards;
+  }
+  @keyframes runner-type {
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .runner-line {
+      clip-path: none;
+      animation: none;
+    }
+  }
+}

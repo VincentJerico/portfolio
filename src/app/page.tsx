@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { CaseStudyCard } from '@/components/content/CaseStudyCard';
 import { ProjectCard } from '@/components/content/ProjectCard';
 import { QaAreaGrid } from '@/components/content/QaAreaGrid';
+import { RunnerHeroBlock } from '@/components/content/RunnerHeroBlock';
 import { Section } from '@/components/content/Section';
 import { SkillChips } from '@/components/content/SkillChips';
 import { Timeline } from '@/components/content/Timeline';
@@ -54,24 +55,29 @@ export default function OverviewPage() {
               Email me
             </ButtonLink>
           </div>
+          <div className="mt-10 max-w-xl">
+            <RunnerHeroBlock metrics={metrics} />
+          </div>
         </div>
-        {profile.photo && (
-          <figure className="w-full max-w-[240px] justify-self-start rounded-card border border-line bg-surface p-2 shadow-card md:justify-self-end">
-            <Image
-              src={profile.photo}
-              alt={profile.fullName}
-              width={510}
-              height={680}
-              sizes="240px"
-              loading="eager"
-              fetchPriority="high"
-              className="aspect-[3/4] w-full rounded-[4px] object-cover object-[50%_35%]"
-            />
-            <figcaption className="mt-2 px-1 font-mono text-[0.6875rem] text-ink-muted">
-              fixture · vincent-portrait.jpg · 510×680
-            </figcaption>
-          </figure>
-        )}
+        <div className="flex w-full min-w-0 flex-col items-start gap-4 md:w-[22rem] md:items-end">
+          {profile.photo && (
+            <figure className="w-full max-w-[240px] justify-self-start rounded-card border border-line bg-surface p-2 shadow-card ">
+              <Image
+                src={profile.photo}
+                alt={profile.fullName}
+                width={510}
+                height={680}
+                sizes="240px"
+                loading="eager"
+                fetchPriority="high"
+                className="aspect-[3/4] w-full rounded-[4px] object-cover object-[50%_35%]"
+              />
+              <figcaption className="mt-2 px-1 font-mono text-[0.6875rem] text-ink-muted">
+                fixture · vincent-portrait.jpg · 510×680
+              </figcaption>
+            </figure>
+          )}
+        </div>
       </section>
 
       {/* 2. Run summary */}
