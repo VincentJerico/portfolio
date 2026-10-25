@@ -8,7 +8,7 @@ export function FindingsTable({ findings }: { findings: readonly Finding[] }) {
       caption="Findings index"
       columns={['ID', 'Issue', 'Reference', 'Severity']}
       rows={findings.map((f) => [
-        <a key="id" href={`#ticket-${f.id}`} className="font-mono">
+        <a key="id" href={`#ticket-${f.id}`} className="font-mono whitespace-nowrap">
           {f.id}
         </a>,
         f.title,
