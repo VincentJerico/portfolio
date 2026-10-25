@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Spec Section 6. Extensions are marked "ext:" and logged in docs/04-DECISIONS.md (C14, C15).
+// Spec Section 6. Extensions are marked "ext:" and logged in docs/04-DECISIONS.md (C14, C15, C18).
 
 export const Status = z.enum(['verified', 'confirm', 'todo', 'approval']);
 // Only 'verified' values render. Anything else is hidden by the content helpers.
@@ -61,6 +61,8 @@ export const Finding = z.object({
   steps: z.array(z.string()).optional(),
   expected: z.string().optional(),
   actual: z.string().optional(),
+  impact: z.string().optional(), // ext: FINDINGS.md Impact / Why it matters (C18)
+  recommendation: z.string().optional(), // ext: FINDINGS.md Recommendation (C18)
   trackedBy: z.string().optional(),
   ticketStatus: z.string().optional(),
   evidenceIndex: z.number().int().optional(),

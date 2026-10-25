@@ -4,7 +4,8 @@ import type { Project } from './schema';
 // docs/01-PORTFOLIO-DATA.md Section 3, display order 1-8. Data lines map to fields as follows:
 // Target / Scope guard / Type / Client / Features -> context; CI / Patterns / milestones -> approach;
 // Engineering decisions -> decisions (split at the first ": "); Limits / Caveat -> limits.
-// Ticket bodies (steps, expected, actual) are added from each repo's FINDINGS.md in Phase 3b.
+// Ticket bodies (steps, actual, impact, recommendation, trackedBy) quote each repo's docs/FINDINGS.md;
+// tests/unit/tickets.test.ts checks every string against a copy in tests/fixtures/findings/.
 
 const GH = 'https://github.com/VincentJerico';
 const ci = (repo: string) => ({
@@ -43,6 +44,17 @@ export const projects: z.input<typeof Project>[] = [
         title: 'Cart is not reachable by keyboard, which blocks checkout',
         reference: '2.1.1 Keyboard (A)',
         severity: 'critical',
+        steps: [
+          'Log in as `standard_user`, add any item, and press Tab repeatedly. Focus never lands on the cart icon.',
+        ],
+        actual:
+          'The cart is `<a class="shopping_cart_link" role="button" aria-label="Cart, empty">` with no `href` and no `tabindex`, so it never gets keyboard focus. Tab order after login: Open Menu → Sort → 6 × (product image, product name, Add to cart) → X, Facebook, LinkedIn → wraps to the top. The cart is skipped.',
+        impact:
+          'A keyboard-only user can fill a cart but can never open it, so they can\'t check out. Screen reader users still hear "Cart, empty, button" when reading the page, so they are told about a button they can\'t Tab to.',
+        recommendation:
+          'The cart navigates, so make it a real link: `<a href="/cart.html" aria-label="Cart, 1 item">`. Drop `role="button"`.',
+        trackedBy: 'F-1 · the cart is not reachable by keyboard',
+        ticketStatus: 'Pinned by test',
         sourceHref: a11y('f-1--cart-is-not-reachable-by-keyboard'),
       },
       {
@@ -51,6 +63,13 @@ export const projects: z.input<typeof Project>[] = [
         reference: '2.4.7 Focus Visible (AA)',
         severity: 'serious',
         evidenceIndex: 1,
+        actual:
+          'Every control computes `outline-style: none` with no `box-shadow`, border or background change on focus. `:focus-visible` matches, but nothing is drawn. Element screenshots taken before and after keyboard focus are pixel-identical for the Login button, Open Menu, the sort select, product links, Add to cart and the footer links.',
+        impact: "Sighted keyboard users can't see where they are on the page.",
+        recommendation:
+          'Add a global `:focus-visible { outline: 3px solid #132322; outline-offset: 2px; }`. The indicator needs at least 3:1 contrast against adjacent colors (SC 1.4.11).',
+        trackedBy: 'F-2 · the login button shows no visible focus indicator',
+        ticketStatus: 'Pinned by test',
         sourceHref: a11y('f-2--no-visible-focus-indicator-anywhere'),
       },
       {
@@ -58,6 +77,13 @@ export const projects: z.input<typeof Project>[] = [
         title: "Menu toggle doesn't expose open/closed state",
         reference: '4.1.2 Name, Role, Value (A)',
         severity: 'serious',
+        actual:
+          '`<button id="react-burger-menu-btn">Open Menu</button>` has no `aria-expanded` or `aria-controls`, and its name stays "Open Menu" while the menu is open. The "Dynamic Catalog" item inside the menu does use `aria-expanded` and `aria-controls` correctly, so the pattern is already in the codebase.',
+        impact:
+          "Screen reader users aren't told whether the menu opened, or which content it controls.",
+        recommendation: '`aria-expanded={isOpen}` and `aria-controls="<menu id>"` on the toggle.',
+        trackedBy: 'F-3 · the menu button does not expose its expanded state',
+        ticketStatus: 'Pinned by test',
         sourceHref: a11y('f-3--menu-toggle-hides-its-state'),
       },
       {
@@ -66,6 +92,14 @@ export const projects: z.input<typeof Project>[] = [
         reference: '2.4.11 Focus Not Obscured (AA)',
         severity: 'serious',
         evidenceIndex: 0,
+        actual:
+          "Focus is not contained in the open menu. After the last item and the Close button, Tab moves into the page underneath. On Tab 7, focus lands on the first product's image link (x 111–261). The 300 px menu panel covers that link completely: `elementFromPoint` at its four corners and centre returns the menu every time.",
+        impact:
+          "A sighted keyboard user loses track of focus completely, which is worse than F-2 because there is nothing to see even with a focus style. They can also activate a control they can't see.",
+        recommendation:
+          'Treat the open menu as a modal: make the rest of the page `inert` (or trap focus), and add `aria-modal="true"`. Alternatively, close the menu when focus leaves it.',
+        trackedBy: 'F-7 · Tab moves focus onto a link hidden behind the open menu',
+        ticketStatus: 'Pinned by test',
         sourceHref: a11y('f-7--focus-moves-behind-the-open-menu'),
       },
       {
@@ -73,6 +107,14 @@ export const projects: z.input<typeof Project>[] = [
         title: 'Closing the menu drops focus to `<body>`',
         reference: '2.4.3 Focus Order (A)',
         severity: 'moderate',
+        actual:
+          'Escape closes the menu (good), but focus ends on `<body>`. Timeline after Escape: `0 ms → Open Menu button`, `50 ms → BODY`, and it stays on `BODY`. Closing with the Close Menu button behaves the same way. Something blurs the toggle right after the library restores focus to it.',
+        impact:
+          'A keyboard user is sent back to the top of the page and has to Tab through from the start. Screen readers may announce nothing at all.',
+        recommendation:
+          'After the close transition ends, focus the toggle and make sure nothing blurs it afterwards.',
+        trackedBy: 'F-4 · closing the menu with Escape drops focus to <body>',
+        ticketStatus: 'Pinned by test',
         sourceHref: a11y('f-4--closing-the-menu-loses-focus'),
       },
       {
@@ -80,6 +122,14 @@ export const projects: z.input<typeof Project>[] = [
         title: 'Page titles are `<span>`s; pages have no headings',
         reference: '1.3.1 Info & Relationships (A)',
         severity: 'moderate',
+        actual:
+          'The visual page titles "Products", "Your Cart" and "Checkout: Your Information" are `<span class="title">`, and the "Swag Labs" logo is a `<div>`. The inventory, cart and checkout pages have zero heading elements. The login page has only two `<h4>`s, with no `h1`–`h3`.',
+        impact:
+          "Screen reader users navigate by headings (the H key, the rotor). Here they get nothing, so they can't jump to content or learn the page structure.",
+        recommendation:
+          '`<h1 class="title">Products</h1>` (and the same on every page). On login, add an `h1` and change the credential boxes to `h2`.',
+        trackedBy: 'F-5 · the page title "Products" is not a heading',
+        ticketStatus: 'Pinned by test',
         sourceHref: a11y('f-5--page-titles-are-not-headings'),
       },
       {
@@ -87,6 +137,14 @@ export const projects: z.input<typeof Project>[] = [
         title: 'Placeholder is the only visible label',
         reference: '3.3.2 Labels or Instructions (A)',
         severity: 'moderate',
+        actual:
+          'Username, Password, First Name, Last Name and Zip/Postal Code have a `placeholder` and an `aria-label` but no `<label>`. The accessible name exists, so axe passes. The visible label disappears as soon as the user types.',
+        impact:
+          'Users with memory or cognitive disabilities, and anyone who gets interrupted, lose track of what a filled field is for. Placeholder text is also usually low-contrast.',
+        recommendation:
+          'Add a visible `<label for="user-name">Username</label>` for every field and keep the placeholder for examples only.',
+        trackedBy: 'F-6 · login fields have placeholders but no visible labels',
+        ticketStatus: 'Pinned by test',
         sourceHref: a11y('f-6--placeholder-is-the-only-visible-label'),
       },
     ],
@@ -156,6 +214,13 @@ export const projects: z.input<typeof Project>[] = [
         reference: 'A05 Security Misconfiguration',
         severity: 'medium',
         trackedBy: 'tests/juice-shop.headers.spec.ts',
+        actual:
+          "No response sets `Content-Security-Policy`, on the home page, the product search API or a product record. ZAP's rule 10038 reports the same thing.",
+        impact:
+          'A CSP limits where scripts can load from. Without one, any XSS bug can run arbitrary script, and S-6 means that script can read the session token.',
+        recommendation:
+          "Start with a report-only policy, such as `Content-Security-Policy-Report-Only: default-src 'self'`, review the reports, then enforce it.",
+        ticketStatus: 'Pinned by test',
         sourceHref: sec('s-1--no-content-security-policy'),
       },
       {
@@ -164,6 +229,11 @@ export const projects: z.input<typeof Project>[] = [
         reference: 'A05 Security Misconfiguration',
         severity: 'low',
         trackedBy: 'tests/juice-shop.headers.spec.ts',
+        actual: 'No `Referrer-Policy` header, so the browser falls back to its default.',
+        impact:
+          'Full URLs, including query strings, can leak to third-party sites in the `Referer` header.',
+        recommendation: '`Referrer-Policy: strict-origin-when-cross-origin`.',
+        ticketStatus: 'Pinned by test',
         sourceHref: sec('s-2--no-referrer-policy'),
       },
       {
@@ -172,6 +242,10 @@ export const projects: z.input<typeof Project>[] = [
         reference: 'A05 Security Misconfiguration',
         severity: 'low',
         trackedBy: 'tests/juice-shop.headers.spec.ts',
+        actual:
+          "The app sends `Feature-Policy: payment 'self'`. Browsers replaced that header with `Permissions-Policy`, and ZAP's rule 10063 flags its absence.",
+        recommendation: 'Send the same intent as `Permissions-Policy: payment=(self)`.',
+        ticketStatus: 'Pinned by test',
         sourceHref: sec('s-3--feature-policy-instead-of-permissions-policy'),
       },
       {
@@ -180,6 +254,13 @@ export const projects: z.input<typeof Project>[] = [
         reference: 'A05 Security Misconfiguration',
         severity: 'medium',
         trackedBy: 'tests/juice-shop.headers.spec.ts',
+        actual:
+          "Every response, API responses included, sends `Access-Control-Allow-Origin: *`. ZAP's rule 10098 flags the same thing.",
+        impact:
+          "Any website a user visits can read these responses from their browser. The wildcard doesn't send cookies, so this mostly exposes data that doesn't need a login, but it removes a layer of protection the API doesn't need to give up.",
+        recommendation:
+          "Allow only the app's own origin, or omit the header where cross-origin access isn't needed.",
+        ticketStatus: 'Pinned by test',
         sourceHref: sec('s-4--wildcard-cors'),
       },
       {
@@ -188,6 +269,13 @@ export const projects: z.input<typeof Project>[] = [
         reference: 'A05 Security Misconfiguration',
         severity: 'low',
         trackedBy: 'tests/juice-shop.headers.spec.ts',
+        actual:
+          '`GET /api/DoesNotExist` returns a 500 page that includes a stack trace with internal paths such as `/juice-shop/node_modules/express/lib/router/layer.js:95`.',
+        impact:
+          'It tells an attacker the framework, its layout on disk and the libraries in use. An unknown route should be a 404, not a server error.',
+        recommendation:
+          'Return 404 for unknown routes and use a production error handler that never renders stack traces.',
+        ticketStatus: 'Pinned by test',
         sourceHref: sec('s-5--stack-trace-on-an-unknown-api-route'),
       },
       {
@@ -196,6 +284,13 @@ export const projects: z.input<typeof Project>[] = [
         reference: 'A07 Identification and Auth Failures',
         severity: 'medium',
         trackedBy: 'tests/juice-shop.session.spec.ts',
+        actual:
+          "After logging in through the login page with a throwaway local account, the browser holds a `token` cookie with `HttpOnly` off. `SameSite=Lax` is fine. `Secure` doesn't apply, because the local app is served over plain HTTP.",
+        impact:
+          'Any script running on the page can read the session token. Combined with an XSS bug, that means session theft.',
+        recommendation:
+          "Set the session cookie from the server with `HttpOnly`, `SameSite=Lax` and, over HTTPS, `Secure`. The page shouldn't need to read the token itself.",
+        ticketStatus: 'Pinned by test',
         sourceHref: sec('s-6--session-token-cookie-readable-by-scripts'),
       },
       {
@@ -204,6 +299,12 @@ export const projects: z.input<typeof Project>[] = [
         reference: 'A05 Security Misconfiguration',
         severity: 'low',
         trackedBy: 'tests/juice-shop.session.spec.ts',
+        actual:
+          "`GET /rest/order-history` without a token returns a 500 page with a stack trace. The page title also echoes the requester's IP address.",
+        impact:
+          'Same information leak as S-5. A missing login should get a plain 401, like the basket, users, cards and addresses endpoints already return.',
+        recommendation: 'Check authentication before the handler runs and return 401.',
+        ticketStatus: 'Pinned by test',
         sourceHref: sec('s-7--order-history-fails-with-a-stack-trace-instead-of-a-401'),
       },
       {
@@ -214,6 +315,10 @@ export const projects: z.input<typeof Project>[] = [
         note: 'D-1 (130) is "at the time of writing" (2026-10-20); Trivy\'s database changes daily.',
         trackedBy: 'scripts/dependency-scan.sh',
         ticketStatus: 'Report only',
+        actual:
+          'Trivy found 130 unique high or critical CVEs in the image (46 critical, 84 high). Most are in Node.js packages. The most affected are `vm2` (45), `multer` (10), `libssl3` (9), `tar` (9) and `handlebars` (7). `vm2` is a sandboxing library that is no longer maintained.',
+        recommendation:
+          'For a real app, replace `vm2` (it has no fixed versions), then upgrade the remaining packages and the base image.',
         sourceHref: sec('d-1--vulnerable-dependencies'),
       },
     ],
@@ -254,12 +359,25 @@ export const projects: z.input<typeof Project>[] = [
         title: '60 logins per second pushed an unrelated 2 ms read to 12 seconds at p95.',
         note: "Password hashing (`scryptSync`) blocks Node's only thread.",
         severity: 'high',
+        steps: ['`k6 run -e LOGIN_RATE=60 experiments/auth-contention.js`'],
+        actual:
+          'Readers call `GET /api/tasks` at a steady 40 requests per second for 60 seconds. Between 20s and 40s, a second group of users signs in. The readers never touch the login endpoint, yet their latency follows the login rate',
+        impact:
+          'A login burst (Monday morning, everyone signing in again after a deploy) slows the whole API, not just login.',
+        recommendation:
+          "Use the async `crypto.scrypt` (promise or callback). It runs on libuv's thread pool, so hashes stop blocking requests and can run in parallel.",
         sourceHref: perf('perf-001-login-traffic-stalls-every-other-request'),
       },
       {
         id: 'PERF-002',
         title: '`GET /api/tasks` has no pagination: 1.24 MB per board load at 10,000 tasks.',
         severity: 'low',
+        steps: ['`k6 run experiments/list-growth.js`'],
+        actual: '`GET /api/tasks` returns every task the user owns, every time.',
+        impact:
+          'The payload is the risk: 1.24 MB per board load is about a full second of download on a 10 Mbps mobile connection, before the browser renders 10,000 rows.',
+        recommendation:
+          'add `limit` and `offset` (or a cursor) with a sensible default, and let the client filter by `status`. Keep this experiment as a regression check.',
         sourceHref: perf('perf-002-the-task-list-has-no-pagination'),
       },
       {
