@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { isActive, NAV_ITEMS } from '@/lib/nav';
+import { isActive, type NavItem } from '@/lib/nav';
 
-export function NavList() {
+export function NavList({ items }: { items: readonly NavItem[] }) {
   const pathname = usePathname();
 
   return (
     <ul className="flex flex-col gap-0.5">
-      {NAV_ITEMS.map(({ href, label }) => {
+      {items.map(({ href, label }) => {
         const active = isActive(pathname, href);
         return (
           <li key={href}>

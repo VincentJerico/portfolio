@@ -16,7 +16,8 @@
     "vercel:link": "dotenv -e .env.cli -- sh -c 'vercel link --yes --token \"$VERCEL_TOKEN\"'",
     "vercel:whoami": "dotenv -e .env.cli -- sh -c 'vercel whoami --token \"$VERCEL_TOKEN\"'",
     "deploy:preview": "dotenv -e .env.cli -- sh -c 'vercel deploy --token \"$VERCEL_TOKEN\"'",
-    "deploy:prod": "dotenv -e .env.cli -- sh -c 'vercel deploy --prod --token \"$VERCEL_TOKEN\"'"
+    "deploy:prod": "dotenv -e .env.cli -- sh -c 'vercel deploy --prod --token \"$VERCEL_TOKEN\"'",
+    "content:report": "tsx scripts/content-report.ts"
   },
   "dependencies": {
     "lucide-react": "^1.61.0",

@@ -32,6 +32,9 @@ jobs:
       - run: pnpm format:check
       - run: pnpm typecheck
       - run: pnpm test
+        env:
+          # Private terms (client names, postal code, phone) the content guard must never find.
+          CLIENT_DENYLIST: ${{ secrets.CLIENT_DENYLIST }}
 
   build:
     name: Build

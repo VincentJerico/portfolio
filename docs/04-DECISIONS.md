@@ -85,10 +85,14 @@ until supplied.
 | C7 | API quirks, TaskFlow seed-and-catch, journey area status and performance test types render as `extraTables`; defect tickets only where a FINDINGS / BUGS-FOUND file exists | Spec 4.4 D: no invented repro steps |
 | C8 | Photo is the desktop sidebar avatar; `VJ` monogram is the mobile top bar mark and favicon | Spec 4.3 and 7.1 both ask for it; this places each |
 | C9 | The spec is treated as the approved design document; per-phase implementation plans live in `docs/superpowers/plans/` | Avoids a duplicate design doc |
+| C10 | Default `NEXT_PUBLIC_SITE_URL` for CI test builds is `http://localhost:3210` (the Playwright server port); real URL set in Vercel and the deploy job | Build must not fail before a domain exists |
 | C11 | Theme: OS preference wins (`defaultTheme="system"`); dark is the CSS default for no-JS visitors and crawlers; the toggle stores an explicit choice | Reads "dark default, system respected" (spec 3) without one overriding the other |
 | C12 | The generated CV PDF is not committed (`public/cv/` git-ignored); CI and `pnpm cv` produce it | D1; keeps the PDF in sync with `/resume` |
 | C13 | Light `--warn` changed from spec `#9A6700` to `#956400` | Spec value is 4.34:1 on `--surface-2` (`#F2F2EE`), below 4.5:1; `#956400` is the nearest darker shade that passes (4.56:1). Caught by `tests/unit/tokens.test.ts` |
-| C10 | Default `NEXT_PUBLIC_SITE_URL` for CI test builds is `http://localhost:3210` (the Playwright server port); real URL set in Vercel and the deploy job | Build must not fail before a domain exists |
+| C14 | Schema extensions: `Profile.languages` (D7), `Profile.background` (data §1 Background line, for `/resume`), `Project.year` (C3), optional `decisions[].body`, `CaseStudy.currentlyTesting` (data §5.3), `QaArea` collection (data §5.4) | Each holds a data-file fact the spec schema had no field for |
+| C15 | `Profile.siteUrl` removed; `getEnv().NEXT_PUBLIC_SITE_URL` is the single source | Avoids two sources for one value |
+| C16 | Metric `login-latency` value "12 s p95" with the data cell as context; `browsers` value "4" counting the four browsers on the same tile | Spec 6 example; spec 2.1 allows counting items rendered together |
+| C17 | `navItems()` and all content reads run on the server; client nav components get plain props | Keeps content and Zod out of the client bundle (perf budget) |
 
 ---
 

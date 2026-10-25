@@ -1,0 +1,67 @@
+{
+  "https://github.com/VincentJerico/accessibility-testing/blob/main/docs/FINDINGS.md": {
+    "commit": "2b5bf9ed8b5784e89ec194b55607391a8536e48b",
+    "anchors": [
+      "accessibility-audit--saucedemo-wcag-22-aa",
+      "summary",
+      "findings",
+      "f-1--cart-is-not-reachable-by-keyboard",
+      "f-2--no-visible-focus-indicator-anywhere",
+      "f-3--menu-toggle-hides-its-state",
+      "f-7--focus-moves-behind-the-open-menu",
+      "f-4--closing-the-menu-loses-focus",
+      "f-5--page-titles-are-not-headings",
+      "f-6--placeholder-is-the-only-visible-label",
+      "what-works-regression-guarded",
+      "scanner-validation-w3c-before-and-after-demo",
+      "not-covered-known-limits"
+    ]
+  },
+  "https://github.com/VincentJerico/security-testing/blob/main/docs/FINDINGS.md": {
+    "commit": "c6c0c994d4babeb3d8aafe076ca5bb7cc9a1529a",
+    "anchors": [
+      "security-findings-owasp-juice-shop-local",
+      "summary",
+      "findings",
+      "s-1--no-content-security-policy",
+      "s-2--no-referrer-policy",
+      "s-3--feature-policy-instead-of-permissions-policy",
+      "s-4--wildcard-cors",
+      "s-5--stack-trace-on-an-unknown-api-route",
+      "s-6--session-token-cookie-readable-by-scripts",
+      "s-7--order-history-fails-with-a-stack-trace-instead-of-a-401",
+      "d-1--vulnerable-dependencies",
+      "zap-baseline-warnings",
+      "what-works-guarded-by-tests",
+      "how-the-checks-prove-themselves",
+      "not-covered"
+    ]
+  },
+  "https://github.com/VincentJerico/performance-testing/blob/main/docs/FINDINGS.md": {
+    "commit": "23e44edb1e1a1581d5e738b1d2e0f19702c68892",
+    "anchors": [
+      "findings",
+      "perf-001-login-traffic-stalls-every-other-request",
+      "what-happens",
+      "why",
+      "why-it-matters",
+      "recommendation",
+      "perf-002-the-task-list-has-no-pagination",
+      "obs-001-task-crud-is-fast-capacity-depends-on-the-traffic-mix",
+      "obs-002-server-memory-during-the-soak-test"
+    ]
+  },
+  "https://github.com/VincentJerico/taskflow-under-test/blob/main/docs/BUGS-FOUND.md": {
+    "commit": "8b0d564ca225877e7d0b05d11f7305da975d9bc3",
+    "anchors": [
+      "bugs-found--seed--catch-exercise",
+      "bug-1--missing-title-validation",
+      "bug-2--broken-access-control-the-important-one",
+      "bug-3--wrong-status-code-on-create",
+      "bug-4--weak-due-date-validation",
+      "found-by-audit--stored-xss-in-task-titles",
+      "takeaways",
+      "how-this-was-run"
+    ]
+  }
+}
