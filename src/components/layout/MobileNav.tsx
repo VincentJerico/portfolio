@@ -2,12 +2,10 @@
 
 import { Menu, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import { identity } from '@/lib/identity';
-import { IdentityBlock } from './IdentityBlock';
+import type { NavItem } from '@/lib/nav';
 import { NavList } from './NavList';
-import { ShellLinks } from './ShellLinks';
 
 const DRAWER_ID = 'site-drawer';
 const DESKTOP_QUERY = '(min-width: 1024px)';
@@ -28,7 +26,15 @@ function focusables(root: HTMLElement): HTMLElement[] {
  * command, so it works without JavaScript; this component adds aria-expanded, a focus wrap,
  * focus return, and closing on navigation or on growing to the desktop layout.
  */
-export function MobileNav() {
+interface MobileNavProps {
+  fullName: string;
+  items: readonly NavItem[];
+  /** Server-rendered blocks, passed in so content never ships in the client bundle. */
+  identity: ReactNode;
+  links: ReactNode;
+}
+
+export function MobileNav({ fullName, items, identity, links }: MobileNavProps) {
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const menuRef = useRef<HTMLButtonElement>(null);
@@ -93,7 +99,7 @@ export function MobileNav() {
         >
           VJ
         </span>
-        <p className="min-w-0 flex-1 truncate font-semibold text-ink">{identity.fullName}</p>
+        <p className="min-w-0 flex-1 truncate font-semibold text-ink">{fullName}</p>
         <button
           ref={menuRef}
           type="button"
@@ -118,7 +124,7 @@ export function MobileNav() {
       >
         <div className="flex min-h-full flex-col gap-6 px-5 py-5">
           <div className="flex items-start justify-between gap-3">
-            <IdentityBlock />
+            {identity}
             <button
               type="button"
               commandfor={DRAWER_ID}
@@ -131,11 +137,11 @@ export function MobileNav() {
             </button>
           </div>
           <nav aria-label="Site">
-            <NavList />
+            <NavList items={items} />
           </nav>
           <div className="mt-auto flex flex-col gap-2 border-t border-line pt-4">
             <ThemeToggle className="w-full" />
-            <ShellLinks />
+            {links}
           </div>
         </div>
       </dialog>

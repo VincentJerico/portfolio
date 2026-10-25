@@ -18,6 +18,7 @@ export const Profile = z.object({
   headline: z.string(),
   oneLiner: z.string(),
   intro: z.string(),
+  background: z.string().optional(), // ext: data §1 Background line, used by /resume (C19)
   tagline: z.string(),
   goal: z.string(),
   nextDirections: z.array(z.string()),
