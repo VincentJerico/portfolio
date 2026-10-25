@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { plantedBugs } from '../../src/content';
+import { waitForHydration } from '../helpers/hydration';
 
 test.use({ viewport: { width: 1280, height: 900 } });
 
@@ -11,6 +12,7 @@ const boxesOverlap = (a: Box, b: Box) =>
 const banner = (page: Page) => page.getByRole('region', { name: 'Bug Hunt' });
 
 async function inspectByKeyboard(page: Page, targetId: string) {
+  await waitForHydration(page);
   const button = page.locator(`[data-hunt-id="${targetId}"] [data-hunt-inspect]`);
   await button.focus();
   await page.keyboard.press('Enter');
@@ -37,6 +39,7 @@ test('a clean element reports no defect', async ({ page }) => {
 });
 
 test('all five bugs can be found by keyboard, then the completion card shows', async ({ page }) => {
+  test.slow(); // five pages and five dialogs
   await page.goto('/?bughunt=1');
   for (const bug of plantedBugs) {
     await page.goto(bug.route);

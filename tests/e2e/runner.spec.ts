@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { waitForHydration } from '../helpers/hydration';
 
 const SUMMARY = /^\d+ passed, \d+ failed(, \d+ not measured)? in \d+(\.\d+)?s$/;
 
@@ -88,6 +89,7 @@ test('a run started from the mobile menu still scans the page (no inert page)', 
 }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto('/projects');
+  await waitForHydration(page);
   await page.evaluate(() => {
     const img = document.createElement('img');
     img.src = '/images/profile/vincent-portrait.jpg';
@@ -130,6 +132,7 @@ test('closing mid-run leaves no errors behind', async ({ page }) => {
 
 test('self-test: the checks fail when the page is broken', async ({ page }) => {
   await page.goto('/about');
+  await waitForHydration(page);
   await page.evaluate(() => {
     const img = document.createElement('img');
     img.src = '/images/profile/vincent-portrait.jpg';
