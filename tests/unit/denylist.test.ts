@@ -1,20 +1,8 @@
-import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { allContent } from '@/content';
-import { denylistProblems, findDenied, parseDenylist } from '@/lib/strings';
+import { denylistProblems, findDenied } from '@/lib/strings';
+import { loadDenylist } from '../helpers/denylist';
 import { plantedContent } from '../fixtures/planted-content';
-
-// Private terms that must never be published: client names, postal code, street address.
-// Locally: tests/fixtures/client-denylist.txt (git-ignored). CI: the CLIENT_DENYLIST secret.
-const FILE = 'tests/fixtures/client-denylist.txt';
-
-function loadDenylist(): string[] {
-  const text = existsSync(FILE) ? readFileSync(FILE, 'utf8') : process.env.CLIENT_DENYLIST;
-  if (!text?.trim()) {
-    throw new Error(`client denylist missing: create ${FILE} or set CLIENT_DENYLIST`);
-  }
-  return parseDenylist(text);
-}
 
 describe('client denylist', () => {
   const deny = loadDenylist();

@@ -17,7 +17,8 @@
     "vercel:whoami": "dotenv -e .env.cli -- sh -c 'vercel whoami --token \"$VERCEL_TOKEN\"'",
     "deploy:preview": "dotenv -e .env.cli -- sh -c 'vercel deploy --token \"$VERCEL_TOKEN\"'",
     "deploy:prod": "dotenv -e .env.cli -- sh -c 'vercel deploy --prod --token \"$VERCEL_TOKEN\"'",
-    "content:report": "tsx scripts/content-report.ts"
+    "content:report": "tsx scripts/content-report.ts",
+    "cv": "tsx scripts/build-cv-pdf.ts"
   },
   "dependencies": {
     "lucide-react": "^1.61.0",
@@ -38,6 +39,7 @@
     "eslint-config-next": "16.4.3",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-playwright": "^2.12.1",
+    "pdfjs-dist": "^6.4.299",
     "prettier": "^3.9.10",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",

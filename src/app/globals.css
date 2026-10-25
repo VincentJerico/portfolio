@@ -138,3 +138,67 @@
     }
   }
 }
+
+/* Print (spec 7.7): single column, black on white, no site chrome, URLs after external links. */
+@media print {
+  :root,
+  .light,
+  .dark {
+    color-scheme: light;
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #ffffff;
+    --border: #bbbbbb;
+    --text: #000000;
+    --text-muted: #333333;
+    --accent: #000000;
+    --pass: #000000;
+    --warn: #000000;
+    --fail: #000000;
+    --shadow: none;
+  }
+
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  [data-print-hide] {
+    display: none !important;
+  }
+
+  html,
+  body {
+    font-size: 10.5pt;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  main > div {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+
+  h1 {
+    font-size: 24pt;
+  }
+
+  h3 {
+    font-size: 11pt;
+  }
+
+  a {
+    color: #000000;
+  }
+
+  a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 8.5pt;
+    color: #333333;
+    word-break: break-all;
+  }
+}
