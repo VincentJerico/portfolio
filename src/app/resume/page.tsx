@@ -1,15 +1,17 @@
 import { Download } from 'lucide-react';
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import type { ReactNode } from 'react';
 import { ButtonLink } from '@/components/ui/Button';
 import { certifications, education, experience, profile, skills } from '@/content';
 import { projectsInOrder, visible } from '@/lib/content';
 import { formatCertDate, formatMonth, formatPeriod } from '@/lib/format';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Resume',
   description: profile.oneLiner,
-};
+  path: '/resume',
+});
 
 function ResumeSection({ title, children }: { title: string; children: ReactNode }) {
   return (
