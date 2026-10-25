@@ -2,6 +2,7 @@
 
 import { Play } from 'lucide-react';
 import { useCallback, useRef, useState, type ComponentType } from 'react';
+import { createPortal } from 'react-dom';
 
 type Panel = ComponentType<{ onClose: () => void }>;
 
@@ -15,6 +16,10 @@ export function RunSuiteButton({ className = '' }: { className?: string }) {
   async function start() {
     if (open || loading.current) return;
     loading.current = true;
+    // A modal (the mobile menu drawer) would make the page inert, and axe skips inert content.
+    document
+      .querySelectorAll('dialog')
+      .forEach((dialog) => dialog.matches(':modal') && dialog.close());
     try {
       const runner = await import('./RunnerPanel');
       setPanel(() => runner.RunnerPanel);
@@ -26,7 +31,12 @@ export function RunSuiteButton({ className = '' }: { className?: string }) {
 
   const close = useCallback(() => {
     setOpen(false);
-    triggerRef.current?.focus();
+    // A trigger inside the now-closed drawer is hidden; return focus to the menu button instead.
+    const trigger = triggerRef.current;
+    const target = trigger?.checkVisibility()
+      ? trigger
+      : document.querySelector<HTMLElement>('[aria-controls="site-drawer"]');
+    target?.focus();
   }, []);
 
   return (
@@ -40,7 +50,7 @@ export function RunSuiteButton({ className = '' }: { className?: string }) {
         <Play aria-hidden="true" className="size-4" />
         Run tests on this page
       </button>
-      {open && Panel && <Panel onClose={close} />}
+      {open && Panel && createPortal(<Panel onClose={close} />, document.body)}
     </>
   );
 }

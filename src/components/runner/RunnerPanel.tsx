@@ -15,21 +15,20 @@ const LABEL = { pass: 'PASS', fail: 'FAIL', warn: 'WARN' } as const;
 
 /** Runs the real checks against the current page and streams results like a test runner (spec 4.4 B). */
 export function RunnerPanel({ onClose }: { onClose: () => void }) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
   const [rows, setRows] = useState<Row[]>([]);
   const [totalMs, setTotalMs] = useState<number | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
-    const dialog = dialogRef.current!;
+    const panel = panelRef.current!;
     const controller = new AbortController();
-    // Non-modal on purpose: a modal dialog makes the rest of the page inert, and axe skips inert
-    // content, so every scan would pass vacuously. The runner self-test pins this.
-    dialog.show();
-    dialog.querySelector<HTMLElement>('[data-runner-close]')?.focus();
-    const onKeyDown = (event: KeyboardEvent) => event.key === 'Escape' && dialog.close();
+    // Not a <dialog>: axe-core treats any visible open dialog as modal by an on-screen point test,
+    // and then skips the rest of the page, so every scan would pass vacuously. A labelled region
+    // keeps the page scannable. The runner self-tests pin this.
+    panel.querySelector<HTMLElement>('[data-runner-close]')?.focus();
+    const onKeyDown = (event: KeyboardEvent) => event.key === 'Escape' && onClose();
     document.addEventListener('keydown', onKeyDown);
-    dialog.addEventListener('close', onClose);
 
     (async () => {
       const started = performance.now();
@@ -57,7 +56,6 @@ export function RunnerPanel({ onClose }: { onClose: () => void }) {
     return () => {
       controller.abort();
       document.removeEventListener('keydown', onKeyDown);
-      dialog.removeEventListener('close', onClose);
     };
   }, [onClose]);
 
@@ -69,8 +67,8 @@ export function RunnerPanel({ onClose }: { onClose: () => void }) {
     : '';
 
   return (
-    <dialog
-      ref={dialogRef}
+    <section
+      ref={panelRef}
       data-runner-panel
       aria-label="Test run"
       className="fixed inset-x-0 bottom-0 z-40 m-0 mx-auto max-h-[75dvh] w-[min(100vw,44rem)] max-w-none overflow-hidden rounded-t-card border border-b-0 border-line bg-surface p-0 text-ink shadow-2xl"
@@ -82,7 +80,7 @@ export function RunnerPanel({ onClose }: { onClose: () => void }) {
         <button
           type="button"
           data-runner-close
-          onClick={() => dialogRef.current?.close()}
+          onClick={onClose}
           aria-label="Close test run"
           className="inline-flex size-11 items-center justify-center rounded-chip hover:bg-surface-2"
         >
@@ -132,6 +130,6 @@ export function RunnerPanel({ onClose }: { onClose: () => void }) {
           )}
         </div>
       </div>
-    </dialog>
+    </section>
   );
 }
