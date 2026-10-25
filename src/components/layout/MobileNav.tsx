@@ -4,8 +4,6 @@ import { Menu, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
-import type { NavItem } from '@/lib/nav';
-import { NavList } from './NavList';
 
 const DRAWER_ID = 'site-drawer';
 const DESKTOP_QUERY = '(min-width: 1024px)';
@@ -28,13 +26,13 @@ function focusables(root: HTMLElement): HTMLElement[] {
  */
 interface MobileNavProps {
   fullName: string;
-  items: readonly NavItem[];
   /** Server-rendered blocks, passed in so content never ships in the client bundle. */
   identity: ReactNode;
+  nav: ReactNode;
   links: ReactNode;
 }
 
-export function MobileNav({ fullName, items, identity, links }: MobileNavProps) {
+export function MobileNav({ fullName, identity, nav, links }: MobileNavProps) {
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const menuRef = useRef<HTMLButtonElement>(null);
@@ -140,9 +138,7 @@ export function MobileNav({ fullName, items, identity, links }: MobileNavProps) 
               <X aria-hidden="true" className="size-5" />
             </button>
           </div>
-          <nav aria-label="Site">
-            <NavList items={items} />
-          </nav>
+          {nav}
           <div className="mt-auto flex flex-col gap-2 border-t border-line pt-4">
             <ThemeToggle className="w-full" />
             {links}

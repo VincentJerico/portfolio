@@ -7,7 +7,9 @@ import { SkipLink } from '@/components/layout/SkipLink';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { profile } from '@/content';
 import { fontVariables } from '@/lib/fonts';
-import { navItems } from '@/lib/nav-items';
+import { explorerData } from '@/lib/explorer-rows';
+import { SiteChecksChip } from '@/components/explorer/SiteChecksChip';
+import { TestExplorerNav } from '@/components/explorer/TestExplorerNav';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -18,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
-  const items = navItems();
+  const { rows, projects, summary, site } = explorerData();
   return (
     <html lang="en" className={fontVariables} suppressHydrationWarning>
       <body>
@@ -26,11 +28,23 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           <SkipLink />
           <MobileNav
             fullName={profile.fullName}
-            items={items}
             identity={<IdentityBlock />}
-            links={<ShellLinks />}
+            nav={
+              <TestExplorerNav
+                idPrefix="drawer"
+                rows={rows}
+                projects={projects}
+                summary={summary}
+              />
+            }
+            links={
+              <>
+                <ShellLinks />
+                <SiteChecksChip status={site} />
+              </>
+            }
           />
-          <Sidebar items={items} />
+          <Sidebar />
           <main id="main" tabIndex={-1} className="focus:outline-none lg:pl-[280px]">
             <div className="mx-auto w-full max-w-[1100px] px-4 py-10 sm:px-6 lg:px-12 lg:py-16">
               {children}
