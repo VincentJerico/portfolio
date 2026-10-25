@@ -49,12 +49,15 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm cv
       - uses: actions/upload-artifact@v7
         with:
           name: next-build
           path: |
             .next/
             !.next/cache/
+            public/cv/
           include-hidden-files: true
           retention-days: 7
 
@@ -77,9 +80,12 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: next-build
-          path: .next/
+          path: .
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e --project=${{ matrix.project }}
+        env:
+          # The rendered-HTML and CV integrity checks scan for these private terms too.
+          CLIENT_DENYLIST: ${{ secrets.CLIENT_DENYLIST }}
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:

@@ -92,7 +92,10 @@ export function MobileNav({ fullName, items, identity, links }: MobileNavProps) 
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-surface/95 px-4 backdrop-blur lg:hidden">
+      <header
+        data-print-hide
+        className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-surface/95 px-4 backdrop-blur lg:hidden"
+      >
         <span
           aria-hidden="true"
           className="grid size-8 shrink-0 place-items-center rounded-chip border border-line font-mono text-xs font-medium text-ink"
@@ -116,6 +119,7 @@ export function MobileNav({ fullName, items, identity, links }: MobileNavProps) 
       </header>
 
       <dialog
+        data-print-hide
         ref={dialogRef}
         id={DRAWER_ID}
         aria-label="Site menu"
