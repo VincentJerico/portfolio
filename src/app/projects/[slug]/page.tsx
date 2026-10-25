@@ -9,6 +9,7 @@ import { EvidenceGallery } from '@/components/content/EvidenceGallery';
 import { FindingsTable } from '@/components/content/FindingsTable';
 import { ResultCallout } from '@/components/content/ResultCallout';
 import { RunSummaryPanel } from '@/components/content/RunSummaryPanel';
+import { TicketOpener } from '@/components/content/TicketOpener';
 import { Section } from '@/components/content/Section';
 import { InlineCode } from '@/components/ui/InlineCode';
 import { projectBySlug, projectsInOrder } from '@/lib/content';
@@ -109,6 +110,7 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
           title="Findings"
           kicker={`${project.findings.length} defect tickets`}
         >
+          <TicketOpener />
           <div className="flex flex-col gap-6">
             <FindingsTable findings={project.findings} />
             <div className="flex flex-col gap-2">

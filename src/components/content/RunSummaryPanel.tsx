@@ -31,7 +31,8 @@ export function RunSummaryPanel({ project }: { project: Project }) {
         {counts.map(({ severity, count }) => (
           <li key={severity}>
             <a
-              href="#findings"
+              href={`#ticket-${project.findings.find((f) => f.severity === severity)!.id}`}
+              data-open-severity={severity}
               className="inline-flex items-center no-underline pointer-coarse:min-h-11"
             >
               <SeverityChip severity={severity} count={count} />

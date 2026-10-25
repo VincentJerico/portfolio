@@ -25,7 +25,7 @@ test('metric source links and "+n" disclosures are touch sized', async ({ page }
 test('severity chip links in a run summary are touch sized', async ({ page }) => {
   await page.goto('/projects/accessibility-testing');
   await expectTouchSized(
-    page.getByRole('region', { name: 'Run summary' }).locator('a[href="#findings"]'),
+    page.getByRole('region', { name: 'Run summary' }).locator('a[data-open-severity]'),
     'severity link',
   );
 });

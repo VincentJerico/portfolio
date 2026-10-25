@@ -32,7 +32,7 @@ export default function OverviewPage() {
         aria-labelledby="hero-heading"
         className="grid items-start gap-10 md:grid-cols-[1fr_auto]"
       >
-        <div className="measure">
+        <div className="measure min-w-0">
           <p className="label-mono text-ink-muted">
             {profile.role} · {profile.company}
           </p>
