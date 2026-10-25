@@ -1,0 +1,71 @@
+import type { z } from 'zod';
+import type { PlantedBug } from './schema';
+
+// Bug Hunt mode (spec 4.4 C): the five suggested bugs Vincent approved on 2026-10-24. They exist only
+// in the browser while the mode is on; the server HTML always carries the true values.
+export const plantedBugs: z.input<typeof PlantedBug>[] = [
+  {
+    id: 'HUNT-01',
+    route: '/skills',
+    targetId: 'skills-accessibility-heading',
+    hint: 'On the Skills page',
+    title: 'Typo in the Accessibility skill group heading',
+    severity: 'low',
+    steps: ['Open the Skills page', 'Read the skill group headings'],
+    expected: 'The heading reads "Accessibility"',
+    actual: 'The heading reads "Accessibilty" (the second "i" is missing)',
+    wouldBeCaughtBy: 'A spell-check step in CI (cspell) over rendered headings',
+  },
+  {
+    id: 'HUNT-02',
+    route: '/',
+    targetId: 'metric-automated-tests',
+    hint: 'On the Overview page',
+    title: 'A metric total that does not match its parts',
+    severity: 'medium',
+    steps: [
+      'Open the Overview page',
+      'Find the automated tests metric in the run summary',
+      'Add up its parts',
+    ],
+    expected: 'The total equals its parts: 91 UI + 17 API = 108',
+    actual: 'The total reads 109 while its parts add up to 108',
+    wouldBeCaughtBy: 'A unit test asserting each displayed total equals the sum of its parts',
+  },
+  {
+    id: 'HUNT-03',
+    route: '/about',
+    targetId: 'about-timeline-published-performance-testing-k6',
+    hint: 'On the About page',
+    title: 'A timeline event dated in the future',
+    severity: 'low',
+    steps: ['Open the About page', 'Read the timeline dates in order'],
+    expected: 'Publishing performance-testing is dated 24 Oct 2026',
+    actual: 'It is dated 24 Oct 2027, a year in the future',
+    wouldBeCaughtBy: 'A content schema rule that no event is dated after the build date',
+  },
+  {
+    id: 'HUNT-04',
+    route: '/projects',
+    targetId: 'projects-card-api-testing-framework',
+    hint: 'On the Projects page',
+    title: 'One project card sits 3 px off the grid',
+    severity: 'low',
+    steps: ['Open the Projects page', 'Compare the left edges of the cards in one column'],
+    expected: 'Every card lines up with the grid',
+    actual: 'The api-testing-framework card is shifted 3 px to the right',
+    wouldBeCaughtBy: 'A visual regression snapshot of the projects grid',
+  },
+  {
+    id: 'HUNT-05',
+    route: '/',
+    targetId: 'overview-download-cv',
+    hint: 'On the Overview page',
+    title: 'The Download CV button shows an external-link icon',
+    severity: 'low',
+    steps: ['Open the Overview page', 'Look at the icon on the Download CV button'],
+    expected: 'A download icon, matching what the button does',
+    actual: 'An external-link icon, which suggests it opens another site',
+    wouldBeCaughtBy: 'A component test that the Download CV button renders the download icon',
+  },
+];

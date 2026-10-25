@@ -33,7 +33,7 @@ export default function ProjectsPage() {
           cards={projects.map((project) => ({
             slug: project.slug,
             category: project.category,
-            card: <ProjectCard project={project} />,
+            card: <ProjectCard project={project} huntPrefix="projects" />,
           }))}
         />
       </section>

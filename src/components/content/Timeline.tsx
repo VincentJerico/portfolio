@@ -1,8 +1,21 @@
 import Link from 'next/link';
 import type { TimelineEvent } from '@/content/schema';
+import { Inspectable } from '@/components/bughunt/Inspectable';
 import { formatTimelineDate } from '@/lib/format';
+import { githubSlug } from '@/lib/slug';
 
-export function Timeline({ events }: { events: readonly TimelineEvent[] }) {
+// HUNT-03 (Bug Hunt only): an event dated in the future.
+const PLANTED_DATES: Record<string, string> = {
+  'about-timeline-published-performance-testing-k6': '24 Oct 2027',
+};
+
+export function Timeline({
+  events,
+  huntPrefix,
+}: {
+  events: readonly TimelineEvent[];
+  huntPrefix: string;
+}) {
   return (
     <ol className="relative border-l border-line">
       {events.map((event) => (
@@ -13,7 +26,19 @@ export function Timeline({ events }: { events: readonly TimelineEvent[] }) {
               event.kind === 'next' ? 'bg-ink-muted' : 'bg-accent'
             }`}
           />
-          <p className="label-mono text-ink-muted">{formatTimelineDate(event.date)}</p>
+          <Inspectable
+            id={`${huntPrefix}-${githubSlug(event.title)}`}
+            label={`${event.title} timeline entry`}
+            planted={
+              PLANTED_DATES[`${huntPrefix}-${githubSlug(event.title)}`] && (
+                <p className="label-mono text-ink-muted">
+                  {PLANTED_DATES[`${huntPrefix}-${githubSlug(event.title)}`]}
+                </p>
+              )
+            }
+          >
+            <p className="label-mono text-ink-muted">{formatTimelineDate(event.date)}</p>
+          </Inspectable>
           <p className="mt-1 text-ink">
             {event.href ? (
               <Link

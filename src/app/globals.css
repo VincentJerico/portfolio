@@ -202,3 +202,50 @@
     word-break: break-all;
   }
 }
+
+/* Hero runner block: each line types in once. Under reduced motion the global rule collapses the
+   animation to its final frame, so every line is simply shown. */
+@layer components {
+  .runner-line {
+    clip-path: inset(0 100% 0 0);
+    animation: runner-type 0.5s steps(32, end) forwards;
+  }
+  @keyframes runner-type {
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .runner-line {
+      clip-path: none;
+      animation: none;
+    }
+  }
+}
+
+/* Bug Hunt: planted values only on screen; print always shows the true ones. */
+@layer components {
+  .hunt-screen {
+    display: contents;
+  }
+  .hunt-print {
+    display: none;
+  }
+  @media print {
+    .hunt-screen {
+      display: none;
+    }
+    .hunt-print {
+      display: contents;
+    }
+  }
+}
+
+/* P5: view transitions are motion too. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

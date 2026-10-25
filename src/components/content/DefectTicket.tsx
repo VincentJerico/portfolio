@@ -28,6 +28,10 @@ export function DefectTicket({
   }
   if (finding.expected) rows.push(['Expected', <InlineCode key="e" text={finding.expected} />]);
   if (finding.actual) rows.push(['Actual', <InlineCode key="a" text={finding.actual} />]);
+  if (finding.impact) rows.push(['Impact', <InlineCode key="i" text={finding.impact} />]);
+  if (finding.recommendation) {
+    rows.push(['Recommendation', <InlineCode key="r" text={finding.recommendation} />]);
+  }
   if (finding.trackedBy)
     rows.push([
       'Tracked by',

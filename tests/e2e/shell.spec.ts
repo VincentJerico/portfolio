@@ -58,8 +58,8 @@ test.describe('desktop sidebar', () => {
   });
 
   test('every tab stop in the shell shows a visible focus indicator', async ({ page }) => {
-    // Skip link, the nav links, theme toggle, GitHub, Email.
-    const shellTabStops = 1 + NAV_ITEMS.length + 1 + 2;
+    // Skip link, nav links, Projects folder, theme toggle, GitHub, Email, run tests, site checks.
+    const shellTabStops = 1 + NAV_ITEMS.length + 1 + 1 + 2 + 1 + 1;
     await page.goto('/');
     for (let i = 0; i < shellTabStops; i++) {
       await page.keyboard.press('Tab');

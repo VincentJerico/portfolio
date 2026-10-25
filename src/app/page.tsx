@@ -1,15 +1,18 @@
-import { ArrowRight, Download, Mail } from 'lucide-react';
+import { ArrowRight, Download, ExternalLink, Mail } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Inspectable } from '@/components/bughunt/Inspectable';
 import { CaseStudyCard } from '@/components/content/CaseStudyCard';
 import { ProjectCard } from '@/components/content/ProjectCard';
 import { QaAreaGrid } from '@/components/content/QaAreaGrid';
+import { RunnerHeroBlock } from '@/components/content/RunnerHeroBlock';
 import { Section } from '@/components/content/Section';
 import { SkillChips } from '@/components/content/SkillChips';
 import { Timeline } from '@/components/content/Timeline';
 import { ButtonLink } from '@/components/ui/Button';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { MetricTile } from '@/components/ui/MetricTile';
+import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
 import { experience, metrics, profile, qaAreas, skills, timeline } from '@/content';
 import { approvedCaseStudies, projectsInOrder, visible } from '@/lib/content';
 import { formatDay, formatPeriod } from '@/lib/format';
@@ -31,7 +34,7 @@ export default function OverviewPage() {
         aria-labelledby="hero-heading"
         className="grid items-start gap-10 md:grid-cols-[1fr_auto]"
       >
-        <div className="measure">
+        <div className="measure min-w-0">
           <p className="label-mono text-ink-muted">
             {profile.role} · {profile.company}
           </p>
@@ -41,37 +44,59 @@ export default function OverviewPage() {
           <p className="mt-5 text-xl font-semibold text-ink lg:text-2xl">{profile.headline}</p>
           <p className="mt-4 text-ink-muted">{profile.intro}</p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <ButtonLink href="/projects" variant="primary">
-              View projects
-              <ArrowRight aria-hidden="true" className="size-4" />
-            </ButtonLink>
-            <ButtonLink href={profile.cvPdf} download>
-              <Download aria-hidden="true" className="size-4" />
-              Download CV
-            </ButtonLink>
-            <ButtonLink href={`mailto:${profile.email}`} variant="ghost">
-              <Mail aria-hidden="true" className="size-4" />
-              Email me
-            </ButtonLink>
+            <Inspectable as="span" id="overview-view-projects" label="View projects button">
+              <ButtonLink href="/projects" variant="primary">
+                View projects
+                <ArrowRight aria-hidden="true" className="size-4" />
+              </ButtonLink>
+            </Inspectable>
+            <Inspectable
+              as="span"
+              id="overview-download-cv"
+              label="Download CV button"
+              planted={
+                // HUNT-05 (Bug Hunt only): an icon that contradicts the label.
+                <ButtonLink href={profile.cvPdf} download>
+                  <ExternalLink aria-hidden="true" className="size-4" />
+                  Download CV
+                </ButtonLink>
+              }
+            >
+              <ButtonLink href={profile.cvPdf} download>
+                <Download aria-hidden="true" className="size-4" />
+                Download CV
+              </ButtonLink>
+            </Inspectable>
+            <Inspectable as="span" id="overview-email" label="Email me button">
+              <ButtonLink href={`mailto:${profile.email}`} variant="ghost">
+                <Mail aria-hidden="true" className="size-4" />
+                Email me
+              </ButtonLink>
+            </Inspectable>
+          </div>
+          <div className="mt-10 max-w-xl">
+            <RunnerHeroBlock metrics={metrics} />
           </div>
         </div>
-        {profile.photo && (
-          <figure className="w-full max-w-[240px] justify-self-start rounded-card border border-line bg-surface p-2 shadow-card md:justify-self-end">
-            <Image
-              src={profile.photo}
-              alt={profile.fullName}
-              width={510}
-              height={680}
-              sizes="240px"
-              loading="eager"
-              fetchPriority="high"
-              className="aspect-[3/4] w-full rounded-[4px] object-cover object-[50%_35%]"
-            />
-            <figcaption className="mt-2 px-1 font-mono text-[0.6875rem] text-ink-muted">
-              fixture · vincent-portrait.jpg · 510×680
-            </figcaption>
-          </figure>
-        )}
+        <div className="flex w-full min-w-0 flex-col items-start gap-4 md:w-[22rem] md:items-end">
+          {profile.photo && (
+            <figure className="w-full max-w-[240px] justify-self-start rounded-card border border-line bg-surface p-2 shadow-card ">
+              <Image
+                src={profile.photo}
+                alt={profile.fullName}
+                width={510}
+                height={680}
+                sizes="240px"
+                loading="eager"
+                fetchPriority="high"
+                className="aspect-[3/4] w-full rounded-[4px] object-cover object-[50%_35%]"
+              />
+              <figcaption className="mt-2 px-1 font-mono text-[0.6875rem] text-ink-muted">
+                fixture · vincent-portrait.jpg · 510×680
+              </figcaption>
+            </figure>
+          )}
+        </div>
       </section>
 
       {/* 2. Run summary */}
@@ -87,6 +112,9 @@ export default function OverviewPage() {
             </li>
           ))}
         </ul>
+        <div className="mt-4">
+          <RunSuiteButton />
+        </div>
       </Section>
 
       {/* 3. Featured projects */}
@@ -103,7 +131,7 @@ export default function OverviewPage() {
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {featured.map((project) => (
             <li key={project.slug}>
-              <ProjectCard project={project} />
+              <ProjectCard project={project} huntPrefix="overview" />
             </li>
           ))}
         </ul>
@@ -171,7 +199,7 @@ export default function OverviewPage() {
           </Link>
         }
       >
-        <Timeline events={latestEvents} />
+        <Timeline events={latestEvents} huntPrefix="overview-timeline" />
       </Section>
 
       {/* 8. Contact */}

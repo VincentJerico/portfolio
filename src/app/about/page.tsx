@@ -127,7 +127,7 @@ export default function AboutPage() {
       </Section>
 
       <Section id="timeline" title="Timeline">
-        <Timeline events={visible(timeline)} />
+        <Timeline events={visible(timeline)} huntPrefix="about-timeline" />
       </Section>
     </div>
   );

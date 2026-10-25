@@ -36,3 +36,6 @@ blob-report/
 .pnpm-debug.log*
 .pnp
 .pnp.*
+
+# Claude Code local state (agent worktrees)
+.claude/
