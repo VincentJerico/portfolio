@@ -4,6 +4,10 @@ import { plantedBugs } from '../../src/content';
 
 test.use({ viewport: { width: 1280, height: 900 } });
 
+type Box = { x: number; y: number; width: number; height: number };
+const boxesOverlap = (a: Box, b: Box) =>
+  a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+
 const banner = (page: Page) => page.getByRole('region', { name: 'Bug Hunt' });
 
 async function inspectByKeyboard(page: Page, targetId: string) {
@@ -109,4 +113,18 @@ test('works when localStorage throws', async ({ page }) => {
   await expect(banner(page)).toBeVisible();
   await inspectByKeyboard(page, 'metric-automated-tests');
   await expect(page.getByRole('dialog', { name: /HUNT-02/ })).toBeVisible();
+});
+
+test.describe('on a phone', () => {
+  test.use({ viewport: { width: 375, height: 812 }, hasTouch: true, isMobile: true });
+
+  test('inspect buttons never cover the hero buttons', async ({ page }) => {
+    await page.goto('/?bughunt=1');
+    for (const id of ['overview-view-projects', 'overview-download-cv', 'overview-email']) {
+      const host = page.locator(`[data-hunt-id="${id}"]`);
+      const link = (await host.getByRole('link').boundingBox())!;
+      const button = (await host.locator('[data-hunt-inspect]').boundingBox())!;
+      expect(boxesOverlap(button, link), `${id}: Inspect overlaps the link`).toBe(false);
+    }
+  });
 });

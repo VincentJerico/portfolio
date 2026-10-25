@@ -34,10 +34,13 @@ export function Inspectable({
   const { active, isPlanted, inspect } = useBugHunt();
   const showPlanted = active && isPlanted(id);
 
+  // Inline hosts (buttons, links) get their Inspect button beside them, so it never covers or
+  // steals taps from the control; block hosts get it pinned to the top-right corner.
+  const inline = As === 'span';
   return (
     <As
       data-hunt-id={id}
-      className={`relative ${className} ${showPlanted ? plantedClassName : ''}`}
+      className={`relative ${inline && active ? 'inline-flex items-center gap-1.5' : ''} ${className} ${showPlanted ? plantedClassName : ''}`}
     >
       {showPlanted && planted !== undefined ? (
         <>
@@ -54,7 +57,7 @@ export function Inspectable({
           data-print-hide
           aria-label={`Inspect ${label}`}
           onClick={(event) => inspect(id, event.currentTarget)}
-          className="absolute -top-3 right-0 z-10 inline-flex min-h-6 items-center gap-1 rounded-chip border border-warn/60 bg-surface px-1.5 font-mono text-[0.6875rem] text-warn shadow-sm hover:bg-surface-2 pointer-coarse:min-h-11"
+          className={`${inline ? '' : 'absolute -top-3 right-0'} z-10 inline-flex min-h-6 items-center gap-1 rounded-chip border border-warn/60 bg-surface px-1.5 font-mono text-[0.6875rem] text-warn shadow-sm hover:bg-surface-2 pointer-coarse:min-h-11`}
         >
           <Search aria-hidden="true" className="size-3" />
           Inspect

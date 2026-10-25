@@ -27,6 +27,17 @@ export const performanceCheck: Check = {
   name: 'Performance',
   async run() {
     const [nav] = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+    // Navigation timing, LCP and CLS belong to the document's first load; after an in-app
+    // navigation they would describe a different page.
+    const loadedPath = nav ? new URL(nav.name).pathname : location.pathname;
+    if (loadedPath !== location.pathname) {
+      return {
+        status: 'warn',
+        details: [
+          `Not measured: timings were recorded for ${loadedPath}, the page first loaded. Reload this page and run again.`,
+        ],
+      };
+    }
     const lcpEntries = await buffered<PerformanceEntry & { startTime: number }>(
       'largest-contentful-paint',
     );

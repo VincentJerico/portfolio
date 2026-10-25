@@ -1,7 +1,6 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { CHECKS, type CheckResult } from './checks';
@@ -14,11 +13,10 @@ interface Row extends CheckResult {
 const LABEL = { pass: 'PASS', fail: 'FAIL', warn: 'WARN' } as const;
 
 /** Runs the real checks against the current page and streams results like a test runner (spec 4.4 B). */
-export function RunnerPanel({ onClose }: { onClose: () => void }) {
+export function RunnerPanel({ path, onClose }: { path: string; onClose: () => void }) {
   const panelRef = useRef<HTMLElement>(null);
   const [rows, setRows] = useState<Row[]>([]);
   const [totalMs, setTotalMs] = useState<number | null>(null);
-  const pathname = usePathname();
 
   useEffect(() => {
     const panel = panelRef.current!;
@@ -27,7 +25,19 @@ export function RunnerPanel({ onClose }: { onClose: () => void }) {
     // and then skips the rest of the page, so every scan would pass vacuously. A labelled region
     // keeps the page scannable. The runner self-tests pin this.
     panel.querySelector<HTMLElement>('[data-runner-close]')?.focus();
-    const onKeyDown = (event: KeyboardEvent) => event.key === 'Escape' && onClose();
+    // Esc belongs to an open modal (palette, ticket) first; only a bare Esc closes the runner.
+    const onKeyDown = (event: KeyboardEvent) =>
+      event.key === 'Escape' && !document.querySelector(':modal') && onClose();
+    // Keep focused page elements from scrolling under the sheet (WCAG 2.4.11).
+    const root = document.documentElement;
+    const previousPadding = root.style.scrollPaddingBottom;
+    const previousBodyPadding = document.body.style.paddingBottom;
+    const resize = new ResizeObserver(() => {
+      root.style.scrollPaddingBottom = `${panel.offsetHeight + 16}px`;
+      // Room to scroll the last elements of the page above the sheet.
+      document.body.style.paddingBottom = `${panel.offsetHeight}px`;
+    });
+    resize.observe(panel);
     document.addEventListener('keydown', onKeyDown);
 
     (async () => {
@@ -56,14 +66,18 @@ export function RunnerPanel({ onClose }: { onClose: () => void }) {
     return () => {
       controller.abort();
       document.removeEventListener('keydown', onKeyDown);
+      resize.disconnect();
+      root.style.scrollPaddingBottom = previousPadding;
+      document.body.style.paddingBottom = previousBodyPadding;
     };
   }, [onClose]);
 
   const passed = rows.filter((r) => r.status === 'pass').length;
   const failed = rows.filter((r) => r.status === 'fail').length;
+  const unmeasured = rows.filter((r) => r.status === 'warn').length;
   const done = totalMs !== null;
   const summary = done
-    ? `${passed} passed, ${failed} failed in ${(totalMs / 1000).toFixed(1)}s`
+    ? `${passed} passed, ${failed} failed${unmeasured ? `, ${unmeasured} not measured` : ''} in ${(totalMs / 1000).toFixed(1)}s`
     : '';
 
   return (
@@ -75,7 +89,7 @@ export function RunnerPanel({ onClose }: { onClose: () => void }) {
     >
       <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-2">
         <p className="font-mono text-xs text-ink-muted">
-          <span className="text-accent">$</span> run checks · {pathname}
+          <span className="text-accent">$</span> run checks · {path}
         </p>
         <button
           type="button"
@@ -120,10 +134,10 @@ export function RunnerPanel({ onClose }: { onClose: () => void }) {
           </p>
           {done && (
             <p className="mt-2 font-sans text-sm text-ink-muted">
-              {failed === 0
+              {failed === 0 && unmeasured === 0
                 ? "The suite passed. There are still bugs a scanner can't see. Want to find them?"
                 : 'Automated checks catch only part of what matters, and these failures are real ones to fix.'}{' '}
-              <a href={`${pathname}?bughunt=1`} className="font-semibold">
+              <a href={`${path}?bughunt=1`} className="font-semibold">
                 Try Bug Hunt
               </a>
             </p>

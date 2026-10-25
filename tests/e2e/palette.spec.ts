@@ -45,3 +45,11 @@ test('no results is announced and Esc returns focus to the opener', async ({ pag
   await expect(input).toBeHidden();
   await expect(opener).toBeFocused();
 });
+
+test('choosing a finding on its own report opens the ticket', async ({ page }) => {
+  await page.goto('/projects/accessibility-testing');
+  await page.keyboard.press('ControlOrMeta+k');
+  await page.getByRole('combobox', { name: 'Search the site' }).fill('F-7');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#ticket-F-7')).toHaveAttribute('open', '');
+});

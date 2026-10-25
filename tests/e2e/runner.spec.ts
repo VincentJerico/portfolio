@@ -1,6 +1,19 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const SUMMARY = /^\d+ passed, \d+ failed in \d+(\.\d+)?s$/;
+const SUMMARY = /^\d+ passed, \d+ failed(, \d+ not measured)? in \d+(\.\d+)?s$/;
+
+/** The focused element's label, if the runner panel covers it completely; otherwise nothing. */
+async function focusHiddenUnderPanel(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const el = document.activeElement as HTMLElement | null;
+    const sheet = document.querySelector('[data-runner-panel]');
+    if (!el || !sheet || sheet.contains(el)) return [];
+    const r = el.getBoundingClientRect();
+    const p = sheet.getBoundingClientRect();
+    const inside = r.top >= p.top && r.bottom <= p.bottom && r.left >= p.left && r.right <= p.right;
+    return inside ? [el.textContent?.trim().slice(0, 40) || el.tagName] : [];
+  });
+}
 
 /** Clicks a visible trigger; on phones without one in the page, opens the menu drawer first. */
 async function openRunner(page: Page) {
@@ -136,4 +149,79 @@ test('self-test: the checks fail when the page is broken', async ({ page }) => {
   await expect(a11y).toContainText('color-contrast');
   await expect(panel.locator('[data-check="Images"]')).toContainText(/FAIL/);
   await expect(panel.locator('[data-check="Document structure"]')).toContainText(/FAIL/);
+});
+
+test.describe('one runner per page', () => {
+  test.use({ viewport: { width: 1280, height: 900 } });
+
+  test('a second trigger reuses the open panel instead of starting another run', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await page.locator('aside').getByRole('button', { name: 'Run tests on this page' }).click();
+    await page.locator('main').getByRole('button', { name: 'Run tests on this page' }).click();
+    await expect(page.getByRole('region', { name: 'Test run' })).toHaveCount(1);
+    const panel = page.getByRole('region', { name: 'Test run' });
+    await expect(panel.getByRole('status')).toHaveText(SUMMARY, { timeout: 20_000 });
+    await expect(panel).not.toContainText('could not run');
+  });
+
+  test('the panel closes when the visitor navigates away', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('aside').getByRole('button', { name: 'Run tests on this page' }).click();
+    await expect(page.getByRole('region', { name: 'Test run' }).getByRole('status')).toHaveText(
+      SUMMARY,
+      { timeout: 20_000 },
+    );
+    await page.locator('aside').getByRole('link', { name: 'Skills', exact: true }).click();
+    await expect(page).toHaveURL(/\/skills$/);
+    await expect(page.getByRole('region', { name: 'Test run' })).toHaveCount(0);
+  });
+
+  test('performance is not measured after an in-app navigation', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('aside').getByRole('link', { name: 'Skills', exact: true }).click();
+    await expect(page).toHaveURL(/\/skills$/);
+    await page.locator('aside').getByRole('button', { name: 'Run tests on this page' }).click();
+    const perf = page
+      .getByRole('region', { name: 'Test run' })
+      .locator('[data-check="Performance"]');
+    await expect(perf).toContainText('Not measured', { timeout: 20_000 });
+    await expect(perf).not.toContainText('PASS');
+  });
+
+  test('no focused element hides entirely under the open panel', async ({ page }) => {
+    await page.goto('/projects/accessibility-testing');
+    await page.locator('aside').getByRole('button', { name: 'Run tests on this page' }).click();
+    const panel = page.getByRole('region', { name: 'Test run' });
+    await expect(panel.getByRole('status')).toHaveText(SUMMARY, { timeout: 20_000 });
+    const hidden: string[] = [];
+    for (let i = 0; i < 60; i++) {
+      await page.keyboard.press('Tab');
+      hidden.push(...(await focusHiddenUnderPanel(page)));
+    }
+    expect(hidden).toEqual([]);
+  });
+
+  test('a dialog opened mid-scan makes the accessibility result "not measured", never PASS', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    // Hold back axe-core's download so the scan is still running when the dialog opens.
+    await page.route('**/_next/static/chunks/**', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      await route.continue();
+    });
+    await page.locator('aside').getByRole('button', { name: 'Run tests on this page' }).click();
+    await page.evaluate(() => {
+      const dialog = document.createElement('dialog');
+      dialog.textContent = 'interrupting dialog';
+      document.body.append(dialog);
+      setTimeout(() => dialog.showModal(), 300);
+    });
+    const a11y = page
+      .getByRole('region', { name: 'Test run' })
+      .locator('[data-check="Accessibility"]');
+    await expect(a11y).toContainText('Not measured', { timeout: 20_000 });
+  });
 });

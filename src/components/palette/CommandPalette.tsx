@@ -43,7 +43,13 @@ export function CommandPalette({ items, onClose }: { items: PaletteItem[]; onClo
   function go(item: PaletteItem | undefined) {
     if (!item) return;
     dialogRef.current?.close();
-    router.push(item.href);
+    const url = new URL(item.href, window.location.href);
+    if (url.pathname === window.location.pathname && url.hash) {
+      // Same page: set the hash directly so hashchange fires (TicketOpener opens the ticket).
+      window.location.hash = url.hash;
+    } else {
+      router.push(item.href);
+    }
   }
 
   function onKeyDown(event: React.KeyboardEvent) {

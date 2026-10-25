@@ -14,6 +14,7 @@ import { SkipLink } from '@/components/layout/SkipLink';
 import { CommandPaletteRoot } from '@/components/palette/CommandPaletteRoot';
 import { SearchButton } from '@/components/palette/SearchButton';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
+import { RunnerHost } from '@/components/runner/RunnerHost';
 import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
 import { profile } from '@/content';
 import { explorerData } from '@/lib/explorer-rows';
@@ -70,6 +71,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
               </div>
             </main>
             <CommandPaletteRoot items={paletteItems()} />
+            <RunnerHost />
           </BugHuntProvider>
         </ThemeProvider>
       </body>

@@ -120,8 +120,8 @@ BugHuntToggle,Inspectable,DefectTicket,HuntBanner}.tsx`; Modify the five host co
 ### Task 6: P2 next links, P3 command palette, P5 view transitions
 
 **Files:** Create `src/lib/next-spec.ts`, `src/components/content/NextSpec.tsx`,
-`src/components/palette/{CommandPaletteTrigger,CommandPalette}.tsx`; Modify `next.config.ts`
-(`experimental.viewTransition` per bundled docs) and `globals.css`; Tests `tests/unit/next-spec.test.ts`,
+`src/components/palette/{CommandPaletteTrigger,CommandPalette}.tsx`; Modify the root layout
+(React 19.3 `<ViewTransition>`; the bundled Next 16 docs need no config flag) and `globals.css`; Tests `tests/unit/next-spec.test.ts`,
 `tests/e2e/palette.spec.ts`.
 
 - P2: fixed reading order Overview → Projects → each report (by order) → Client Work → case studies → Skills →
