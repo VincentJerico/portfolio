@@ -83,6 +83,9 @@ jobs:
           path: .
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e --project=${{ matrix.project }}
+        env:
+          # The rendered-HTML and CV integrity checks scan for these private terms too.
+          CLIENT_DENYLIST: ${{ secrets.CLIENT_DENYLIST }}
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
