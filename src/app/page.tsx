@@ -112,7 +112,7 @@ export default function OverviewPage() {
       {/* 4. Client work teaser */}
       {caseStudies.length > 0 && role && (
         <Section id="client-work" title="Client work" kicker={`${role.title} · ${role.company}`}>
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,20rem)_1fr]">
+          <div className="grid gap-4 2xl:grid-cols-[minmax(0,20rem)_1fr]">
             <div className="rounded-card border border-line bg-surface-2 p-5">
               <p className="label-mono text-ink-muted">{formatPeriod(role.start, role.end)}</p>
               {role.companyDescription && (

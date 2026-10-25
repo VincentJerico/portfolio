@@ -24,14 +24,19 @@ export default function ProjectsPage() {
         <h1 className="mt-4">Projects</h1>
         <p className="mt-5 text-ink-muted">{profile.tagline}</p>
       </header>
-      <ProjectFilter
-        categories={categories}
-        cards={projects.map((project) => ({
-          slug: project.slug,
-          category: project.category,
-          card: <ProjectCard project={project} />,
-        }))}
-      />
+      <section aria-labelledby="all-projects-heading">
+        <h2 id="all-projects-heading" className="label-mono mb-4 text-ink-muted">
+          All projects
+        </h2>
+        <ProjectFilter
+          categories={categories}
+          cards={projects.map((project) => ({
+            slug: project.slug,
+            category: project.category,
+            card: <ProjectCard project={project} />,
+          }))}
+        />
+      </section>
     </div>
   );
 }

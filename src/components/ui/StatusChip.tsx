@@ -23,7 +23,7 @@ export function StatusChip({ status, label }: { status: ChipStatus; label?: stri
   const { tone, Icon, label: fallback } = STYLE[status];
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-chip border bg-surface px-2 py-0.5 font-mono text-xs font-medium tracking-[0.04em] whitespace-nowrap uppercase ${tone}`}
+      className={`inline-flex items-center gap-1.5 rounded-chip border bg-surface px-2 py-0.5 font-mono text-xs font-medium tracking-[0.04em] uppercase ${tone}`}
     >
       <Icon aria-hidden="true" className="size-3.5 shrink-0" />
       {label ?? fallback}
