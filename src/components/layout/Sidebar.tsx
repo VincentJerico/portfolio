@@ -1,5 +1,6 @@
 import { SiteChecksChip } from '@/components/explorer/SiteChecksChip';
 import { TestExplorerNav } from '@/components/explorer/TestExplorerNav';
+import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { explorerData } from '@/lib/explorer-rows';
 import { IdentityBlock } from './IdentityBlock';
@@ -19,6 +20,7 @@ export function Sidebar() {
       <div className="mt-auto flex flex-col gap-2 border-t border-line px-2 pt-4">
         <ThemeToggle className="w-full" />
         <ShellLinks />
+        <RunSuiteButton />
         <SiteChecksChip status={site} />
       </div>
     </aside>

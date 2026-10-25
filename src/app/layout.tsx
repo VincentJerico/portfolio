@@ -5,6 +5,7 @@ import { ShellLinks } from '@/components/layout/ShellLinks';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { SkipLink } from '@/components/layout/SkipLink';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
+import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
 import { profile } from '@/content';
 import { fontVariables } from '@/lib/fonts';
 import { explorerData } from '@/lib/explorer-rows';
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             links={
               <>
                 <ShellLinks />
+                <RunSuiteButton />
                 <SiteChecksChip status={site} />
               </>
             }

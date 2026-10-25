@@ -11,6 +11,7 @@ import { Timeline } from '@/components/content/Timeline';
 import { ButtonLink } from '@/components/ui/Button';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { MetricTile } from '@/components/ui/MetricTile';
+import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
 import { experience, metrics, profile, qaAreas, skills, timeline } from '@/content';
 import { approvedCaseStudies, projectsInOrder, visible } from '@/lib/content';
 import { formatDay, formatPeriod } from '@/lib/format';
@@ -93,6 +94,9 @@ export default function OverviewPage() {
             </li>
           ))}
         </ul>
+        <div className="mt-4">
+          <RunSuiteButton />
+        </div>
       </Section>
 
       {/* 3. Featured projects */}
