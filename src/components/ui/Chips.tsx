@@ -23,11 +23,15 @@ export function Chips({
       {hidden.length > 0 && (
         <li className="contents">
           <details className="group contents">
+            {/* The summary stays visible when open, so focus never drops and the list can collapse. */}
             <summary
-              className={`${chip} inline-flex min-h-6 cursor-pointer list-none items-center text-accent group-open:hidden [&::-webkit-details-marker]:hidden`}
+              className={`${chip} inline-flex min-h-6 cursor-pointer list-none items-center text-accent pointer-coarse:min-h-11 [&::-webkit-details-marker]:hidden`}
             >
-              +{hidden.length}
-              <span className="sr-only"> more</span>
+              <span className="group-open:hidden">
+                +{hidden.length}
+                <span className="sr-only"> more</span>
+              </span>
+              <span className="hidden group-open:inline">fewer</span>
             </summary>
             {hidden.map((item) => (
               <span key={item} className={chip}>

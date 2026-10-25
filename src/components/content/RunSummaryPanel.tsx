@@ -30,7 +30,10 @@ export function RunSummaryPanel({ project }: { project: Project }) {
       <ul key="f" className="flex flex-wrap gap-1.5">
         {counts.map(({ severity, count }) => (
           <li key={severity}>
-            <a href="#findings" className="no-underline">
+            <a
+              href="#findings"
+              className="inline-flex items-center no-underline pointer-coarse:min-h-11"
+            >
               <SeverityChip severity={severity} count={count} />
             </a>
           </li>

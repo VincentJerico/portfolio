@@ -11,6 +11,13 @@ export default defineConfig([
     ...playwright.configs['flat/recommended'],
     files: ['tests/e2e/**', 'tests/a11y/**', 'tests/security/**', 'tests/selftest/**'],
   },
+  {
+    files: ['tests/e2e/**', 'tests/a11y/**', 'tests/security/**', 'tests/selftest/**'],
+    rules: {
+      // Shared assertion helpers are named expect*.
+      'playwright/expect-expect': ['warn', { assertFunctionNames: ['expectTouchSized'] }],
+    },
+  },
   prettier,
   globalIgnores([
     '.next/**',

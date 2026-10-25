@@ -56,7 +56,9 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
 
   return (
     <div>
-      {hydrated && (
+      {/* Rendered on the server too, but invisible (and so unfocusable and unannounced) until
+          hydrated: it reserves its space, so the grid never jumps (spec 12.5 CLS). */}
+      <div className={hydrated ? '' : 'invisible'}>
         <div className="mb-6 flex flex-col gap-3">
           <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-2">
             {options.map(({ value, label }) => (
@@ -72,8 +74,8 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
             ))}
           </div>
         </div>
-      )}
-      <p role="status" aria-live="polite" className="label-mono mb-4 text-ink-muted">
+      </div>
+      <p role="status" aria-live="polite" className="label-mono mb-4 min-h-5 text-ink-muted">
         {hydrated ? `Showing ${shown.length} of ${cards.length} projects` : ''}
       </p>
       {shown.length > 0 ? (

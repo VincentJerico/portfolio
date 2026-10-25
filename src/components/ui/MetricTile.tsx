@@ -8,7 +8,7 @@ export function MetricTile({ metric }: { metric: Metric }) {
       {metric.context && <p className="text-xs leading-snug text-ink-muted">{metric.context}</p>}
       <a
         href={metric.source.href}
-        className="label-mono mt-auto inline-flex min-h-6 items-center self-start text-accent"
+        className="label-mono mt-auto inline-flex min-h-6 items-center self-start text-accent pointer-coarse:min-h-11"
       >
         source<span className="sr-only">: {metric.source.label}</span>
       </a>
