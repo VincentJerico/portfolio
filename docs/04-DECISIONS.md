@@ -95,6 +95,7 @@ until supplied.
 | C17 | `navItems()` and all content reads run on the server; client nav components get plain props | Keeps content and Zod out of the client bundle (perf budget) |
 | C18 | `Finding.impact` and `Finding.recommendation` added | The source reports give Impact and Recommendation; tickets quote them |
 | C19 | CSP keeps `script-src 'unsafe-inline'` | Next streams its RSC payload in inline scripts and next-themes runs an inline script; nonces would make every page render per request instead of statically (spec 10 allows this when nonces break static generation) |
+| C20 | CSP sends `upgrade-insecure-requests` only when `NEXT_PUBLIC_SITE_URL` is https | WebKit upgrades `http://localhost` subresources to https and they fail (no CSS/JS in local and CI runs); production on https keeps the exact spec CSP |
 
 ---
 

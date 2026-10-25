@@ -1,5 +1,5 @@
 import type { Metadata, MetadataRoute } from 'next';
-import { caseStudies as allCaseStudies } from '@/content';
+import { caseStudies as allCaseStudies, profile } from '@/content';
 import type { CaseStudy } from '@/content/schema';
 import { approvedCaseStudies, projectsInOrder } from './content';
 import { NAV_ITEMS } from './nav';
@@ -18,7 +18,15 @@ export function pageMetadata({
     ...(title ? { title } : {}),
     description,
     alternates: { canonical: path },
-    openGraph: { url: path, ...(title ? { title } : {}), description },
+    // Next merges metadata shallowly: this replaces the layout's openGraph, so repeat the site fields.
+    openGraph: {
+      type: 'website',
+      siteName: profile.fullName,
+      locale: 'en',
+      url: path,
+      ...(title ? { title } : {}),
+      description,
+    },
     twitter: { card: 'summary_large_image', ...(title ? { title } : {}), description },
   };
 }

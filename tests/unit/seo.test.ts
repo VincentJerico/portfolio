@@ -27,7 +27,15 @@ describe('pageMetadata', () => {
     const meta = pageMetadata({ title: 'Skills', description: 'd', path: '/skills' });
     expect(meta.alternates?.canonical).toBe('/skills');
     expect(meta.description).toBe('d');
-    expect(meta.openGraph).toMatchObject({ url: '/skills', title: 'Skills', description: 'd' });
+    expect(meta.openGraph).toMatchObject({
+      url: '/skills',
+      title: 'Skills',
+      description: 'd',
+      // Next merges metadata shallowly: a page's openGraph replaces the layout's, so it must carry these.
+      type: 'website',
+      siteName: 'Vincent Jerico Alcuran',
+      locale: 'en',
+    });
     expect(meta.twitter).toMatchObject({ card: 'summary_large_image' });
   });
 });

@@ -1,6 +1,6 @@
 import type { NextConfig } from 'next';
 import { getEnv } from './src/lib/env';
-import { SECURITY_HEADERS } from './src/lib/security-headers';
+import { securityHeaders } from './src/lib/security-headers';
 
 // Fail the build early, with a clear message, when NEXT_PUBLIC_SITE_URL is missing or invalid.
 getEnv();
@@ -15,7 +15,9 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/:path*',
-        headers: Object.entries(SECURITY_HEADERS).map(([key, value]) => ({ key, value })),
+        headers: Object.entries(securityHeaders(getEnv().NEXT_PUBLIC_SITE_URL)).map(
+          ([key, value]) => ({ key, value }),
+        ),
       },
     ];
   },

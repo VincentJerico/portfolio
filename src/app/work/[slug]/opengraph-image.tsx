@@ -3,6 +3,8 @@ import { OG_SIZE, renderOgImage } from '@/lib/og';
 
 export const size = OG_SIZE;
 export const contentType = 'image/png';
+// Unknown slugs are a 404, not a render error.
+export const dynamicParams = false;
 export const alt = 'Anonymised client case study from Vincent Jerico Alcuran';
 
 export function generateStaticParams() {
