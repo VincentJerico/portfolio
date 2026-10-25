@@ -1,4 +1,5 @@
 import { ArrowRight, Download, ExternalLink, Mail } from 'lucide-react';
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Inspectable } from '@/components/bughunt/Inspectable';
@@ -13,9 +14,14 @@ import { ButtonLink } from '@/components/ui/Button';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { MetricTile } from '@/components/ui/MetricTile';
 import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
-import { experience, metrics, profile, qaAreas, skills, timeline } from '@/content';
+import { education, experience, metrics, profile, qaAreas, skills, timeline } from '@/content';
 import { approvedCaseStudies, projectsInOrder, visible } from '@/lib/content';
 import { formatDay, formatPeriod } from '@/lib/format';
+import { getEnv } from '@/lib/env';
+import { pageMetadata } from '@/lib/seo';
+import { JsonLd } from '@/components/seo/JsonLd';
+
+export const metadata: Metadata = pageMetadata({ description: profile.oneLiner, path: '/' });
 
 export default function OverviewPage() {
   const featured = projectsInOrder().filter((project) => project.featured);
@@ -27,8 +33,24 @@ export default function OverviewPage() {
     .reverse();
   const asOf = metrics[0]?.asOf;
 
+  const school = visible(education)[0]?.school;
   return (
     <div className="flex flex-col gap-20 lg:gap-24">
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': 'Person',
+          name: profile.fullName,
+          jobTitle: profile.role,
+          worksFor: { '@type': 'Organization', name: profile.company },
+          url: getEnv().NEXT_PUBLIC_SITE_URL,
+          email: `mailto:${profile.email}`,
+          sameAs: [profile.github, ...(profile.linkedin ? [profile.linkedin] : [])],
+          homeLocation: { '@type': 'Place', name: profile.location },
+          knowsLanguage: profile.languages,
+          ...(school ? { alumniOf: { '@type': 'CollegeOrUniversity', name: school } } : {}),
+        }}
+      />
       {/* 1. Hero */}
       <section
         aria-labelledby="hero-heading"

@@ -1,14 +1,16 @@
 import { Mail } from 'lucide-react';
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import { GitHubIcon } from '@/components/ui/GitHubIcon';
 import { ButtonLink } from '@/components/ui/Button';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { profile } from '@/content';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Contact',
   description: profile.oneLiner,
-};
+  path: '/contact',
+});
 
 export default function ContactPage() {
   return (

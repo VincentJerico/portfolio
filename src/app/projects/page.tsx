@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import { ProjectCard } from '@/components/content/ProjectCard';
 import { ProjectFilter } from '@/components/content/ProjectFilter';
 import { profile } from '@/content';
 import { projectsInOrder } from '@/lib/content';
 import { categoryLabel } from '@/lib/labels';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Projects',
-  description: profile.oneLiner,
-};
+  description: profile.tagline,
+  path: '/projects',
+});
 
 export default function ProjectsPage() {
   const projects = projectsInOrder();

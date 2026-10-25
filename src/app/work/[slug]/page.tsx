@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { Section } from '@/components/content/Section';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { approvedCaseStudies, caseStudySlugs } from '@/lib/content';
+import { pageMetadata } from '@/lib/seo';
 
 export const dynamicParams = false;
 
@@ -17,7 +18,9 @@ function findStudy(slug: string) {
 
 export async function generateMetadata({ params }: PageProps<'/work/[slug]'>): Promise<Metadata> {
   const study = findStudy((await params).slug);
-  return study ? { title: study.title, description: study.system } : {};
+  return study
+    ? pageMetadata({ title: study.title, description: study.system, path: `/work/${study.slug}` })
+    : {};
 }
 
 function List({ items }: { items: readonly string[] }) {

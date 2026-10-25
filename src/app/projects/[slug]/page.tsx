@@ -14,6 +14,9 @@ import { Section } from '@/components/content/Section';
 import { InlineCode } from '@/components/ui/InlineCode';
 import { projectBySlug, projectsInOrder } from '@/lib/content';
 import { categoryLabel } from '@/lib/labels';
+import { pageMetadata } from '@/lib/seo';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { profile } from '@/content';
 
 export const dynamicParams = false;
 
@@ -25,7 +28,13 @@ export async function generateMetadata({
   params,
 }: PageProps<'/projects/[slug]'>): Promise<Metadata> {
   const project = projectBySlug((await params).slug);
-  return project ? { title: project.name, description: project.summary } : {};
+  return project
+    ? pageMetadata({
+        title: project.name,
+        description: project.summary,
+        path: `/projects/${project.slug}`,
+      })
+    : {};
 }
 
 function Paragraphs({ items }: { items: readonly string[] }) {
@@ -61,6 +70,19 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
 
   return (
     <article className="flex flex-col gap-14">
+      <JsonLd
+        data={{
+          '@context': 'https://schema.org',
+          '@type': project.repo ? 'SoftwareSourceCode' : 'CreativeWork',
+          name: project.name,
+          description: project.summary,
+          author: { '@type': 'Person', name: profile.fullName },
+          ...(project.repo
+            ? { codeRepository: project.repo, programmingLanguage: project.stack }
+            : {}),
+          ...(project.liveUrl ? { url: project.liveUrl } : {}),
+        }}
+      />
       <header className="flex flex-col gap-5">
         <nav aria-label="Breadcrumb">
           <ol className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
