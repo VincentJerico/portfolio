@@ -41,6 +41,8 @@ test('a clean element reports no defect', async ({ page }) => {
 test('all five bugs can be found by keyboard, then the completion card shows', async ({ page }) => {
   test.slow(); // five pages and five dialogs
   await page.goto('/?bughunt=1');
+  // The hunt is saved once the page hydrates; navigating away earlier would lose it.
+  await expect(banner(page)).toBeVisible();
   for (const bug of plantedBugs) {
     await page.goto(bug.route);
     await inspectByKeyboard(page, bug.targetId);
