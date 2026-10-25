@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findBanned, findDenied, parseDenylist } from '@/lib/strings';
+import { denylistProblems, findBanned, findDenied, parseDenylist } from '@/lib/strings';
 import { plantedContent } from '../fixtures/planted-content';
 
 describe('findBanned (self-test: planted defects must be reported)', () => {
@@ -44,5 +44,23 @@ describe('findDenied', () => {
     expect(findDenied(plantedContent, ['Planted Client Co'])).toEqual([
       { path: 'caseStudies[0].title', term: 'Planted Client Co' },
     ]);
+  });
+});
+
+describe('denylistProblems', () => {
+  it('accepts one plain term per line', () => {
+    expect(denylistProblems(['Acme', 'Beta Co'])).toEqual([]);
+  });
+
+  it('flags a list pasted as one comma-separated line', () => {
+    expect(denylistProblems(['Acme, Beta Co'])).toEqual(['term 1 contains a comma']);
+  });
+
+  it('flags escaped newlines left in a secret', () => {
+    expect(denylistProblems(['Acme\\nBeta Co'])).toEqual(['term 1 contains an escaped newline']);
+  });
+
+  it('flags a suspiciously long term', () => {
+    expect(denylistProblems(['x'.repeat(61)])).toEqual(['term 1 is longer than 60 characters']);
   });
 });

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Spec Section 6. Extensions are marked "ext:" and logged in docs/04-DECISIONS.md (C14–C19).
+// Spec Section 6. Extensions are marked "ext:" and logged in docs/04-DECISIONS.md (C14, C15).
 
 export const Status = z.enum(['verified', 'confirm', 'todo', 'approval']);
 // Only 'verified' values render. Anything else is hidden by the content helpers.
@@ -18,7 +18,7 @@ export const Profile = z.object({
   headline: z.string(),
   oneLiner: z.string(),
   intro: z.string(),
-  background: z.string().optional(), // ext: data §1 Background line, used by /resume (C19)
+  background: z.string().optional(), // ext: data §1 Background line, used by /resume (C14)
   tagline: z.string(),
   goal: z.string(),
   nextDirections: z.array(z.string()),
@@ -125,7 +125,7 @@ export const Project = z.object({
   context: z.array(z.string()),
   approach: z.array(z.string()),
   findings: z.array(Finding).default([]),
-  // ext: body optional, for decision bullets with no "title: body" split (C16)
+  // ext: body optional, for decision bullets with no "title: body" split (C14)
   decisions: z.array(z.object({ title: z.string(), body: z.string().optional() })).default([]),
   limits: z.array(z.string()).default([]),
   evidence: z.array(Image).default([]),
@@ -173,7 +173,7 @@ export const CaseStudy = z.object({
   method: z.array(z.string()).default([]),
   approved: z.boolean(),
   status: Status,
-  currentlyTesting: z.boolean().default(false), // ext: data 5.3 (C17)
+  currentlyTesting: z.boolean().default(false), // ext: data 5.3 (C14)
 });
 
 export const SkillGroup = z.object({
@@ -202,7 +202,7 @@ export const Education = z.object({
   status: Status,
 });
 
-export const QaArea = z.string(); // ext: data 5.4 checklist areas (C18)
+export const QaArea = z.string(); // ext: data 5.4 checklist areas (C14)
 
 export type Status = z.output<typeof Status>;
 export type Profile = z.output<typeof Profile>;

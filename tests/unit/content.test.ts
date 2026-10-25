@@ -19,7 +19,6 @@ describe('content integrity', () => {
   it('contains no placeholder markers or emojis', () => {
     expect(findBanned(allContent)).toEqual([]);
   });
-
 });
 
 describe('profile', () => {

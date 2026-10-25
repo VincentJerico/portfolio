@@ -25,7 +25,8 @@ const unapproved = caseStudies.filter((item) => !item.approved);
 console.log('## Hidden fields\n\n| Field | Why hidden |\n| --- | --- |');
 for (const [field, reason] of HIDDEN) console.log(`| ${field} | ${reason} |`);
 console.log(`\nItems with status other than verified: ${notVerified.length}`);
-console.log(`Unapproved case studies: ${unapproved.length}\n`);
+console.log(`Unapproved case studies: ${unapproved.length}`);
+console.log('Open: client names are not yet in the private denylist (Vincent to supply).\n');
 
 const raw = readFileSync('docs/01-PORTFOLIO-DATA.md', 'utf8');
 const lines = raw.split('\n');

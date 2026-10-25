@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { allContent } from '@/content';
-import { findDenied, parseDenylist } from '@/lib/strings';
+import { denylistProblems, findDenied, parseDenylist } from '@/lib/strings';
 import { plantedContent } from '../fixtures/planted-content';
 
 // Private terms that must never be published: client names, postal code, street address.
@@ -19,8 +19,10 @@ function loadDenylist(): string[] {
 describe('client denylist', () => {
   const deny = loadDenylist();
 
-  it('is not empty', () => {
+  it('is not empty and has one usable term per line', () => {
     expect(deny.length).toBeGreaterThan(0);
+    // Messages name term positions only, never the private terms.
+    expect(denylistProblems(deny)).toEqual([]);
   });
 
   it('matches nothing in the site content', () => {

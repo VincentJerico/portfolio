@@ -52,3 +52,14 @@ export function findDenied(
     return terms.filter((t) => lower.includes(t.lower)).map(({ term }) => ({ path, term }));
   });
 }
+
+/** Format problems that would make a denylist silently match nothing (e.g. a mangled CI secret). */
+export function denylistProblems(terms: readonly string[]): string[] {
+  return terms.flatMap((term, i) => {
+    const at = `term ${i + 1}`;
+    if (term.includes(',')) return [`${at} contains a comma`];
+    if (term.includes('\\n')) return [`${at} contains an escaped newline`];
+    if (term.length > 60) return [`${at} is longer than 60 characters`];
+    return [];
+  });
+}
