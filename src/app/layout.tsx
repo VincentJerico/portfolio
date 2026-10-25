@@ -1,3 +1,5 @@
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata } from 'next';
 import { ViewTransition } from 'react';
 import { BugHuntProvider } from '@/components/bughunt/BugHuntProvider';
@@ -78,6 +80,13 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             <CommandPaletteRoot items={paletteItems()} />
             <RunnerHost />
           </BugHuntProvider>
+          {/* Cookieless analytics, only on Vercel builds: elsewhere their first-party scripts 404. */}
+          {process.env.VERCEL === '1' && (
+            <>
+              <Analytics />
+              <SpeedInsights />
+            </>
+          )}
         </ThemeProvider>
       </body>
     </html>
