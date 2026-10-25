@@ -96,11 +96,10 @@ until supplied.
 
 ---
 
-## UX additions P1–P5 (approved, relayed)
+## UX additions P1–P5 (approved)
 
-Approval of all five was relayed on 2026-10-25 from another Claude session, quoting Vincent's choices ("P1
-Coverage tracker", "P2 Next-spec links", "P3 Command palette", "P4 + P5"). To be confirmed with Vincent
-directly before they are built in Phase 3b.
+Approved by Vincent on 2026-10-25 (first relayed from another Claude session, then confirmed directly in this
+session: "I confirm P1–P5"). Built in Phase 3b.
 
 Vincent asked for a site that is unique, pretty, user-friendly and "addictive to explore". These fit the
 "Site Under Test" concept, keep to the spec's constraints (CSS-only motion, no animation library, no invented
