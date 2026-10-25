@@ -6,6 +6,7 @@ import { experience as rawExperience } from './experience';
 import { qaAreas as rawQaAreas } from './method';
 import { metrics as rawMetrics } from './metrics';
 import { profile as rawProfile } from './profile';
+import { projects as rawProjects } from './projects';
 import {
   CaseStudy,
   Certification,
@@ -13,6 +14,7 @@ import {
   Experience,
   Metric,
   Profile,
+  Project,
   QaArea,
   SkillGroup,
   TimelineEvent,
@@ -31,6 +33,7 @@ function parse<S extends z.ZodType>(name: string, schema: S, data: unknown): z.o
 
 export const profile = parse('profile.ts', Profile, rawProfile);
 export const metrics = parse('metrics.ts', z.array(Metric), rawMetrics);
+export const projects = parse('projects.ts', z.array(Project), rawProjects);
 export const experience = parse('experience.ts', z.array(Experience), rawExperience);
 export const caseStudies = parse('case-studies.ts', z.array(CaseStudy), rawCaseStudies);
 export const skills = parse('skills.ts', z.array(SkillGroup), rawSkills);
@@ -42,6 +45,7 @@ export const qaAreas = parse('method.ts', z.array(QaArea), rawQaAreas);
 export const allContent = {
   profile,
   metrics,
+  projects,
   experience,
   caseStudies,
   skills,
