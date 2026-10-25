@@ -1,0 +1,35 @@
+/* Design tokens (spec 4.1). Dark "control panel" is the default for no-JS visitors and crawlers;
+   next-themes adds .light or .dark to <html>. Contrast of every pair is enforced by
+   tests/unit/tokens.test.ts. */
+
+:root {
+  color-scheme: dark;
+  --bg: #0b0f14;
+  --surface: #11161d;
+  --surface-2: #161c24;
+  --border: #232b36;
+  --text: #e6edf3;
+  --text-muted: #9aa4af;
+  --accent: #58a6ff;
+  --pass: #3fb950;
+  --warn: #d29922;
+  --fail: #f85149;
+  --focus-ring: #58a6ff;
+  --shadow: none;
+}
+
+.light {
+  color-scheme: light;
+  --bg: #fafaf7;
+  --surface: #ffffff;
+  --surface-2: #f2f2ee;
+  --border: #e3e3de;
+  --text: #111418;
+  --text-muted: #555d66;
+  --accent: #0b5fd8;
+  --pass: #1a7f37;
+  --warn: #956400; /* spec #9A6700 was 4.34:1 on surface-2; nearest passing shade */
+  --fail: #cf222e;
+  --focus-ring: #0b5fd8;
+  --shadow: 0 1px 2px rgb(17 20 24 / 0.06), 0 1px 1px rgb(17 20 24 / 0.04);
+}

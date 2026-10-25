@@ -29,3 +29,10 @@ blob-report/
 
 # OS
 .DS_Store
+
+# Misc from create-next-app
+/build
+*.pem
+.pnpm-debug.log*
+.pnp
+.pnp.*
