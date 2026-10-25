@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { plantedBugs as rawPlantedBugs } from './bug-hunt';
 import { caseStudies as rawCaseStudies } from './case-studies';
 import { certifications as rawCertifications } from './certifications';
 import { education as rawEducation } from './education';
@@ -13,6 +14,7 @@ import {
   Education,
   Experience,
   Metric,
+  PlantedBug,
   Profile,
   Project,
   QaArea,
@@ -41,6 +43,7 @@ export const certifications = parse('certifications.ts', z.array(Certification),
 export const timeline = parse('timeline.ts', z.array(TimelineEvent), rawTimeline);
 export const education = parse('education.ts', z.array(Education), rawEducation);
 export const qaAreas = parse('method.ts', z.array(QaArea), rawQaAreas);
+export const plantedBugs = parse('bug-hunt.ts', z.array(PlantedBug), rawPlantedBugs);
 
 export const allContent = {
   profile,

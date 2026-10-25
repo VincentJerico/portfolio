@@ -2,6 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { SkillGroup } from '@/content/schema';
 import { skills } from '@/content';
+import { Inspectable } from '@/components/bughunt/Inspectable';
+import { githubSlug } from '@/lib/slug';
+
+// HUNT-01 (Bug Hunt only): a typo in a heading.
+const PLANTED_HEADINGS: Record<string, string> = { Accessibility: 'Accessibilty' };
 
 export const metadata: Metadata = {
   title: 'Skills',
@@ -11,7 +16,13 @@ export const metadata: Metadata = {
 function GroupCard({ group }: { group: SkillGroup }) {
   return (
     <li className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
-      <h3>{group.group}</h3>
+      <Inspectable
+        id={`skills-${githubSlug(group.group)}-heading`}
+        label={`${group.group} heading`}
+        planted={PLANTED_HEADINGS[group.group] && <h3>{PLANTED_HEADINGS[group.group]}</h3>}
+      >
+        <h3>{group.group}</h3>
+      </Inspectable>
       <ul className="flex flex-wrap gap-1.5">
         {group.skills.map((skill) => (
           <li

@@ -1,5 +1,6 @@
 import { SiteChecksChip } from '@/components/explorer/SiteChecksChip';
 import { TestExplorerNav } from '@/components/explorer/TestExplorerNav';
+import { BugHuntToggle } from '@/components/bughunt/BugHuntToggle';
 import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { explorerData } from '@/lib/explorer-rows';
@@ -21,6 +22,7 @@ export function Sidebar() {
         <ThemeToggle className="w-full" />
         <ShellLinks />
         <RunSuiteButton />
+        <BugHuntToggle />
         <SiteChecksChip status={site} />
       </div>
     </aside>

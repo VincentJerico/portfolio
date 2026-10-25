@@ -1,6 +1,7 @@
-import { ArrowRight, Download, Mail } from 'lucide-react';
+import { ArrowRight, Download, ExternalLink, Mail } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Inspectable } from '@/components/bughunt/Inspectable';
 import { CaseStudyCard } from '@/components/content/CaseStudyCard';
 import { ProjectCard } from '@/components/content/ProjectCard';
 import { QaAreaGrid } from '@/components/content/QaAreaGrid';
@@ -43,18 +44,35 @@ export default function OverviewPage() {
           <p className="mt-5 text-xl font-semibold text-ink lg:text-2xl">{profile.headline}</p>
           <p className="mt-4 text-ink-muted">{profile.intro}</p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <ButtonLink href="/projects" variant="primary">
-              View projects
-              <ArrowRight aria-hidden="true" className="size-4" />
-            </ButtonLink>
-            <ButtonLink href={profile.cvPdf} download>
-              <Download aria-hidden="true" className="size-4" />
-              Download CV
-            </ButtonLink>
-            <ButtonLink href={`mailto:${profile.email}`} variant="ghost">
-              <Mail aria-hidden="true" className="size-4" />
-              Email me
-            </ButtonLink>
+            <Inspectable as="span" id="overview-view-projects" label="View projects button">
+              <ButtonLink href="/projects" variant="primary">
+                View projects
+                <ArrowRight aria-hidden="true" className="size-4" />
+              </ButtonLink>
+            </Inspectable>
+            <Inspectable
+              as="span"
+              id="overview-download-cv"
+              label="Download CV button"
+              planted={
+                // HUNT-05 (Bug Hunt only): an icon that contradicts the label.
+                <ButtonLink href={profile.cvPdf} download>
+                  <ExternalLink aria-hidden="true" className="size-4" />
+                  Download CV
+                </ButtonLink>
+              }
+            >
+              <ButtonLink href={profile.cvPdf} download>
+                <Download aria-hidden="true" className="size-4" />
+                Download CV
+              </ButtonLink>
+            </Inspectable>
+            <Inspectable as="span" id="overview-email" label="Email me button">
+              <ButtonLink href={`mailto:${profile.email}`} variant="ghost">
+                <Mail aria-hidden="true" className="size-4" />
+                Email me
+              </ButtonLink>
+            </Inspectable>
           </div>
           <div className="mt-10 max-w-xl">
             <RunnerHeroBlock metrics={metrics} />
@@ -113,7 +131,7 @@ export default function OverviewPage() {
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {featured.map((project) => (
             <li key={project.slug}>
-              <ProjectCard project={project} />
+              <ProjectCard project={project} huntPrefix="overview" />
             </li>
           ))}
         </ul>
@@ -181,7 +199,7 @@ export default function OverviewPage() {
           </Link>
         }
       >
-        <Timeline events={latestEvents} />
+        <Timeline events={latestEvents} huntPrefix="overview-timeline" />
       </Section>
 
       {/* 8. Contact */}

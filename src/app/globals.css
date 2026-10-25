@@ -222,3 +222,21 @@
     }
   }
 }
+
+/* Bug Hunt: planted values only on screen; print always shows the true ones. */
+@layer components {
+  .hunt-screen {
+    display: contents;
+  }
+  .hunt-print {
+    display: none;
+  }
+  @media print {
+    .hunt-screen {
+      display: none;
+    }
+    .hunt-print {
+      display: contents;
+    }
+  }
+}

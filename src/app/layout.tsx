@@ -4,6 +4,9 @@ import { MobileNav } from '@/components/layout/MobileNav';
 import { ShellLinks } from '@/components/layout/ShellLinks';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { SkipLink } from '@/components/layout/SkipLink';
+import { BugHuntProvider } from '@/components/bughunt/BugHuntProvider';
+import { BugHuntToggle } from '@/components/bughunt/BugHuntToggle';
+import { HuntBanner } from '@/components/bughunt/HuntBanner';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
 import { profile } from '@/content';
@@ -26,32 +29,36 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
     <html lang="en" className={fontVariables} suppressHydrationWarning>
       <body>
         <ThemeProvider>
-          <SkipLink />
-          <MobileNav
-            fullName={profile.fullName}
-            identity={<IdentityBlock />}
-            nav={
-              <TestExplorerNav
-                idPrefix="drawer"
-                rows={rows}
-                projects={projects}
-                summary={summary}
-              />
-            }
-            links={
-              <>
-                <ShellLinks />
-                <RunSuiteButton />
-                <SiteChecksChip status={site} />
-              </>
-            }
-          />
-          <Sidebar />
-          <main id="main" tabIndex={-1} className="focus:outline-none lg:pl-[280px]">
-            <div className="mx-auto w-full max-w-[1100px] px-4 py-10 sm:px-6 lg:px-12 lg:py-16">
-              {children}
-            </div>
-          </main>
+          <BugHuntProvider>
+            <SkipLink />
+            <MobileNav
+              fullName={profile.fullName}
+              identity={<IdentityBlock />}
+              nav={
+                <TestExplorerNav
+                  idPrefix="drawer"
+                  rows={rows}
+                  projects={projects}
+                  summary={summary}
+                />
+              }
+              links={
+                <>
+                  <ShellLinks />
+                  <RunSuiteButton />
+                  <BugHuntToggle />
+                  <SiteChecksChip status={site} />
+                </>
+              }
+            />
+            <Sidebar />
+            <main id="main" tabIndex={-1} className="focus:outline-none lg:pl-[280px]">
+              <div className="mx-auto w-full max-w-[1100px] px-4 py-10 sm:px-6 lg:px-12 lg:py-16">
+                <HuntBanner email={profile.email} />
+                {children}
+              </div>
+            </main>
+          </BugHuntProvider>
         </ThemeProvider>
       </body>
     </html>

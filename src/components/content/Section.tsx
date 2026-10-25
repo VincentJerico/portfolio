@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Inspectable } from '@/components/bughunt/Inspectable';
 
 interface SectionProps {
   id: string;
@@ -18,7 +19,9 @@ export function Section({ id, title, kicker, action, children, className = '' }:
       <div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
         <div>
           {kicker && <p className="label-mono mb-2 text-ink-muted">{kicker}</p>}
-          <h2 id={headingId}>{title}</h2>
+          <Inspectable id={`section-${id}`} label={`${title} heading`}>
+            <h2 id={headingId}>{title}</h2>
+          </Inspectable>
         </div>
         {action}
       </div>
