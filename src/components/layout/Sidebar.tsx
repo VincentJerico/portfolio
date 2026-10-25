@@ -1,6 +1,7 @@
 import { SiteChecksChip } from '@/components/explorer/SiteChecksChip';
 import { TestExplorerNav } from '@/components/explorer/TestExplorerNav';
 import { BugHuntToggle } from '@/components/bughunt/BugHuntToggle';
+import { SearchButton } from '@/components/palette/SearchButton';
 import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { explorerData } from '@/lib/explorer-rows';
@@ -16,6 +17,9 @@ export function Sidebar() {
     >
       <div className="px-2">
         <IdentityBlock />
+      </div>
+      <div className="px-2">
+        <SearchButton />
       </div>
       <TestExplorerNav idPrefix="sidebar" rows={rows} projects={projects} summary={summary} />
       <div className="mt-auto flex flex-col gap-2 border-t border-line px-2 pt-4">

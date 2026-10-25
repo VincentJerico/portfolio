@@ -240,3 +240,12 @@
     }
   }
 }
+
+/* P5: view transitions are motion too. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

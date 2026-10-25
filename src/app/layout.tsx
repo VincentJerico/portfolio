@@ -1,19 +1,24 @@
 import type { Metadata } from 'next';
+import { ViewTransition } from 'react';
+import { BugHuntProvider } from '@/components/bughunt/BugHuntProvider';
+import { BugHuntToggle } from '@/components/bughunt/BugHuntToggle';
+import { HuntBanner } from '@/components/bughunt/HuntBanner';
+import { NextSpec } from '@/components/content/NextSpec';
+import { SiteChecksChip } from '@/components/explorer/SiteChecksChip';
+import { TestExplorerNav } from '@/components/explorer/TestExplorerNav';
 import { IdentityBlock } from '@/components/layout/IdentityBlock';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { ShellLinks } from '@/components/layout/ShellLinks';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { SkipLink } from '@/components/layout/SkipLink';
-import { BugHuntProvider } from '@/components/bughunt/BugHuntProvider';
-import { BugHuntToggle } from '@/components/bughunt/BugHuntToggle';
-import { HuntBanner } from '@/components/bughunt/HuntBanner';
+import { CommandPaletteRoot } from '@/components/palette/CommandPaletteRoot';
+import { SearchButton } from '@/components/palette/SearchButton';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
 import { profile } from '@/content';
-import { fontVariables } from '@/lib/fonts';
 import { explorerData } from '@/lib/explorer-rows';
-import { SiteChecksChip } from '@/components/explorer/SiteChecksChip';
-import { TestExplorerNav } from '@/components/explorer/TestExplorerNav';
+import { fontVariables } from '@/lib/fonts';
+import { paletteItems, siteReadingOrder } from '@/lib/site-index';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -25,6 +30,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   const { rows, projects, summary, site } = explorerData();
+  const { order, reportsWithNext } = siteReadingOrder();
   return (
     <html lang="en" className={fontVariables} suppressHydrationWarning>
       <body>
@@ -35,12 +41,15 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
               fullName={profile.fullName}
               identity={<IdentityBlock />}
               nav={
-                <TestExplorerNav
-                  idPrefix="drawer"
-                  rows={rows}
-                  projects={projects}
-                  summary={summary}
-                />
+                <>
+                  <SearchButton />
+                  <TestExplorerNav
+                    idPrefix="drawer"
+                    rows={rows}
+                    projects={projects}
+                    summary={summary}
+                  />
+                </>
               }
               links={
                 <>
@@ -55,9 +64,12 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             <main id="main" tabIndex={-1} className="focus:outline-none lg:pl-[280px]">
               <div className="mx-auto w-full max-w-[1100px] px-4 py-10 sm:px-6 lg:px-12 lg:py-16">
                 <HuntBanner email={profile.email} />
-                {children}
+                {/* P5: route changes cross-fade (off under reduced motion, see globals.css). */}
+                <ViewTransition>{children}</ViewTransition>
+                <NextSpec order={order} reportsWithNext={reportsWithNext} />
               </div>
             </main>
+            <CommandPaletteRoot items={paletteItems()} />
           </BugHuntProvider>
         </ThemeProvider>
       </body>
