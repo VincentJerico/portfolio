@@ -9,3 +9,4 @@ docs/
 .superpowers/
 src/generated/
 .claude/
+.lighthouseci/

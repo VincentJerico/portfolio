@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../helpers/test';
 import { waitForHydration } from '../helpers/hydration';
 
 const SUMMARY = /^\d+ passed, \d+ failed(, \d+ not measured)? in \d+(\.\d+)?s$/;

@@ -1,0 +1,11 @@
+# Link check (spec 12.6), run against the prerendered HTML with the built site served locally.
+# legatalink.free.nf is excluded: its free host serves a browser check to bots, so it always fails
+# automated checks while working for people. /quality states this exclusion and its reason.
+exclude = ['^https?://legatalink\.free\.nf']
+accept = ["200..=206", "429"]
+max_retries = 3
+retry_wait_time = 2
+timeout = 20
+cache = true
+max_cache_age = "1d"
+exclude_path = ["\\.next/server/app/selftest"]

@@ -1,5 +1,6 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '../helpers/test';
 import { NAV_ITEMS } from '../../src/lib/nav';
+import { tabKey } from '../helpers/keys';
 
 const MOBILE = { width: 375, height: 812 };
 const DESKTOP = { width: 1280, height: 800 };
@@ -31,9 +32,9 @@ test.describe('every route', () => {
   }
 });
 
-test('skip link is the first tab stop and moves focus to main', async ({ page }) => {
+test('skip link is the first tab stop and moves focus to main', async ({ page, browserName }) => {
   await page.goto('/about');
-  await page.keyboard.press('Tab');
+  await page.keyboard.press(tabKey(browserName));
   await expect(page.locator(':focus')).toHaveText('Skip to content');
   await page.keyboard.press('Enter');
   await expect(page.locator('main')).toBeFocused();
@@ -57,12 +58,15 @@ test.describe('desktop sidebar', () => {
     await expect(page.getByRole('button', { name: 'Menu', exact: true })).toBeHidden();
   });
 
-  test('every tab stop in the shell shows a visible focus indicator', async ({ page }) => {
+  test('every tab stop in the shell shows a visible focus indicator', async ({
+    page,
+    browserName,
+  }) => {
     // Skip link, nav links, Projects folder, theme toggle, GitHub, Email, run tests, site checks.
     const shellTabStops = 1 + NAV_ITEMS.length + 1 + 1 + 2 + 1 + 1;
     await page.goto('/');
     for (let i = 0; i < shellTabStops; i++) {
-      await page.keyboard.press('Tab');
+      await page.keyboard.press(tabKey(browserName));
       const outline = await page.evaluate(() => {
         const el = document.activeElement as HTMLElement | null;
         if (!el || el === document.body) return null;
@@ -95,16 +99,19 @@ test.describe('mobile drawer', () => {
     await expect(menu).toBeFocused();
   });
 
-  test('focus stays inside the open drawer while tabbing both ways', async ({ page }) => {
+  test('focus stays inside the open drawer while tabbing both ways', async ({
+    page,
+    browserName,
+  }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Menu', exact: true }).click();
     await expect(page.locator('#site-drawer')).toBeVisible();
     for (let i = 0; i < 20; i++) {
-      await page.keyboard.press('Tab');
+      await page.keyboard.press(tabKey(browserName));
       expect(await activeIsInside(page, '#site-drawer'), `Tab ${i + 1}`).toBe(true);
     }
     for (let i = 0; i < 20; i++) {
-      await page.keyboard.press('Shift+Tab');
+      await page.keyboard.press(tabKey(browserName, true));
       expect(await activeIsInside(page, '#site-drawer'), `Shift+Tab ${i + 1}`).toBe(true);
     }
   });
@@ -136,7 +143,11 @@ test.describe('mobile drawer', () => {
     await expect(page.locator('#site-drawer')).toBeVisible();
     await page.setViewportSize(DESKTOP);
     await expect(page.locator('#site-drawer')).toBeHidden();
-    expect(await page.evaluate(() => document.querySelector(':modal'))).toBeNull();
+    // CSS hides the drawer on the resize itself; the media-query `change` handler that closes the
+    // modal runs a frame later, so wait for it rather than reading once.
+    await expect
+      .poll(() => page.evaluate(() => document.querySelector(':modal') === null))
+      .toBe(true);
     await page
       .getByRole('navigation', { name: 'Site' })
       .getByRole('link', { name: 'Skills' })

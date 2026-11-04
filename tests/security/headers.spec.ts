@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test';
+import { headerDefects } from '../../src/lib/header-check';
+import { expect, test } from '../helpers/test';
 // Literal spec Section 10 values (CI serves over http, so CSP omits upgrade-insecure-requests).
 const EXPECTED: Record<string, string> = {
   'content-security-policy':
@@ -14,11 +15,7 @@ const EXPECTED: Record<string, string> = {
 for (const path of ['/', '/projects/security-testing']) {
   test(`${path} sends every spec 10 security header`, async ({ request }) => {
     const response = await request.get(path);
-    const headers = response.headers();
-    for (const [name, value] of Object.entries(EXPECTED)) {
-      expect(headers[name], name).toBe(value);
-    }
-    expect(headers['access-control-allow-origin']).toBeUndefined();
+    expect(headerDefects(response.headers(), EXPECTED)).toEqual([]);
   });
 }
 

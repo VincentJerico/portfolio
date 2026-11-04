@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../helpers/test';
 import { NAV_ITEMS } from '../../src/lib/nav';
 import { caseStudySlugs, projectsInOrder } from '../../src/lib/content';
 

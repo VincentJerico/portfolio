@@ -7,7 +7,10 @@ export function SearchButton() {
   return (
     <button
       type="button"
-      onClick={() => window.dispatchEvent(new Event(OPEN_PALETTE))}
+      // Pass the button itself: Safari doesn't focus buttons on click, so activeElement would be <body>.
+      onClick={(event) =>
+        window.dispatchEvent(new CustomEvent(OPEN_PALETTE, { detail: event.currentTarget }))
+      }
       className="flex min-h-11 w-full items-center gap-3 rounded-chip border border-line bg-bg px-2.5 text-sm text-ink-muted hover:text-ink"
     >
       <Search aria-hidden="true" className="size-4" />

@@ -15,14 +15,17 @@ export function CommandPaletteRoot({ items }: { items: PaletteItem[] }) {
   const [open, setOpen] = useState(false);
   const openerRef = useRef<HTMLElement | null>(null);
 
-  const show = useCallback(async () => {
-    openerRef.current = document.activeElement as HTMLElement | null;
-    if (!Palette) {
-      const palette = await import('./CommandPalette');
-      setPalette(() => palette.CommandPalette);
-    }
-    setOpen(true);
-  }, [Palette]);
+  const show = useCallback(
+    async (opener?: HTMLElement) => {
+      openerRef.current = opener ?? (document.activeElement as HTMLElement | null);
+      if (!Palette) {
+        const palette = await import('./CommandPalette');
+        setPalette(() => palette.CommandPalette);
+      }
+      setOpen(true);
+    },
+    [Palette],
+  );
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -31,7 +34,7 @@ export function CommandPaletteRoot({ items }: { items: PaletteItem[] }) {
         void show();
       }
     };
-    const onOpen = () => void show();
+    const onOpen = (event: Event) => void show((event as CustomEvent<HTMLElement>).detail);
     window.addEventListener('keydown', onKey);
     window.addEventListener(OPEN_PALETTE, onOpen);
     return () => {

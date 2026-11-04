@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../helpers/test';
 import { projectBySlug } from '../../src/lib/content';
 
 const a11y = projectBySlug('accessibility-testing')!;

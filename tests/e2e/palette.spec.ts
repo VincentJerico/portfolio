@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test';
+import { waitForHydration } from '../helpers/hydration';
+import { expect, test } from '../helpers/test';
 
 test.use({ viewport: { width: 1280, height: 900 } });
 
@@ -14,6 +15,7 @@ test('every page ends with a suggested next page', async ({ page }) => {
 
 test('Ctrl/Cmd+K opens the palette; typing filters; Enter navigates', async ({ page }) => {
   await page.goto('/');
+  await waitForHydration(page); // the shortcut listener attaches on hydration
   await page.keyboard.press('ControlOrMeta+k');
   const input = page.getByRole('combobox', { name: 'Search the site' });
   await expect(input).toBeFocused();
@@ -25,6 +27,7 @@ test('Ctrl/Cmd+K opens the palette; typing filters; Enter navigates', async ({ p
 
 test('arrow keys move the active option', async ({ page }) => {
   await page.goto('/');
+  await waitForHydration(page); // the shortcut listener attaches on hydration
   await page.keyboard.press('ControlOrMeta+k');
   const input = page.getByRole('combobox', { name: 'Search the site' });
   await input.fill('test');
@@ -48,6 +51,7 @@ test('no results is announced and Esc returns focus to the opener', async ({ pag
 
 test('choosing a finding on its own report opens the ticket', async ({ page }) => {
   await page.goto('/projects/accessibility-testing');
+  await waitForHydration(page); // the shortcut listener attaches on hydration
   await page.keyboard.press('ControlOrMeta+k');
   await page.getByRole('combobox', { name: 'Search the site' }).fill('F-7');
   await page.keyboard.press('Enter');

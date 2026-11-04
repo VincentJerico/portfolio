@@ -1,7 +1,6 @@
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata } from 'next';
-import { ViewTransition } from 'react';
 import { BugHuntProvider } from '@/components/bughunt/BugHuntProvider';
 import { BugHuntToggle } from '@/components/bughunt/BugHuntToggle';
 import { HuntBanner } from '@/components/bughunt/HuntBanner';
@@ -10,6 +9,7 @@ import { SiteChecksChip } from '@/components/explorer/SiteChecksChip';
 import { TestExplorerNav } from '@/components/explorer/TestExplorerNav';
 import { IdentityBlock } from '@/components/layout/IdentityBlock';
 import { MobileNav } from '@/components/layout/MobileNav';
+import { RouteTransition } from '@/components/layout/RouteTransition';
 import { ShellLinks } from '@/components/layout/ShellLinks';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { SkipLink } from '@/components/layout/SkipLink';
@@ -72,8 +72,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             <main id="main" tabIndex={-1} className="focus:outline-none lg:pl-[280px]">
               <div className="mx-auto w-full max-w-[1100px] px-4 py-10 sm:px-6 lg:px-12 lg:py-16">
                 <HuntBanner email={profile.email} />
-                {/* P5: route changes cross-fade (off under reduced motion, see globals.css). */}
-                <ViewTransition>{children}</ViewTransition>
+                <RouteTransition>{children}</RouteTransition>
                 <NextSpec order={order} reportsWithNext={reportsWithNext} />
               </div>
             </main>
