@@ -20,6 +20,20 @@ export const QualityReport = z.object({
     }),
   ),
   routes: z.record(z.string(), z.object({ status: Result, durationMs: z.number().nonnegative() })),
+  lighthouse: z
+    .array(
+      z.object({
+        route: z.string(),
+        performance: z.number(),
+        accessibility: z.number(),
+        bestPractices: z.number(),
+        seo: z.number(),
+      }),
+    )
+    .default([]),
+  e2e: z
+    .object({ passed: z.number(), failed: z.number(), flaky: z.number(), skipped: z.number() })
+    .optional(),
 });
 
 export type QualityReport = z.output<typeof QualityReport>;

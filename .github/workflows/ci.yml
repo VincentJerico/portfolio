@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    # Weekly, to catch links that rot between pushes.
+    - cron: '0 6 * * 1'
 
 permissions:
   contents: read
@@ -33,13 +36,16 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
         env:
-          # Private terms (client names, postal code, phone) the content guard must never find.
+          # Private terms (client names, regions, postal code, phone) the content guard must never find.
           CLIENT_DENYLIST: ${{ secrets.CLIENT_DENYLIST }}
 
   build:
     name: Build
     needs: static
     runs-on: ubuntu-latest
+    env:
+      # The tested build includes /selftest (planted defects for the gate self-tests); deploys don't.
+      E2E_SELFTEST: '1'
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -68,7 +74,37 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [chromium, mobile-chrome]
+        project: [chromium, webkit, mobile-chrome]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v8
+        with:
+          name: next-build
+          path: .
+      - run: pnpm exec playwright install --with-deps ${{ matrix.project == 'webkit' && 'webkit' || 'chromium' }}
+      - run: pnpm test:e2e --project=${{ matrix.project }}
+        env:
+          # The rendered-HTML and CV integrity checks scan for these private terms too.
+          CLIENT_DENYLIST: ${{ secrets.CLIENT_DENYLIST }}
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-${{ matrix.project }}
+          path: |
+            playwright-report/
+            test-results/results.json
+          retention-days: 14
+
+  lighthouse:
+    name: Lighthouse
+    needs: build
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -82,13 +118,89 @@ jobs:
           name: next-build
           path: .
       - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm test:e2e --project=${{ matrix.project }}
+      - name: Lighthouse CI (budgets in lighthouserc.json)
+        run: |
+          export CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")"
+          pnpm exec lhci autorun
         env:
-          # The rendered-HTML and CV integrity checks scan for these private terms too.
-          CLIENT_DENYLIST: ${{ secrets.CLIENT_DENYLIST }}
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report-${{ matrix.project }}
-          path: playwright-report/
+          name: lighthouse
+          path: .lighthouseci/
+          include-hidden-files: true
           retention-days: 14
+
+  links:
+    name: Link check
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v8
+        with:
+          name: next-build
+          path: .
+      - name: Serve the build for same-origin links
+        run: |
+          pnpm start -p 3210 &
+          npx --yes wait-on@8 http://localhost:3210 --timeout 60000
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          args: --config lychee.toml --base-url http://localhost:3210 --no-progress '.next/server/app/**/*.html'
+          fail: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  quality-report:
+    name: Quality report
+    # Main only, and even when a gate failed: /quality must show failures, never a stale pass.
+    if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    needs: [static, build, e2e, lighthouse, links]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: playwright-chromium
+          path: reports/playwright-raw
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: lighthouse
+          path: reports/lighthouse-raw
+      - name: Build quality.json
+        run: |
+          mkdir -p reports/playwright reports/lighthouse
+          cp reports/playwright-raw/test-results/results.json reports/playwright/ 2>/dev/null || true
+          cp reports/lighthouse-raw/reports/manifest.json reports/lighthouse/ 2>/dev/null || true
+          pnpm exec tsx scripts/build-quality-report.ts
+        env:
+          JOB_RESULTS: >-
+            {"static":"${{ needs.static.result }}","build":"${{ needs.build.result }}",
+            "e2e":"${{ needs.e2e.result }}","lighthouse":"${{ needs.lighthouse.result }}",
+            "links":"${{ needs.links.result }}"}
+      - name: Commit the report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/generated/quality.json
+          git diff --cached --quiet && exit 0
+          git commit -m "chore(quality): update report [skip ci]"
+          git push
