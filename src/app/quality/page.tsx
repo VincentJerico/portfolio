@@ -44,7 +44,7 @@ const GATES: { name: string; what: string; selfTest: string }[] = [
   },
   {
     name: 'Lighthouse',
-    what: 'Mobile, median of three runs on five routes: performance at least 95, accessibility 100, best practices at least 95, SEO 100, LCP within 2 s, CLS within 0.05, blocking time within 150 ms, JavaScript on the overview within 180 KB.',
+    what: 'Mobile, median of three runs on five routes: performance at least 95, accessibility 100, best practices at least 95, SEO 100, LCP within 2 s, CLS within 0.05, blocking time within 250 ms, JavaScript on the overview within 180 KB.',
     selfTest: 'Budgets are assertions: CI fails the moment a route goes over.',
   },
   {

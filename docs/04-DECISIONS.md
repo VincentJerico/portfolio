@@ -97,6 +97,7 @@ until supplied.
 | C19 | CSP keeps `script-src 'unsafe-inline'` | Next streams its RSC payload in inline scripts and next-themes runs an inline script; nonces would make every page render per request instead of statically (spec 10 allows this when nonces break static generation) |
 | C20 | CSP sends `upgrade-insecure-requests` only when `NEXT_PUBLIC_SITE_URL` is https | WebKit upgrades `http://localhost` subresources to https and they fail (no CSS/JS in local and CI runs); production on https keeps the exact spec CSP |
 | C21 | Lighthouse total-JS budget on `/` is 180 KB, measured as Lighthouse does (transfer size incl. headers), not the spec's 120 KB (**Vincent, 2026-11-04**; first set at 165 KB on a body-only measurement, revised the same day) | Next.js 16 and React 19 alone are about 140 KB; `/` is 166 KB in CI and about 170 KB on Vercel with its analytics scripts. 180 KB keeps headroom while failing on real growth |
+| C22 | Lighthouse Total Blocking Time budget is 250 ms, not the spec's 150 ms (**Vincent, 2026-11-04**) | On the GitHub runner with Lighthouse's 4x CPU slowdown, medians were 82–206 ms per route and `/` varied 122–150 ms between runs, almost all of it React and Next.js startup. 150 ms would fail at random; 250 ms keeps about 20% headroom over the worst median, and the performance score stays gated at 0.95 or higher |
 
 ---
 

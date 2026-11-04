@@ -66,19 +66,19 @@ test('focus is never entirely obscured while tabbing a report page (F-7)', async
   }
 });
 
-test('every internal link reachable from the overview resolves', async ({ page, request }) => {
+// Links are checked over HTTP from the prerendered HTML: rendering 20 pages in a browser adds nothing
+// to "does this link resolve" and outran the test timeout on CI WebKit.
+test('every internal link reachable from the overview resolves', async ({ request, baseURL }) => {
+  const origin = new URL(baseURL!).origin;
   const seen = new Set<string>(['/']);
   const queue = ['/'];
   const broken: string[] = [];
   while (queue.length) {
-    const path = queue.shift()!;
-    await page.goto(path);
-    const hrefs = await page.locator('a[href]').evaluateAll((anchors) =>
-      anchors
-        .map((a) => new URL((a as HTMLAnchorElement).href))
-        .filter((u) => u.origin === location.origin)
-        .map((u) => u.pathname),
-    );
+    const html = await (await request.get(queue.shift()!)).text();
+    const hrefs = [...html.matchAll(/<a\s[^>]*?href="([^"]*)"/g)]
+      .map((m) => new URL(m[1]!.replaceAll('&amp;', '&'), origin))
+      .filter((u) => u.origin === origin)
+      .map((u) => u.pathname);
     for (const href of hrefs.filter((h) => !seen.has(h))) {
       seen.add(href);
       const response = await request.get(href);
