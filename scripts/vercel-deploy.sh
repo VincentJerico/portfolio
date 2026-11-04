@@ -39,9 +39,18 @@ set -a
 set +a
 pnpm cv >&2
 mkdir -p .vercel/output/static/cv
+# `vercel build` may hard-link public files into the output; unlink first so the copy is this PDF.
+rm -f .vercel/output/static/cv/*.pdf
 cp public/cv/*.pdf .vercel/output/static/cv/
 
-url="$(vercel deploy --prebuilt ${prod_flag[@]+"${prod_flag[@]}"} --token "$VERCEL_TOKEN")"
+# JSON output reads the same in a terminal, in CI and in an agent session; a bare-URL stdout does not.
+report="$(vercel deploy --prebuilt ${prod_flag[@]+"${prod_flag[@]}"} --json --token "$VERCEL_TOKEN")"
+url="$(printf '%s' "$report" | node -e '
+  const r = JSON.parse(require("fs").readFileSync(0, "utf8"));
+  const url = r.deployment?.url ?? r.url;
+  if (!/^https:\/\/\S+$/.test(url ?? "")) throw new Error("no deployment URL in vercel deploy output");
+  process.stdout.write(url);
+')"
 if [ -n "${GITHUB_OUTPUT:-}" ]; then
   # url: this deployment's own address; site_url: the address it serves as (the production domain).
   echo "url=$url" >> "$GITHUB_OUTPUT"

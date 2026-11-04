@@ -32,5 +32,6 @@ export default defineConfig([
     'test-results/**',
     '.superpowers/**',
     '.claude/**',
+    '.vercel/**',
   ]),
 ]);

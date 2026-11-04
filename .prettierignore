@@ -11,3 +11,4 @@ src/generated/
 .claude/
 .lighthouseci/
 lighthouserc.remote.json
+.vercel/
