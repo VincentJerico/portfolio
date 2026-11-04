@@ -39,3 +39,6 @@ blob-report/
 
 # Claude Code local state (agent worktrees)
 .claude/
+
+# Lighthouse CI output
+.lighthouseci/
