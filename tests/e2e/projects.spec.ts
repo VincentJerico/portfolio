@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../helpers/test';
 import { projectBySlug, projectsInOrder } from '../../src/lib/content';
 import { severityCounts } from '../../src/lib/labels';
 

@@ -1,4 +1,4 @@
-import { expect, test, type Locator } from '@playwright/test';
+import { expect, test, type Locator } from '../helpers/test';
 
 // Spec 2.5: standalone controls are at least 44x44px on touch layouts. Links inside running text
 // or table cells are inline targets (WCAG 2.5.8 inline exception) and are not measured here.

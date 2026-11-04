@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../helpers/test';
 import { profile, skills } from '../../src/content';
 
 test.describe('client work', () => {
@@ -68,7 +68,7 @@ test.describe('about', () => {
 
 test.describe('contact', () => {
   // Both projects run Chromium, where clipboard permissions can be granted.
-  test('copies the email and confirms it', async ({ page, context }) => {
+  test('copies the email and confirms it', { tag: '@chromium-only' }, async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto('/contact');
     await expect(page.locator('main')).toContainText(profile.email);

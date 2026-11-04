@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../helpers/test';
 // Literal spec Section 10 values (CI serves over http, so CSP omits upgrade-insecure-requests).
 const EXPECTED: Record<string, string> = {
   'content-security-policy':

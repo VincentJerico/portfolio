@@ -5,10 +5,19 @@ const baseURL = `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: ['e2e/**/*.spec.ts', 'security/**/*.spec.ts'],
+  testMatch: ['e2e/**/*.spec.ts', 'security/**/*.spec.ts', 'a11y/**/*.spec.ts'],
+  // Spec 12.6: retries capture traces, but a test that only passes on retry still fails the run.
+  retries: process.env.CI ? 2 : 0,
+  failOnFlakyTests: !!process.env.CI,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  reporter: process.env.CI ? [['html', { open: 'never' }], ['github']] : [['list']],
+  reporter: process.env.CI
+    ? [
+        ['html', { open: 'never' }],
+        ['github'],
+        ['json', { outputFile: 'test-results/results.json' }],
+      ]
+    : [['list']],
   use: {
     baseURL,
     trace: 'retain-on-failure',
@@ -17,6 +26,12 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 800 } },
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'], viewport: { width: 1280, height: 800 } },
+      // Chrome DevTools throttling and clipboard permissions have no WebKit equivalent.
+      grepInvert: /@chromium-only/,
     },
     {
       name: 'mobile-chrome',

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../helpers/test';
 import { education, profile } from '../../src/content';
 import { loadDenylist } from '../helpers/denylist';
 import { pdfText } from '../helpers/pdf-text';

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../helpers/test';
 
 test.describe('theme', () => {
   test('follows a light OS preference on first paint without console errors', async ({ page }) => {

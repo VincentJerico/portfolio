@@ -27,6 +27,7 @@ export function CommandPalette({ items, onClose }: { items: PaletteItem[]; onClo
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const listId = useId();
+  const inputId = useId();
 
   const results = useMemo(
     () => (query.trim() ? items.filter((item) => matches(item, query)) : items).slice(0, 30),
@@ -74,10 +75,14 @@ export function CommandPalette({ items, onClose }: { items: PaletteItem[]; onClo
       className="mx-auto mt-[12vh] w-[min(94vw,36rem)] max-w-none rounded-card border border-line bg-surface p-0 text-ink backdrop:bg-black/70"
     >
       <div className="border-b border-line p-3">
+        {/* A visible label, never a placeholder alone (spec 12.3 guard F-6). */}
+        <label htmlFor={inputId} className="label-mono mb-2 block text-ink-muted">
+          Search the site
+        </label>
         <input
+          id={inputId}
           autoFocus
           role="combobox"
-          aria-label="Search the site"
           aria-expanded={results.length > 0}
           aria-controls={listId}
           aria-autocomplete="list"

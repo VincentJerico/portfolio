@@ -15,7 +15,10 @@ export default defineConfig([
     files: ['tests/e2e/**', 'tests/a11y/**', 'tests/security/**', 'tests/selftest/**'],
     rules: {
       // Shared assertion helpers are named expect*.
-      'playwright/expect-expect': ['warn', { assertFunctionNames: ['expectTouchSized'] }],
+      'playwright/expect-expect': [
+        'warn',
+        { assertFunctionNames: ['expectTouchSized', 'expectNoViolations'] },
+      ],
     },
   },
   prettier,
