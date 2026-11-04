@@ -5,7 +5,12 @@ const baseURL = `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: ['e2e/**/*.spec.ts', 'security/**/*.spec.ts', 'a11y/**/*.spec.ts'],
+  testMatch: [
+    'e2e/**/*.spec.ts',
+    'security/**/*.spec.ts',
+    'a11y/**/*.spec.ts',
+    'selftest/**/*.spec.ts',
+  ],
   // Spec 12.6: retries capture traces, but a test that only passes on retry still fails the run.
   retries: process.env.CI ? 2 : 0,
   failOnFlakyTests: !!process.env.CI,
@@ -48,6 +53,7 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
-    env: { NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL ?? baseURL },
+    // E2E_SELFTEST builds /selftest, the page with planted defects the gate self-tests run against.
+    env: { NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL ?? baseURL, E2E_SELFTEST: '1' },
   },
 });
