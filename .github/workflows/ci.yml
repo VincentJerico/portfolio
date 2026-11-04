@@ -119,6 +119,9 @@ jobs:
           name: next-build
           path: .
       - run: pnpm exec playwright install --with-deps chromium
+      # Ubuntu 24.04 blocks the unprivileged user namespaces Chrome's sandbox needs, so a bare Chrome
+      # launch aborts with "No usable sandbox". Allow them on this throwaway runner, sandbox kept on.
+      - run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
       - name: Lighthouse CI (budgets in lighthouserc.json)
         run: |
           export CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")"
