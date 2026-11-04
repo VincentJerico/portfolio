@@ -100,6 +100,7 @@ until supplied.
 | C22 | Lighthouse Total Blocking Time budget is 250 ms, not the spec's 150 ms (**Vincent, 2026-11-04**) | On the GitHub runner with Lighthouse's 4x CPU slowdown, medians were 82–206 ms per route and `/` varied 122–150 ms between runs, almost all of it React and Next.js startup. 150 ms would fail at random; 250 ms keeps about 20% headroom over the worst median, and the performance score stays gated at 0.95 or higher |
 | C23 | Production on `https://vincentjerico.vercel.app` (Vercel project `vincentjerico`); no custom domain yet (**Vincent, 2026-11-04**) | A domain later is one `NEXT_PUBLIC_SITE_URL` update in Vercel and a redeploy |
 | C24 | Preview deployments are public (Vercel Authentication off for previews) | The repository is public, so previews expose nothing new; Vercel serves them `noindex`; CI can smoke-test and run Lighthouse on them without a bypass secret |
+| C25 | Every response sends `Access-Control-Allow-Origin` set to the site's own origin | Vercel serves static files with `Access-Control-Allow-Origin: *` unless the project sets a value; the security header spec caught it on the first production deploy. The site's own origin grants no other site access, which keeps spec Section 10's "no wildcard CORS" |
 
 ---
 

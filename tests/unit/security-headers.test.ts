@@ -26,4 +26,10 @@ describe('securityHeaders', () => {
       'Cross-Origin-Opener-Policy': 'same-origin',
     });
   });
+
+  it('names its own origin for CORS, replacing the wildcard Vercel adds by default', () => {
+    expect(
+      securityHeaders('https://vincentjerico.vercel.app/')['Access-Control-Allow-Origin'],
+    ).toBe('https://vincentjerico.vercel.app');
+  });
 });
