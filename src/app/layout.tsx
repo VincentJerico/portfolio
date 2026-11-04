@@ -1,3 +1,5 @@
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata } from 'next';
 import { ViewTransition } from 'react';
 import { BugHuntProvider } from '@/components/bughunt/BugHuntProvider';
@@ -17,16 +19,21 @@ import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { RunnerHost } from '@/components/runner/RunnerHost';
 import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
 import { profile } from '@/content';
+import { getEnv } from '@/lib/env';
 import { explorerData } from '@/lib/explorer-rows';
 import { fontVariables } from '@/lib/fonts';
 import { paletteItems, siteReadingOrder } from '@/lib/site-index';
 import './globals.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getEnv().NEXT_PUBLIC_SITE_URL),
   title: {
     default: 'Vincent Jerico Alcuran · Software QA/QC Engineer on the path to SDET',
     template: '%s · Vincent Jerico Alcuran',
   },
+  description: profile.oneLiner,
+  openGraph: { type: 'website', siteName: profile.fullName, locale: 'en' },
+  twitter: { card: 'summary_large_image' },
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
@@ -73,6 +80,13 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             <CommandPaletteRoot items={paletteItems()} />
             <RunnerHost />
           </BugHuntProvider>
+          {/* Cookieless analytics, only on Vercel builds: elsewhere their first-party scripts 404. */}
+          {process.env.VERCEL === '1' && (
+            <>
+              <Analytics />
+              <SpeedInsights />
+            </>
+          )}
         </ThemeProvider>
       </body>
     </html>

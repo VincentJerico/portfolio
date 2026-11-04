@@ -5,7 +5,7 @@ const baseURL = `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: ['e2e/**/*.spec.ts'],
+  testMatch: ['e2e/**/*.spec.ts', 'security/**/*.spec.ts'],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   reporter: process.env.CI ? [['html', { open: 'never' }], ['github']] : [['list']],

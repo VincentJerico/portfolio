@@ -64,6 +64,7 @@ for (const route of ['/', '/projects', '/projects/accessibility-testing']) {
       await expect(panel.locator(`[data-check="${name}"]`)).toHaveCount(1);
     }
     await expect(panel.locator('[data-check="Accessibility"]')).toContainText(/PASS/);
+    await expect(panel.locator('[data-check="Security headers"]')).toContainText(/PASS/);
   });
 }
 

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import type { SkillGroup } from '@/content/schema';
 import { skills } from '@/content';
@@ -8,10 +9,11 @@ import { githubSlug } from '@/lib/slug';
 // HUNT-01 (Bug Hunt only): a typo in a heading.
 const PLANTED_HEADINGS: Record<string, string> = { Accessibility: 'Accessibilty' };
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Skills',
   description: 'Testing skills, each linked to the repo or work that proves it.',
-};
+  path: '/skills',
+});
 
 function GroupCard({ group }: { group: SkillGroup }) {
   return (

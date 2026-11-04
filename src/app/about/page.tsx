@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { CareerPath } from '@/components/content/CareerPath';
 import { QaAreaGrid } from '@/components/content/QaAreaGrid';
@@ -8,10 +9,11 @@ import { certifications, education, experience, profile, qaAreas, timeline } fro
 import { projectBySlug, visible } from '@/lib/content';
 import { formatCertDate, formatMonth, formatPeriod } from '@/lib/format';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'About',
   description: profile.oneLiner,
-};
+  path: '/about',
+});
 
 export default function AboutPage() {
   const degree = visible(education)[0];

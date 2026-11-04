@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import { CaseStudyCard } from '@/components/content/CaseStudyCard';
 import { Section } from '@/components/content/Section';
 import { experience } from '@/content';
 import { approvedCaseStudies, visible } from '@/lib/content';
 import { formatPeriod } from '@/lib/format';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Client Work',
   description: 'Software QA/QC work at BossLabs.AI and anonymised client case studies.',
-};
+  path: '/work',
+});
 
 export default function ClientWorkPage() {
   const role = visible(experience).find((item) => item.hasCaseStudies);
