@@ -7,7 +7,7 @@
 shows the real results of the latest run on `main`.
 
 **Spec:** `docs/03-MASTER-PROMPT.md` Section 12 and 14 Phase 5; amended by `docs/04-DECISIONS.md` (C21: total
-JS on `/` ≤ 165 KB gzipped; D1: deploy and the quality report run from Actions).
+JS on `/` ≤ 180 KB, Lighthouse transfer size; D1: deploy and the quality report run from Actions).
 
 ## Already in place (Phases 1–4)
 
@@ -22,7 +22,7 @@ header tests. This phase fills the gaps and wires the pipeline.
   JSON attached to the report.
 - Lighthouse (mobile preset, 3 runs, median) on `/`, `/projects`, `/projects/accessibility-testing`, `/about`,
   `/resume`: performance ≥ 0.95, accessibility = 1, best-practices ≥ 0.95, seo = 1; budgets: total JS on `/` ≤
-  165 KB gzipped (C21), LCP ≤ 2000 ms, CLS ≤ 0.05, TBT ≤ 150 ms.
+  180 KB transfer size (C21), LCP ≤ 2000 ms, CLS ≤ 0.05, TBT ≤ 150 ms.
 - lychee excludes `legatalink.free.nf` (bot check), with the reason shown on `/quality`.
 - A gate that can't fail isn't a gate: every gate has a self-test that is shown failing.
 
