@@ -1,16 +1,18 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 3210;
-const baseURL = `http://localhost:${PORT}`;
+// PLAYWRIGHT_BASE_URL points the suite at a live deployment (smoke and header checks after a deploy).
+const deployed = process.env.PLAYWRIGHT_BASE_URL || undefined;
+const baseURL = deployed ?? `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: [
-    'e2e/**/*.spec.ts',
-    'security/**/*.spec.ts',
-    'a11y/**/*.spec.ts',
-    'selftest/**/*.spec.ts',
-  ],
+  // Against a deployment: smoke and header checks only, minus tests about local builds. Locally and in
+  // the gate jobs: everything except the deployment smoke specs.
+  testMatch: deployed
+    ? ['smoke/**/*.spec.ts', 'security/**/*.spec.ts']
+    : ['e2e/**/*.spec.ts', 'security/**/*.spec.ts', 'a11y/**/*.spec.ts', 'selftest/**/*.spec.ts'],
+  grepInvert: deployed ? /@local-build/ : undefined,
   // Spec 12.6: retries capture traces, but a test that only passes on retry still fails the run.
   retries: process.env.CI ? 2 : 0,
   failOnFlakyTests: !!process.env.CI,
@@ -45,15 +47,20 @@ export default defineConfig({
       testIgnore: /theme\.spec\.ts/,
     },
   ],
-  webServer: {
-    // CI downloads the build job's artifact (.next and the generated CV), so it only starts the server.
-    command: process.env.CI
-      ? `pnpm start -p ${PORT}`
-      : `pnpm build && pnpm cv && pnpm start -p ${PORT}`,
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 180_000,
-    // E2E_SELFTEST builds /selftest, the page with planted defects the gate self-tests run against.
-    env: { NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL ?? baseURL, E2E_SELFTEST: '1' },
-  },
+  webServer: deployed
+    ? undefined
+    : {
+        // CI downloads the build job's artifact (.next and the generated CV), so it only starts the server.
+        command: process.env.CI
+          ? `pnpm start -p ${PORT}`
+          : `pnpm build && pnpm cv && pnpm start -p ${PORT}`,
+        url: baseURL,
+        reuseExistingServer: !process.env.CI,
+        timeout: 180_000,
+        // E2E_SELFTEST builds /selftest, the page with planted defects the gate self-tests run against.
+        env: {
+          NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL ?? baseURL,
+          E2E_SELFTEST: '1',
+        },
+      },
 });

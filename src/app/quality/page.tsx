@@ -128,6 +128,11 @@ export default function QualityPage() {
             </p>
           </div>
         )}
+        <p className="measure mt-6 text-sm text-ink-muted">
+          Production is deployed from GitHub Actions only after every gate passes. The deployed
+          build is rebuilt from the same commit and differs from the tested one only in this report
+          and the CV PDF; the page with planted defects that the self-tests use is left out.
+        </p>
       </Section>
 
       <Section id="gates" title="The gates and how each proves itself">

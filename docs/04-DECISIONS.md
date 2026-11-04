@@ -98,6 +98,8 @@ until supplied.
 | C20 | CSP sends `upgrade-insecure-requests` only when `NEXT_PUBLIC_SITE_URL` is https | WebKit upgrades `http://localhost` subresources to https and they fail (no CSS/JS in local and CI runs); production on https keeps the exact spec CSP |
 | C21 | Lighthouse total-JS budget on `/` is 180 KB, measured as Lighthouse does (transfer size incl. headers), not the spec's 120 KB (**Vincent, 2026-11-04**; first set at 165 KB on a body-only measurement, revised the same day) | Next.js 16 and React 19 alone are about 140 KB; `/` is 166 KB in CI and about 170 KB on Vercel with its analytics scripts. 180 KB keeps headroom while failing on real growth |
 | C22 | Lighthouse Total Blocking Time budget is 250 ms, not the spec's 150 ms (**Vincent, 2026-11-04**) | On the GitHub runner with Lighthouse's 4x CPU slowdown, medians were 82–206 ms per route and `/` varied 122–150 ms between runs, almost all of it React and Next.js startup. 150 ms would fail at random; 250 ms keeps about 20% headroom over the worst median, and the performance score stays gated at 0.95 or higher |
+| C23 | Production on `https://vincentjerico.vercel.app` (Vercel project `vincentjerico`); no custom domain yet (**Vincent, 2026-11-04**) | A domain later is one `NEXT_PUBLIC_SITE_URL` update in Vercel and a redeploy |
+| C24 | Preview deployments are public (Vercel Authentication off for previews) | The repository is public, so previews expose nothing new; Vercel serves them `noindex`; CI can smoke-test and run Lighthouse on them without a bypass secret |
 
 ---
 

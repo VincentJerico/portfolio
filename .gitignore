@@ -42,3 +42,4 @@ blob-report/
 
 # Lighthouse CI output
 .lighthouseci/
+lighthouserc.remote.json
