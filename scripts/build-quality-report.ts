@@ -1,7 +1,8 @@
 // CI only (quality-report job): gathers one run's results and writes src/generated/quality.json.
-// Inputs: JOB_RESULTS (JSON of needs.*.result), reports/playwright/results.json (Chromium run),
+// Inputs: JOB_RESULTS (JSON of needs.*.result), reports/playwright/<project>/results.json for each
+// browser run,
 // reports/lighthouse/manifest.json, plus GitHub's GITHUB_* variables.
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { buildQualityReport } from '../src/lib/quality-builder';
 
 const readJson = (path: string) =>
@@ -12,7 +13,14 @@ if (!JOB_RESULTS || !GITHUB_SHA) throw new Error('JOB_RESULTS and GITHUB_SHA are
 
 const report = buildQualityReport({
   jobs: JSON.parse(JOB_RESULTS),
-  playwright: readJson('reports/playwright/results.json'),
+  playwright: Object.fromEntries(
+    (existsSync('reports/playwright') ? readdirSync('reports/playwright') : []).flatMap(
+      (project) => {
+        const run = readJson(`reports/playwright/${project}/results.json`);
+        return run ? [[project, run]] : [];
+      },
+    ),
+  ),
   lighthouse: readJson('reports/lighthouse/manifest.json'),
   commit: GITHUB_SHA,
   runUrl: `${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}`,

@@ -1,6 +1,16 @@
 import { expect, test } from '../helpers/test';
 import { navItems } from '../../src/lib/nav-items';
 import { projectsInOrder } from '../../src/lib/content';
+import { qualityReport as report } from '../../src/lib/quality-report';
+import { runSummaryLine, siteStatus } from '../../src/lib/quality';
+
+const CHIP = { pass: 'PASS', fail: 'FAIL', 'not-run': 'not run' } as const;
+// A sample report must never read as passing; a real one shows exactly what CI recorded.
+const statusText = {
+  summary: runSummaryLine(report),
+  chip: CHIP[siteStatus(report)],
+  never: report.sample ? /passing|PASS/ : /not run yet/,
+};
 
 test.use({ viewport: { width: 1280, height: 900 } });
 
@@ -25,13 +35,14 @@ test('Projects folder expands to one spec per project', async ({ page }) => {
   }
 });
 
-test('with the sample report every status reads "not run", never passing', async ({ page }) => {
+test('sidebar statuses come from the committed report, never a pass it did not earn', async ({
+  page,
+}) => {
   await page.goto('/');
   const sidebar = page.locator('aside');
-  await expect(sidebar).toContainText('not run yet');
-  await expect(sidebar.getByText('not run', { exact: true }).first()).toBeAttached();
-  await expect(sidebar).not.toContainText(/passing|PASS/);
-  await expect(sidebar.getByRole('link', { name: /Site checks/ })).toContainText('not run');
+  await expect(sidebar).toContainText(statusText.summary);
+  await expect(sidebar).not.toContainText(statusText.never);
+  await expect(sidebar.getByRole('link', { name: /Site checks/ })).toContainText(statusText.chip);
 });
 
 test('coverage counts the pages this visitor has opened', async ({ page }) => {

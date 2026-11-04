@@ -1,6 +1,7 @@
 import { expect, test } from '../helpers/test';
 import { focusEntirelyObscured } from '../helpers/a11y';
 import { waitForHydration } from '../helpers/hydration';
+import { tabKey } from '../helpers/keys';
 
 test.use({ viewport: { width: 1280, height: 900 } });
 
@@ -53,11 +54,14 @@ test('reduced motion turns transitions off', async ({ page }) => {
   expect(duration).toBeLessThan(0.02);
 });
 
-test('focus is never entirely obscured while tabbing a report page (F-7)', async ({ page }) => {
+test('focus is never entirely obscured while tabbing a report page (F-7)', async ({
+  page,
+  browserName,
+}) => {
   await page.goto('/projects/accessibility-testing');
   await waitForHydration(page);
   for (let i = 0; i < 50; i++) {
-    await page.keyboard.press('Tab');
+    await page.keyboard.press(tabKey(browserName));
     expect(await focusEntirelyObscured(page), `Tab ${i + 1}`).toBe(false);
   }
 });

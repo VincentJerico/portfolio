@@ -12,7 +12,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
+  # The weekly schedule also runs on main; its own group keeps it from cancelling a push run.
+  group: ci-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -154,6 +155,7 @@ jobs:
           npx --yes wait-on@8 http://localhost:3210 --timeout 60000
       - uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
+          lycheeVersion: v0.24.2
           args: --config lychee.toml --base-url http://localhost:3210 --no-progress '.next/server/app/**/*.html'
           fail: true
         env:
@@ -161,8 +163,9 @@ jobs:
 
   quality-report:
     name: Quality report
-    # Main only, and even when a gate failed: /quality must show failures, never a stale pass.
-    if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    # Main pushes only, and even when a gate failed (/quality must show failures, never a stale pass),
+    # but not when the run itself was cancelled: cancelled is not a verdict on the commit.
+    if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     needs: [static, build, e2e, lighthouse, links]
     runs-on: ubuntu-latest
     permissions:
@@ -182,7 +185,7 @@ jobs:
       - uses: actions/download-artifact@v8
         continue-on-error: true
         with:
-          name: playwright-chromium
+          pattern: playwright-*
           path: reports/playwright-raw
       - uses: actions/download-artifact@v8
         continue-on-error: true
@@ -192,7 +195,12 @@ jobs:
       - name: Build quality.json
         run: |
           mkdir -p reports/playwright reports/lighthouse
-          cp reports/playwright-raw/test-results/results.json reports/playwright/ 2>/dev/null || true
+          for dir in reports/playwright-raw/playwright-*; do
+            [ -f "$dir/test-results/results.json" ] || continue
+            project="${dir##*/playwright-}"
+            mkdir -p "reports/playwright/$project"
+            cp "$dir/test-results/results.json" "reports/playwright/$project/"
+          done
           cp reports/lighthouse-raw/reports/manifest.json reports/lighthouse/ 2>/dev/null || true
           pnpm exec tsx scripts/build-quality-report.ts
         env:

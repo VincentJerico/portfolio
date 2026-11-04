@@ -48,7 +48,10 @@ const inputs: BuildInputs = {
     lighthouse: 'success',
     links: 'success',
   },
-  playwright: passingSuite,
+  playwright: {
+    chromium: passingSuite,
+    webkit: { suites: [], stats: { expected: 10, unexpected: 0, flaky: 1, skipped: 2 } },
+  },
   lighthouse: [
     {
       url: 'http://localhost:3300/',
@@ -84,6 +87,13 @@ describe('buildQualityReport', () => {
     expect(report.lighthouse).toEqual([
       { route: '/', performance: 100, accessibility: 100, bestPractices: 100, seo: 100 },
     ]);
+  });
+
+  it('sums E2E counts across every browser run, and says so', () => {
+    expect(report.e2e).toEqual({ passed: 13, failed: 1, flaky: 1, skipped: 2 });
+    expect(report.gates.find((g) => g.gate.startsWith('End-to-end'))?.details).toBe(
+      '13 passed, 1 failed, 1 flaky across chromium, webkit',
+    );
   });
 
   it('reports a cancelled or skipped job as failed', () => {

@@ -8,5 +8,4 @@ retry_wait_time = 2
 timeout = 20
 cache = true
 max_cache_age = "1d"
-include_fragments = false
 exclude_path = ["\\.next/server/app/selftest"]

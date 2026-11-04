@@ -37,7 +37,8 @@ export interface BuildInputs {
     lighthouse: JobResult;
     links: JobResult;
   };
-  playwright?: PlaywrightReport;
+  /** Playwright JSON results by project (chromium, webkit, mobile-chrome). */
+  playwright?: Record<string, PlaywrightReport>;
   lighthouse?: LighthouseRun[];
   commit: string;
   runUrl: string;
@@ -72,8 +73,19 @@ function routeResults(report: PlaywrightReport | undefined): QualityReport['rout
 }
 
 export function buildQualityReport(inputs: BuildInputs): QualityReport {
-  const { jobs, playwright } = inputs;
-  const e2e = playwright?.stats;
+  const { jobs, playwright = {} } = inputs;
+  const projects = Object.keys(playwright);
+  const e2e = projects.length
+    ? Object.values(playwright).reduce(
+        (sum, run) => ({
+          expected: sum.expected + run.stats.expected,
+          unexpected: sum.unexpected + run.stats.unexpected,
+          flaky: sum.flaky + run.stats.flaky,
+          skipped: sum.skipped + run.stats.skipped,
+        }),
+        { expected: 0, unexpected: 0, flaky: 0, skipped: 0 },
+      )
+    : undefined;
   const lighthouse = (inputs.lighthouse ?? [])
     .filter((run) => run.isRepresentativeRun)
     .map((run) => ({
@@ -114,7 +126,7 @@ export function buildQualityReport(inputs: BuildInputs): QualityReport {
       tool: 'Playwright, axe-core',
       result: pass(jobs.e2e),
       details: e2e
-        ? `${e2e.expected} passed, ${e2e.unexpected} failed, ${e2e.flaky} flaky across Chromium, WebKit and mobile Chrome`
+        ? `${e2e.expected} passed, ${e2e.unexpected} failed, ${e2e.flaky} flaky across ${projects.join(', ')}`
         : 'Chromium, WebKit and mobile Chrome',
     },
     {
@@ -140,7 +152,7 @@ export function buildQualityReport(inputs: BuildInputs): QualityReport {
     runUrl: inputs.runUrl,
     overall: Object.values(jobs).every((job) => job === 'success') ? 'pass' : 'fail',
     gates,
-    routes: routeResults(playwright),
+    routes: routeResults(playwright.chromium),
     lighthouse,
     ...(e2e
       ? {

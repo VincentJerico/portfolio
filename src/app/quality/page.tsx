@@ -50,7 +50,8 @@ const GATES: { name: string; what: string; selfTest: string }[] = [
   {
     name: 'Link check',
     what: 'lychee checks every link in the built pages, on every pull request and weekly. legatalink.free.nf is excluded: its free host shows bots a browser check, so it always fails automated checks while working for people.',
-    selfTest: 'A broken link fails the job; rate-limited responses are retried before they count.',
+    selfTest:
+      'A broken link fails the job. Timeouts and server errors are retried; a rate-limited answer (HTTP 429) counts as reachable.',
   },
 ];
 
@@ -118,10 +119,6 @@ export default function QualityPage() {
                 ])}
               />
             )}
-            <p className="measure text-sm text-ink-muted">
-              The deployed build is rebuilt from the same commit after these gates pass; it differs
-              from the tested build only in this report and the generated CV PDF.
-            </p>
           </div>
         ) : (
           <div className="flex flex-wrap items-center gap-3 rounded-card border border-line bg-surface p-5">
