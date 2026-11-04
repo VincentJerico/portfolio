@@ -143,7 +143,11 @@ test.describe('mobile drawer', () => {
     await expect(page.locator('#site-drawer')).toBeVisible();
     await page.setViewportSize(DESKTOP);
     await expect(page.locator('#site-drawer')).toBeHidden();
-    expect(await page.evaluate(() => document.querySelector(':modal'))).toBeNull();
+    // CSS hides the drawer on the resize itself; the media-query `change` handler that closes the
+    // modal runs a frame later, so wait for it rather than reading once.
+    await expect
+      .poll(() => page.evaluate(() => document.querySelector(':modal') === null))
+      .toBe(true);
     await page
       .getByRole('navigation', { name: 'Site' })
       .getByRole('link', { name: 'Skills' })
