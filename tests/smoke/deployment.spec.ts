@@ -18,6 +18,11 @@ test('every page in the sitemap loads, and the sitemap never lists /selftest', a
   expect(failures).toEqual([]);
 });
 
+test('the contact page offers the form (a missing secret hides it)', async ({ request }) => {
+  const html = await (await request.get('/contact')).text();
+  expect(html).toContain('Send a message');
+});
+
 test('the planted-defect page does not exist on a deployment', async ({ request }) => {
   expect((await request.get('/selftest')).status()).toBe(404);
 });

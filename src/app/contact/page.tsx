@@ -4,6 +4,8 @@ import { pageMetadata } from '@/lib/seo';
 import { GitHubIcon } from '@/components/ui/GitHubIcon';
 import { ButtonLink } from '@/components/ui/Button';
 import { CopyButton } from '@/components/ui/CopyButton';
+import { ContactForm } from '@/components/contact/ContactForm';
+import { contactConfig } from '@/lib/contact/config';
 import { profile } from '@/content';
 
 export const metadata: Metadata = pageMetadata({
@@ -37,6 +39,18 @@ export default function ContactPage() {
           <CopyButton value={profile.email} label="Copy email" />
         </div>
       </section>
+
+      {contactConfig() !== null && (
+        <section aria-labelledby="message-heading">
+          <h2 id="message-heading" className="label-mono text-ink-muted">
+            Send a message
+          </h2>
+          <p className="mt-3 mb-6 text-ink-muted">
+            Messages go straight to my inbox; nothing is stored on this site.
+          </p>
+          <ContactForm email={profile.email} />
+        </section>
+      )}
 
       <section aria-labelledby="elsewhere-heading">
         <h2 id="elsewhere-heading" className="label-mono text-ink-muted">
