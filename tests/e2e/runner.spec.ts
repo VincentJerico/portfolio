@@ -5,7 +5,11 @@ const SUMMARY = /^\d+ passed, \d+ failed(, \d+ not measured)? in \d+(\.\d+)?s$/;
 
 /** The focused element's label, if the runner panel covers it completely; otherwise nothing. */
 async function focusHiddenUnderPanel(page: Page): Promise<string[]> {
-  return page.evaluate(() => {
+  return page.evaluate(async () => {
+    // Measure once the browser has scrolled the newly focused element into view. On a slow CI runner
+    // WebKit can report the pre-scroll position for one frame; an element left under the panel is
+    // still under it two frames later, so real obscuring still fails.
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const el = document.activeElement as HTMLElement | null;
     const sheet = document.querySelector('[data-runner-panel]');
     if (!el || !sheet || sheet.contains(el)) return [];
