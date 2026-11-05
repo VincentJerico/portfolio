@@ -240,7 +240,8 @@ jobs:
     needs: [static, build, e2e, lighthouse, links]
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      # The report is pushed with the release deploy key, so the job token only reads.
+      contents: read
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -248,8 +249,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # The write token is not left in .git/config while dependencies install and the deploy runs;
-          # the push step supplies it explicitly.
+          # No credentials are left in .git/config while dependencies install and the deploy runs; only the
+          # final step can push, with the release deploy key.
           persist-credentials: false
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - uses: actions/setup-node@v7
@@ -324,6 +325,19 @@ jobs:
           git add src/generated/quality.json
           git diff --cached --quiet && exit 0
           git commit -m "chore(quality): update report [skip ci]"
-          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
+          # main requires pull requests; on a personal account only a deploy key can bypass that ruleset
+          # (GitHub Actions cannot), so the report is pushed with the release deploy key.
+          if [ -z "$RELEASE_DEPLOY_KEY" ]; then
+            echo "::error::RELEASE_DEPLOY_KEY is not set; the report cannot be pushed to main."
+            exit 1
+          fi
+          key="$RUNNER_TEMP/release_deploy_key"
+          known="$RUNNER_TEMP/known_hosts"
+          ( umask 077 && printf '%s\n' "$RELEASE_DEPLOY_KEY" > "$key" )
+          # GitHub's published SSH host key, so the push cannot go to an impersonated host.
+          echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" > "$known"
+          GIT_SSH_COMMAND="ssh -i $key -o IdentitiesOnly=yes -o UserKnownHostsFile=$known -o StrictHostKeyChecking=yes" \
+            git push "git@github.com:${GITHUB_REPOSITORY}.git" HEAD:main
+          rm -f "$key"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_DEPLOY_KEY: ${{ secrets.RELEASE_DEPLOY_KEY }}
