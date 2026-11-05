@@ -34,7 +34,9 @@ export async function submitContact(
     if (!(await deps.limiter.limit(clientKey))) return { status: 'rate-limited' };
     await deps.mailer.send(parsed.data);
     return { status: 'sent' };
-  } catch {
+  } catch (err) {
+    // Message only: never log the submission, addresses, IPs or secrets.
+    console.error('contact: delivery failed', err instanceof Error ? err.message : 'unknown');
     return { status: 'failed' };
   }
 }

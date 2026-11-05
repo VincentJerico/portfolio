@@ -7,10 +7,17 @@ import { submitContact } from '@/lib/contact/submit';
 
 // Built once per server instance so the in-memory test limiter keeps its counts.
 let deps: ReturnType<typeof contactConfig> | undefined;
+let loggedUnconfigured = false;
 
 export async function sendContact(_prev: ContactState, form: FormData): Promise<ContactState> {
   deps ??= contactConfig();
-  if (!deps) return { status: 'failed' };
+  if (!deps) {
+    if (!loggedUnconfigured) {
+      loggedUnconfigured = true;
+      console.error('contact: not configured');
+    }
+    return { status: 'failed' };
+  }
 
   const requestHeaders = await headers();
   const forwarded = requestHeaders.get('x-forwarded-for')?.split(',')[0]?.trim();

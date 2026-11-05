@@ -76,12 +76,36 @@ describe('submitContact', () => {
     expect(deps.mailer.send).not.toHaveBeenCalled();
   });
 
-  it('mailer failure reports failed and does not throw', async () => {
-    const deps = fakes();
-    deps.mailer.send = vi.fn(async () => {
-      throw new Error('boom');
-    });
-    await expect(submitContact(form(VALID), 'k', deps)).resolves.toEqual({ status: 'failed' });
+  it('mailer failure reports failed, does not throw, and logs without personal data', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      const deps = fakes();
+      deps.mailer = resendMailer(
+        'secret-key',
+        'me@example.com',
+        (async () =>
+          new Response('bad ada@example.com', { status: 422 })) as unknown as typeof fetch,
+      );
+      await expect(submitContact(form(VALID), '203.0.113.9', deps)).resolves.toEqual({
+        status: 'failed',
+      });
+      expect(spy).toHaveBeenCalledTimes(1);
+      const logged = JSON.stringify(spy.mock.calls);
+      expect(logged).toContain('contact: delivery failed');
+      expect(logged).toContain('422');
+      for (const secret of [
+        'ada@example.com',
+        'Ada Lovelace',
+        'long enough message',
+        '203.0.113.9',
+        'secret-key',
+        'me@example.com',
+      ]) {
+        expect(logged).not.toContain(secret);
+      }
+    } finally {
+      spy.mockRestore();
+    }
   });
 });
 
