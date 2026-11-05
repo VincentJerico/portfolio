@@ -1,11 +1,11 @@
 import { test } from '../helpers/test';
-import { NAV_ITEMS } from '../../src/lib/nav';
+import { navItems } from '../../src/lib/nav-items';
 import { caseStudySlugs, projectsInOrder } from '../../src/lib/content';
 import { expectNoViolations } from '../helpers/a11y';
 import { waitForHydration } from '../helpers/hydration';
 
 const ROUTES = [
-  ...NAV_ITEMS.map((i) => i.href),
+  ...navItems().map((i) => i.href),
   ...projectsInOrder().map((p) => `/projects/${p.slug}`),
   ...caseStudySlugs().map((s) => `/work/${s}`),
   '/this-page-does-not-exist',

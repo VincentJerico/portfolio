@@ -1,3 +1,4 @@
+import createMDX from '@next/mdx';
 import type { NextConfig } from 'next';
 import { getEnv } from './src/lib/env';
 import { securityHeaders } from './src/lib/security-headers';
@@ -31,4 +32,5 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Notes are MDX files loaded by import; no remark/rehype plugins (they cannot take functions under Turbopack).
+export default createMDX()(nextConfig);

@@ -4,6 +4,9 @@ const PORT = 3210;
 // PLAYWRIGHT_BASE_URL points the suite at a live deployment (smoke and header checks after a deploy).
 const deployed = process.env.PLAYWRIGHT_BASE_URL || undefined;
 const baseURL = deployed ?? `http://localhost:${PORT}`;
+// Test code that asks which sections exist (navItems(), visibleNotes()) must see the test build's view, which includes
+// the selftest note. Workers inherit this.
+if (!deployed) process.env.E2E_SELFTEST = '1';
 
 export default defineConfig({
   testDir: './tests',

@@ -221,3 +221,13 @@ export type CaseStudy = z.output<typeof CaseStudy>;
 export type SkillGroup = z.output<typeof SkillGroup>;
 export type TimelineEvent = z.output<typeof TimelineEvent>;
 export type Education = z.output<typeof Education>;
+
+export const Note = z.object({
+  slug: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/),
+  title: z.string(),
+  summary: z.string(),
+  date: isoDate,
+  // 'selftest' notes exist only in the CI test build (E2E_SELFTEST=1).
+  status: z.enum(['published', 'draft', 'selftest']),
+});
+export type Note = z.output<typeof Note>;

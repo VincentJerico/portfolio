@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '../helpers/test';
-import { NAV_ITEMS } from '../../src/lib/nav';
+import { navItems } from '../../src/lib/nav-items';
 import { tabKey } from '../helpers/keys';
 
 const MOBILE = { width: 375, height: 812 };
@@ -13,7 +13,7 @@ async function activeIsInside(page: Page, selector: string) {
 }
 
 test.describe('every route', () => {
-  for (const { href, label } of NAV_ITEMS) {
+  for (const { href, label } of navItems()) {
     test(`${label} (${href}) renders one h1 and one main`, async ({ page }) => {
       const response = await page.goto(href);
       expect(response?.status()).toBe(200);
@@ -63,7 +63,7 @@ test.describe('desktop sidebar', () => {
     browserName,
   }) => {
     // Skip link, nav links, Projects folder, theme toggle, GitHub, Email, run tests, site checks.
-    const shellTabStops = 1 + NAV_ITEMS.length + 1 + 1 + 2 + 1 + 1;
+    const shellTabStops = 1 + navItems().length + 1 + 1 + 2 + 1 + 1;
     await page.goto('/');
     for (let i = 0; i < shellTabStops; i++) {
       await page.keyboard.press(tabKey(browserName));
@@ -188,7 +188,7 @@ test.describe('mobile drawer without JavaScript', () => {
     await page.getByRole('button', { name: 'Menu', exact: true }).click();
     const drawer = page.locator('#site-drawer');
     await expect(drawer).toBeVisible();
-    for (const { label } of NAV_ITEMS) {
+    for (const { label } of navItems()) {
       await expect(drawer.getByRole('link', { name: label })).toBeVisible();
     }
   });

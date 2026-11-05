@@ -1,12 +1,12 @@
 import { expect, test } from '../helpers/test';
-import { NAV_ITEMS } from '../../src/lib/nav';
+import { navItems } from '../../src/lib/nav-items';
 import { caseStudySlugs, projectsInOrder } from '../../src/lib/content';
 import { findBanned, findDenied } from '../../src/lib/strings';
 import { loadDenylist } from '../helpers/denylist';
 
 const NOT_FOUND = '/this-page-does-not-exist';
 const ROUTES = [
-  ...NAV_ITEMS.map((item) => item.href),
+  ...navItems().map((item) => item.href),
   ...projectsInOrder().map((p) => `/projects/${p.slug}`),
   ...caseStudySlugs().map((slug) => `/work/${slug}`),
   NOT_FOUND,

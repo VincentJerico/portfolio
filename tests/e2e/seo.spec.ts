@@ -1,10 +1,10 @@
 import { expect, test } from '../helpers/test';
-import { NAV_ITEMS } from '../../src/lib/nav';
+import { navItems } from '../../src/lib/nav-items';
 import { caseStudySlugs, projectsInOrder } from '../../src/lib/content';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3210';
 const ROUTES = [
-  ...NAV_ITEMS.map((i) => i.href),
+  ...navItems().map((i) => i.href),
   ...projectsInOrder().map((p) => `/projects/${p.slug}`),
   ...caseStudySlugs().map((s) => `/work/${s}`),
 ];
