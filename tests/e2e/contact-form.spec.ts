@@ -51,6 +51,18 @@ test('invalid submit announces errors and focuses the first invalid field', asyn
   await expect(name).toBeFocused();
 });
 
+test('invalid submit keeps what was typed', async ({ page }) => {
+  await open(page);
+  await field(page, 'Name').fill('Test Sender');
+  await field(page, 'Email').fill('not-an-email');
+  await field(page, 'Message').fill('Hello, this is a test message.');
+  await page.getByRole('button', { name: 'Send message' }).click();
+  await expect(field(page, 'Email')).toHaveAttribute('aria-invalid', 'true');
+  await expect(field(page, 'Name')).toHaveValue('Test Sender');
+  await expect(field(page, 'Email')).toHaveValue('not-an-email');
+  await expect(field(page, 'Message')).toHaveValue('Hello, this is a test message.');
+});
+
 test('valid submit announces success and clears the form', async ({ page }) => {
   await open(page);
   await fillValid(page);
@@ -61,7 +73,17 @@ test('valid submit announces success and clears the form', async ({ page }) => {
   }
 });
 
-// A successful send resets the form, so the emptied Name field marks this send as settled
+test('a keyboard submit keeps focus on the button', async ({ page }) => {
+  await open(page);
+  await fillValid(page);
+  const button = page.getByRole('button', { name: 'Send message' });
+  await button.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('status').filter({ hasText: SENT })).toBeVisible();
+  await expect(button).toBeFocused();
+});
+
+// Only a successful send clears the form, so the emptied Name field marks this send as settled
 // (the previous send's success text alone cannot tell sends apart).
 async function sendAndSettle(page: Page) {
   await fillValid(page);
@@ -75,13 +97,15 @@ test('sixth message within ten minutes is refused', async ({ page }) => {
   for (let i = 0; i < 5; i++) {
     await sendAndSettle(page);
   }
-  await fillValid(page);
+  await fillValid(page, 'The sixth message, kept after the refusal.');
   await page.getByRole('button', { name: 'Send message' }).click();
   await expect(
     page
       .getByRole('alert')
       .filter({ hasText: 'Too many messages. Try again in a few minutes, or email me directly.' }),
   ).toBeVisible();
+  await expect(field(page, 'Message')).toHaveValue('The sixth message, kept after the refusal.');
+  await expect(field(page, 'Name')).toHaveValue('Test Sender');
 });
 
 test('a second success on the same page is announced again', async ({ page }) => {
@@ -107,13 +131,17 @@ test('a second success on the same page is announced again', async ({ page }) =>
   await expect(status).toHaveText(SENT);
 });
 
-test('mail failure is announced', async ({ page }) => {
+test('mail failure is announced and keeps what was typed', async ({ page }) => {
   await open(page);
-  await fillValid(page, 'This contains e2e-mailer-failure to force an error.');
+  const message = 'This contains e2e-mailer-failure to force an error.';
+  await fillValid(page, message);
   await page.getByRole('button', { name: 'Send message' }).click();
   const alert = page.getByRole('alert').filter({ hasText: 'Your message could not be sent.' });
   await expect(alert).toContainText('Email me directly at');
   await expect(alert).toContainText('@');
+  await expect(field(page, 'Name')).toHaveValue('Test Sender');
+  await expect(field(page, 'Email')).toHaveValue('sender@example.com');
+  await expect(field(page, 'Message')).toHaveValue(message);
 });
 
 test('no horizontal overflow at 320 px', async ({ page }) => {

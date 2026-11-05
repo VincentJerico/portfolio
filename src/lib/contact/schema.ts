@@ -1,26 +1,13 @@
 import { z } from 'zod';
+import type { ContactField } from './types';
 
-export const HONEYPOT_FIELD = 'website';
+export { HONEYPOT_FIELD, type ContactField, type ContactState, type ContactValues } from './types';
 
 export const ContactInput = z.object({
   name: z.string().trim().min(1).max(100),
   email: z.email().max(254),
   message: z.string().trim().min(10).max(5000),
 });
-
-export type ContactField = 'name' | 'email' | 'message';
-export type ContactValues = { name: string; email: string; message: string };
-
-export type ContactState =
-  | { status: 'idle' }
-  | {
-      status: 'invalid';
-      fieldErrors: Partial<Record<ContactField, string>>;
-      values: ContactValues;
-    }
-  | { status: 'sent' }
-  | { status: 'rate-limited' }
-  | { status: 'failed' };
 
 const COPY: Record<ContactField, { missing: string; tooLong: string }> = {
   name: { missing: 'Enter your name.', tooLong: 'Keep it under 100 characters.' },

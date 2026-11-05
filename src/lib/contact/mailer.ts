@@ -8,6 +8,19 @@ export interface Mailer {
   send(msg: ContactMessage): Promise<void>;
 }
 
+/** A refusal from the mail provider. Carries the HTTP status only, never the response body. */
+export class MailError extends Error {
+  readonly status: number;
+
+  constructor(status: number) {
+    super(`Mail provider responded ${status}`);
+    this.status = status;
+    this.name = 'MailError';
+  }
+}
+
+const SEND_TIMEOUT_MS = 10_000;
+
 export function resendMailer(apiKey: string, to: string, fetchImpl: typeof fetch = fetch): Mailer {
   return {
     async send({ name, email, message }) {
@@ -24,8 +37,9 @@ export function resendMailer(apiKey: string, to: string, fetchImpl: typeof fetch
           subject: `Portfolio contact from ${name}`,
           text: `From: ${name} <${email}>\n\n${message}\n`,
         }),
+        signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
       });
-      if (!response.ok) throw new Error(`Mail provider responded ${response.status}`);
+      if (!response.ok) throw new MailError(response.status);
     },
   };
 }

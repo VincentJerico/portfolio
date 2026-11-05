@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 
@@ -17,6 +18,13 @@ export function upstashLimiter(url: string, token: string): RateLimiter {
       const { success } = await ratelimit.limit(key);
       return success;
     },
+  };
+}
+
+/** Wraps a limiter so it only ever sees an HMAC-SHA256 of the client key, never the raw IP. */
+export function hashedLimiter(inner: RateLimiter, secret: string): RateLimiter {
+  return {
+    limit: (key) => inner.limit(createHmac('sha256', secret).update(key).digest('hex')),
   };
 }
 

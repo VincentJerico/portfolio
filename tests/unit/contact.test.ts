@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { contactConfig } from '@/lib/contact/config';
-import { resendMailer, testMailer, type Mailer } from '@/lib/contact/mailer';
-import { memoryLimiter, type RateLimiter } from '@/lib/contact/rate-limit';
+import { clientKeyFrom } from '@/lib/contact/client-key';
+import { contactConfig, isTestBuild, limiterKeySecret } from '@/lib/contact/config';
+import { MailError, resendMailer, testMailer, type Mailer } from '@/lib/contact/mailer';
+import { hashedLimiter, memoryLimiter, type RateLimiter } from '@/lib/contact/rate-limit';
 import { submitContact } from '@/lib/contact/submit';
 
 function form(fields: Record<string, string>): FormData {
@@ -70,10 +71,53 @@ describe('submitContact', () => {
     });
   });
 
-  it('rate-limited after the limiter refuses', async () => {
+  it('rate-limited after the limiter refuses, handing back what was typed', async () => {
     const deps = fakes(false);
-    expect(await submitContact(form(VALID), 'k', deps)).toEqual({ status: 'rate-limited' });
+    expect(await submitContact(form(VALID), 'k', deps)).toEqual({
+      status: 'rate-limited',
+      values: VALID,
+    });
     expect(deps.mailer.send).not.toHaveBeenCalled();
+  });
+
+  it('a limiter error reports failed and never logs its message (it can embed the IP)', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      const deps = fakes();
+      deps.limiter = {
+        limit: vi.fn(async () => {
+          throw new Error('Command failed: ["EVALSHA","x","1","contact:203.0.113.7:abc"]');
+        }),
+      };
+      await expect(submitContact(form(VALID), '203.0.113.7', deps)).resolves.toEqual({
+        status: 'failed',
+        values: VALID,
+      });
+      expect(deps.mailer.send).not.toHaveBeenCalled();
+      expect(spy.mock.calls).toEqual([['contact: delivery failed', 'rate-limit']]);
+      expect(JSON.stringify(spy.mock.calls)).not.toContain('203.0.113.7');
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('an unexpected mailer error logs a fixed classification only', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    try {
+      const deps = fakes();
+      deps.mailer = {
+        send: vi.fn(async () => {
+          throw new Error('socket hang up for ada@example.com');
+        }),
+      };
+      await expect(submitContact(form(VALID), 'k', deps)).resolves.toEqual({
+        status: 'failed',
+        values: VALID,
+      });
+      expect(spy.mock.calls).toEqual([['contact: delivery failed', 'unknown']]);
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('mailer failure reports failed, does not throw, and logs without personal data', async () => {
@@ -88,11 +132,10 @@ describe('submitContact', () => {
       );
       await expect(submitContact(form(VALID), '203.0.113.9', deps)).resolves.toEqual({
         status: 'failed',
+        values: VALID,
       });
-      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy.mock.calls).toEqual([['contact: delivery failed', 'mail 422']]);
       const logged = JSON.stringify(spy.mock.calls);
-      expect(logged).toContain('contact: delivery failed');
-      expect(logged).toContain('422');
       for (const secret of [
         'ada@example.com',
         'Ada Lovelace',
@@ -123,7 +166,72 @@ describe('memoryLimiter', () => {
   });
 });
 
+describe('clientKeyFrom', () => {
+  const headers = (entries: Record<string, string>) => new Headers(entries);
+
+  it('takes the first X-Forwarded-For entry, trimmed', () => {
+    expect(
+      clientKeyFrom(
+        headers({ 'x-forwarded-for': ' 203.0.113.7 , 10.0.0.1', 'x-real-ip': '1.1.1.1' }),
+        false,
+      ),
+    ).toBe('203.0.113.7');
+  });
+
+  it('falls back to X-Real-IP, then to unknown', () => {
+    expect(clientKeyFrom(headers({ 'x-real-ip': '198.51.100.4' }), false)).toBe('198.51.100.4');
+    expect(clientKeyFrom(headers({ 'x-forwarded-for': ' , ' }), false)).toBe('unknown');
+    expect(clientKeyFrom(headers({}), false)).toBe('unknown');
+  });
+
+  it('appends the e2e client header only in the test build', () => {
+    const h = headers({ 'x-forwarded-for': '203.0.113.7', 'x-e2e-client': 'run-1' });
+    expect(clientKeyFrom(h, true)).toBe('203.0.113.7:run-1');
+    expect(clientKeyFrom(h, false)).toBe('203.0.113.7');
+    expect(clientKeyFrom(headers({}), true)).toBe('unknown:');
+  });
+});
+
+describe('hashedLimiter', () => {
+  it('passes an HMAC of the key, never the raw IP, and keeps keys apart', async () => {
+    const seen: string[] = [];
+    const inner: RateLimiter = {
+      limit: async (key) => {
+        seen.push(key);
+        return true;
+      },
+    };
+    const limiter = hashedLimiter(inner, 'salt-a');
+    await limiter.limit('203.0.113.7');
+    await limiter.limit('203.0.113.7');
+    await limiter.limit('203.0.113.8');
+    await hashedLimiter(inner, 'salt-b').limit('203.0.113.7');
+    for (const key of seen) {
+      expect(key).toMatch(/^[0-9a-f]{64}$/);
+      expect(key).not.toContain('203.0.113');
+    }
+    expect(seen[0]).toBe(seen[1]);
+    expect(new Set([seen[0], seen[2], seen[3]]).size).toBe(3);
+  });
+
+  it('is keyed by CONTACT_KEY_SALT when set, else by a secret derived from the token', () => {
+    expect(limiterKeySecret({ CONTACT_KEY_SALT: 'my-salt' }, 'tok')).toBe('my-salt');
+    const derived = limiterKeySecret({}, 'tok');
+    expect(derived).toMatch(/^[0-9a-f]{64}$/);
+    expect(derived).not.toContain('tok');
+    expect(limiterKeySecret({}, 'tok')).toBe(derived);
+    expect(limiterKeySecret({}, 'other')).not.toBe(derived);
+  });
+});
+
 describe('contactConfig', () => {
+  it('never uses the stand-ins on Vercel, even with E2E_SELFTEST set', () => {
+    expect(isTestBuild({ E2E_SELFTEST: '1' })).toBe(true);
+    expect(isTestBuild({ E2E_SELFTEST: '1', VERCEL_ENV: 'production' })).toBe(false);
+    expect(isTestBuild({ E2E_SELFTEST: '1', VERCEL_ENV: 'preview' })).toBe(false);
+    expect(contactConfig({ E2E_SELFTEST: '1', VERCEL_ENV: 'production' })).toBeNull();
+  });
+
   it('returns null without the secrets and stand-ins in the test build', () => {
     expect(contactConfig({})).toBeNull();
     expect(contactConfig({ RESEND_API_KEY: 'k', CONTACT_TO_EMAIL: 'a@b.c' })).toBeNull();
@@ -158,11 +266,18 @@ describe('mailers', () => {
     });
   });
 
-  it('resendMailer throws on a 4xx', async () => {
+  it('resendMailer gives up after a timeout', async () => {
+    const fetchImpl = vi.fn(async () => new Response('{}', { status: 200 }));
+    await resendMailer('key-1', 'me@example.com', fetchImpl as unknown as typeof fetch).send(msg);
+    const [, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    expect(init.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it('resendMailer throws a MailError carrying the status on a 4xx', async () => {
     const fetchImpl = vi.fn(async () => new Response('no', { status: 422 }));
-    await expect(
-      resendMailer('k', 't@example.com', fetchImpl as unknown as typeof fetch).send(msg),
-    ).rejects.toThrow();
+    const sent = resendMailer('k', 't@example.com', fetchImpl as unknown as typeof fetch).send(msg);
+    await expect(sent).rejects.toBeInstanceOf(MailError);
+    await expect(sent).rejects.toMatchObject({ status: 422 });
   });
 
   it('testMailer throws only for the failure marker', async () => {

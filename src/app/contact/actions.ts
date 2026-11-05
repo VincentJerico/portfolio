@@ -1,9 +1,10 @@
 'use server';
 
 import { headers } from 'next/headers';
+import { clientKeyFrom } from '@/lib/contact/client-key';
 import { contactConfig, isTestBuild } from '@/lib/contact/config';
-import type { ContactState } from '@/lib/contact/schema';
-import { submitContact } from '@/lib/contact/submit';
+import type { ContactState } from '@/lib/contact/types';
+import { submitContact, valuesFrom } from '@/lib/contact/submit';
 
 // Built once per server instance so the in-memory test limiter keeps its counts.
 let deps: ReturnType<typeof contactConfig> | undefined;
@@ -16,13 +17,8 @@ export async function sendContact(_prev: ContactState, form: FormData): Promise<
       loggedUnconfigured = true;
       console.error('contact: not configured');
     }
-    return { status: 'failed' };
+    return { status: 'failed', values: valuesFrom(form) };
   }
 
-  const requestHeaders = await headers();
-  const forwarded = requestHeaders.get('x-forwarded-for')?.split(',')[0]?.trim();
-  let clientKey = forwarded || requestHeaders.get('x-real-ip') || 'unknown';
-  if (isTestBuild()) clientKey += `:${requestHeaders.get('x-e2e-client') ?? ''}`;
-
-  return submitContact(form, clientKey, deps);
+  return submitContact(form, clientKeyFrom(await headers(), isTestBuild()), deps);
 }
