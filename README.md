@@ -5,9 +5,11 @@ Vincent Jerico Alcuran's QA portfolio (Next.js, Tailwind, Playwright). See `AGEN
 ## Contact form
 
 The `/contact` page shows a "Send a message" form only when `RESEND_API_KEY`, `CONTACT_TO_EMAIL`,
-`UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are all set (see `.env.example`). Messages are sent by
-email and rate-limited to 5 per 10 minutes per IP; nothing is stored. Without the variables the form is hidden
-and the page keeps its email and social links.
+`UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are all set (see `.env.example`). The Vercel KV
+integration's names, `KV_REST_API_URL` and `KV_REST_API_TOKEN`, work in place of the two Upstash variables.
+Messages are sent by email and rate-limited to 5 per 10 minutes per IP; nothing is stored. Upstash only sees an
+HMAC of the IP, keyed by the optional `CONTACT_KEY_SALT` (derived from the Redis token when unset). Without the
+variables the form is hidden and the page keeps its email and social links.
 
 ## Adding a note
 

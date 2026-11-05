@@ -33,7 +33,8 @@ messages to `vincentjericoalcuran@gmail.com`; a read-only GitHub token for the A
 - Read the bundled Next.js guide before writing code: `node_modules/next/dist/docs/01-app/02-guides/forms.md`,
   `server-actions.md`, `incremental-static-regeneration.md`, `mdx.md`.
 - `cacheComponents` stays off (existing decision); ISR uses `export const revalidate`.
-- Deployed builds never set `E2E_SELFTEST` (the deploy script unsets it), so stand-ins never ship.
+- Deployed builds never set `E2E_SELFTEST`, so stand-ins never ship. The deploy script's `unset` clears only the
+  CI shell; `vercel pull` loads the project environment, so the Vercel project env must never contain it.
 - WCAG 2.2 AA: axe zero violations both themes; every new control keyboard operable, visible focus, works at 320 px.
 - Done means: `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e`.
 
