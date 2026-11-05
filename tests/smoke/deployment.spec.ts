@@ -27,6 +27,7 @@ test('notes do not exist until the first note is published', async ({ request })
   const xml = await (await request.get('/sitemap.xml')).text();
   expect(xml).not.toContain('/notes');
   expect((await request.get('/notes')).status()).toBe(404);
+  expect((await request.get('/notes/opengraph-image')).status()).toBe(404);
 });
 
 test('the planted-defect page does not exist on a deployment', async ({ request }) => {

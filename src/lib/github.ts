@@ -14,7 +14,8 @@ const commitsBody = z
   .array(z.object({ commit: z.object({ committer: z.object({ date: z.iso.datetime() }) }) }))
   .min(1);
 
-function parseRepo(url: string): { owner: string; name: string } | null {
+/** Owner and name of a `https://github.com/<owner>/<name>` URL, or null for anything else. */
+export function parseRepo(url: string): { owner: string; name: string } | null {
   const match = /^https:\/\/github\.com\/([A-Za-z0-9-]+)\/([A-Za-z0-9._-]+)$/.exec(url);
   return match ? { owner: match[1]!, name: match[2]! } : null;
 }
@@ -29,10 +30,11 @@ export async function fetchRepoMeta(
 ): Promise<RepoMeta | null> {
   const repo = parseRepo(repoUrl);
   if (!repo) return null;
-  const { fetchImpl = fetch, token } = opts;
+  const { fetchImpl = fetch } = opts;
+  let token = opts.token;
   const base = `https://api.github.com/repos/${repo.owner}/${repo.name}`;
-  const get = async (url: string): Promise<unknown> => {
-    const res = await fetchImpl(url, {
+  const request = (url: string) =>
+    fetchImpl(url, {
       headers: {
         Accept: 'application/vnd.github+json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -40,7 +42,19 @@ export async function fetchRepoMeta(
       signal: AbortSignal.timeout(5000),
       next: { revalidate: REVALIDATE },
     });
-    if (res.status !== 200) throw new Error(`GitHub responded ${res.status}`);
+  const get = async (url: string): Promise<unknown> => {
+    let res = await request(url);
+    if (res.status === 401 && token) {
+      // A revoked or expired token: warn, then carry on unauthenticated (public repositories).
+      console.warn(`github: ${repoUrl} responded 401`);
+      token = undefined;
+      res = await request(url);
+    }
+    if (res.status !== 200) {
+      // Status and the public repository URL only; never the token.
+      console.warn(`github: ${repoUrl} responded ${res.status}`);
+      throw new Error(`GitHub responded ${res.status}`);
+    }
     return res.json();
   };
   try {

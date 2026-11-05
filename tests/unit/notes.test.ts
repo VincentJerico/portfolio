@@ -5,6 +5,7 @@ import { notes, visibleNotes } from '@/content/notes';
 import type { Note } from '@/content/schema';
 import { navItems } from '@/lib/nav-items';
 import { sitemapEntries } from '@/lib/seo';
+import { paletteItems } from '@/lib/site-index';
 import { denylistProblems, findBanned, findDenied } from '@/lib/strings';
 import { loadDenylist } from '../helpers/denylist';
 
@@ -57,6 +58,23 @@ describe('notes in navigation and the sitemap', () => {
     const urls = sitemapEntries('https://example.dev', undefined, visible).map((e) => e.url);
     expect(urls).toContain('https://example.dev/notes');
     expect(urls).toContain('https://example.dev/notes/first');
+  });
+});
+
+describe('notes in the command palette', () => {
+  it('lists each visible note in the test build, keyed by its summary', () => {
+    const [selftest] = visibleNotes(true);
+    expect(paletteItems(visibleNotes(true))).toContainEqual({
+      href: `/notes/${selftest!.slug}`,
+      label: selftest!.title,
+      group: 'Notes',
+      keywords: selftest!.summary,
+    });
+  });
+
+  it('lists no note and no Notes page when none is visible', () => {
+    const hrefs = paletteItems([]).map((item) => item.href);
+    expect(hrefs.some((href) => href.startsWith('/notes'))).toBe(false);
   });
 });
 

@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { visibleNotes } from '@/content/notes';
 import { OG_SIZE, renderOgImage } from '@/lib/og';
 
@@ -13,6 +14,7 @@ export function generateStaticParams() {
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const note = visibleNotes().find((n) => n.slug === slug)!;
+  const note = visibleNotes().find((n) => n.slug === slug);
+  if (!note) notFound();
   return renderOgImage({ kicker: 'Note', title: note.title, line: note.summary });
 }
