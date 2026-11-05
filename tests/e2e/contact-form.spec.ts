@@ -61,12 +61,19 @@ test('valid submit announces success and clears the form', async ({ page }) => {
   }
 });
 
+// A successful send resets the form, so the emptied Name field marks this send as settled
+// (the previous send's success text alone cannot tell sends apart).
+async function sendAndSettle(page: Page) {
+  await fillValid(page);
+  await page.getByRole('button', { name: 'Send message' }).click();
+  await expect(field(page, 'Name')).toHaveValue('');
+  await expect(page.getByRole('button', { name: 'Send message' })).toBeEnabled();
+}
+
 test('sixth message within ten minutes is refused', async ({ page }) => {
   await open(page);
   for (let i = 0; i < 5; i++) {
-    await fillValid(page);
-    await page.getByRole('button', { name: 'Send message' }).click();
-    await expect(page.getByRole('status').filter({ hasText: SENT })).toBeVisible();
+    await sendAndSettle(page);
   }
   await fillValid(page);
   await page.getByRole('button', { name: 'Send message' }).click();
@@ -80,8 +87,7 @@ test('sixth message within ten minutes is refused', async ({ page }) => {
 test('a second success on the same page is announced again', async ({ page }) => {
   await open(page);
   const status = page.getByRole('region', { name: 'Send a message' }).getByRole('status');
-  await fillValid(page);
-  await page.getByRole('button', { name: 'Send message' }).click();
+  await sendAndSettle(page);
   await expect(status).toHaveText(SENT);
 
   let release: () => void = () => {};
@@ -92,9 +98,12 @@ test('a second success on the same page is announced again', async ({ page }) =>
   });
   await fillValid(page);
   await page.getByRole('button', { name: 'Send message' }).click();
-  await expect(page.getByRole('button', { name: 'Sending…' })).toBeDisabled();
-  await expect(status).toHaveText('');
-  release();
+  try {
+    await expect(page.getByRole('button', { name: 'Sending…' })).toBeDisabled();
+    await expect(status).toHaveText('');
+  } finally {
+    release();
+  }
   await expect(status).toHaveText(SENT);
 });
 
