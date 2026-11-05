@@ -67,8 +67,6 @@ test('sixth message within ten minutes is refused', async ({ page }) => {
     await fillValid(page);
     await page.getByRole('button', { name: 'Send message' }).click();
     await expect(page.getByRole('status').filter({ hasText: SENT })).toBeVisible();
-    await page.reload();
-    await waitForHydration(page);
   }
   await fillValid(page);
   await page.getByRole('button', { name: 'Send message' }).click();
@@ -77,6 +75,27 @@ test('sixth message within ten minutes is refused', async ({ page }) => {
       .getByRole('alert')
       .filter({ hasText: 'Too many messages. Try again in a few minutes, or email me directly.' }),
   ).toBeVisible();
+});
+
+test('a second success on the same page is announced again', async ({ page }) => {
+  await open(page);
+  const status = page.getByRole('region', { name: 'Send a message' }).getByRole('status');
+  await fillValid(page);
+  await page.getByRole('button', { name: 'Send message' }).click();
+  await expect(status).toHaveText(SENT);
+
+  let release: () => void = () => {};
+  const held = new Promise<void>((resolve) => (release = resolve));
+  await page.route('**/contact', async (route) => {
+    await held;
+    await route.continue();
+  });
+  await fillValid(page);
+  await page.getByRole('button', { name: 'Send message' }).click();
+  await expect(page.getByRole('button', { name: 'Sending…' })).toBeDisabled();
+  await expect(status).toHaveText('');
+  release();
+  await expect(status).toHaveText(SENT);
 });
 
 test('mail failure is announced', async ({ page }) => {

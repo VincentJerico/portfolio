@@ -17,6 +17,7 @@ const FIELD_ORDER: ContactField[] = ['name', 'email', 'message'];
 const CONTROL =
   'mt-2 block min-h-11 w-full rounded-chip border border-line bg-surface px-3 py-2 text-ink aria-[invalid=true]:border-fail';
 
+// Results render only while not pending, so each one is a fresh insertion that assistive tech announces.
 export function ContactForm({ email }: { email: string }) {
   const [state, formAction, pending] = useActionState(sendContact, IDLE);
   const formRef = useRef<HTMLFormElement>(null);
@@ -71,21 +72,21 @@ export function ContactForm({ email }: { email: string }) {
           {pending ? 'Sending…' : 'Send message'}
         </Button>
         <div role="status" className="text-sm text-ink">
-          {state.status === 'sent' && <p>Message sent. I&apos;ll reply by email.</p>}
+          {!pending && state.status === 'sent' && <p>Message sent. I&apos;ll reply by email.</p>}
         </div>
       </div>
 
-      {state.status === 'invalid' && (
+      {!pending && state.status === 'invalid' && (
         <p role="alert" className="text-sm font-semibold text-fail">
           Check the highlighted fields.
         </p>
       )}
-      {state.status === 'rate-limited' && (
+      {!pending && state.status === 'rate-limited' && (
         <p role="alert" className="text-sm font-semibold text-fail">
           Too many messages. Try again in a few minutes, or email me directly.
         </p>
       )}
-      {state.status === 'failed' && (
+      {!pending && state.status === 'failed' && (
         <p role="alert" className="text-sm font-semibold text-fail">
           Your message could not be sent. Email me directly at{' '}
           <a href={`mailto:${email}`} className="break-all">
