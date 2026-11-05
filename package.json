@@ -13,10 +13,10 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "contrast": "tsx scripts/contrast-report.ts",
-    "vercel:link": "dotenv -e .env.cli -- sh -c 'vercel link --yes --token \"$VERCEL_TOKEN\"'",
+    "vercel:link": "dotenv -e .env.cli -- sh -c 'vercel link --yes --project vincentjerico --token \"$VERCEL_TOKEN\"'",
     "vercel:whoami": "dotenv -e .env.cli -- sh -c 'vercel whoami --token \"$VERCEL_TOKEN\"'",
-    "deploy:preview": "dotenv -e .env.cli -- sh -c 'vercel deploy --token \"$VERCEL_TOKEN\"'",
-    "deploy:prod": "dotenv -e .env.cli -- sh -c 'vercel deploy --prod --token \"$VERCEL_TOKEN\"'",
+    "deploy:preview": "dotenv -e .env.cli -- bash scripts/vercel-deploy.sh preview",
+    "deploy:prod": "dotenv -e .env.cli -- bash scripts/vercel-deploy.sh production",
     "content:report": "tsx scripts/content-report.ts",
     "cv": "tsx scripts/build-cv-pdf.ts"
   },

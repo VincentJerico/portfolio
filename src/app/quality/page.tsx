@@ -44,7 +44,7 @@ const GATES: { name: string; what: string; selfTest: string }[] = [
   },
   {
     name: 'Lighthouse',
-    what: 'Mobile, median of three runs on five routes: performance at least 95, accessibility 100, best practices at least 95, SEO 100, LCP within 2 s, CLS within 0.05, blocking time within 250 ms, JavaScript on the overview within 180 KB.',
+    what: 'Mobile, median of three runs on five routes: performance at least 95, accessibility 100, best practices at least 95, SEO 100, LCP within 2 s, CLS within 0.05, blocking time within 250 ms, JavaScript on the overview within 180 KB. Each preview and production deployment is measured again with the same budgets, except performance at least 93 and blocking time within 300 ms, because the CI runner measures page startup slower against the live host than against a local server for the same build.',
     selfTest: 'Budgets are assertions: CI fails the moment a route goes over.',
   },
   {
@@ -128,6 +128,11 @@ export default function QualityPage() {
             </p>
           </div>
         )}
+        <p className="measure mt-6 text-sm text-ink-muted">
+          Production is deployed from GitHub Actions only after every gate passes. The deployed
+          build is rebuilt from the same commit and differs from the tested one only in this report
+          and the CV PDF; the page with planted defects that the self-tests use is left out.
+        </p>
       </Section>
 
       <Section id="gates" title="The gates and how each proves itself">

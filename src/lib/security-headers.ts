@@ -28,5 +28,8 @@ export function securityHeaders(siteUrl: string): Record<string, string> {
     'X-Frame-Options': 'DENY',
     'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
     'Cross-Origin-Opener-Policy': 'same-origin',
+    // Vercel serves static files with `*` unless the project sets its own value; the site's own
+    // origin grants no other site access.
+    'Access-Control-Allow-Origin': new URL(siteUrl).origin,
   };
 }

@@ -14,16 +14,19 @@ permissions:
 concurrency:
   # The weekly schedule also runs on main; its own group keeps it from cancelling a push run.
   group: ci-${{ github.event_name }}-${{ github.ref }}
-  cancel-in-progress: true
+  # A newer PR push makes the old run pointless; main runs queue so a production deploy is never cut off.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  NEXT_PUBLIC_SITE_URL: http://localhost:3210
   NEXT_TELEMETRY_DISABLED: '1'
 
 jobs:
   static:
     name: Lint, format, typecheck, unit
     runs-on: ubuntu-latest
+    env:
+      # `pnpm typecheck` runs `next typegen`, which loads next.config.ts and validates the env.
+      NEXT_PUBLIC_SITE_URL: http://localhost:3210
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -45,6 +48,8 @@ jobs:
     needs: static
     runs-on: ubuntu-latest
     env:
+      # Gate jobs build and serve locally; deploy jobs take the real URL from the Vercel project.
+      NEXT_PUBLIC_SITE_URL: http://localhost:3210
       # The tested build includes /selftest (planted defects for the gate self-tests); deploys don't.
       E2E_SELFTEST: '1'
     steps:
@@ -72,6 +77,9 @@ jobs:
     name: E2E (${{ matrix.project }})
     needs: build
     runs-on: ubuntu-latest
+    env:
+      # Gate jobs build and serve locally; deploy jobs take the real URL from the Vercel project.
+      NEXT_PUBLIC_SITE_URL: http://localhost:3210
     strategy:
       fail-fast: false
       matrix:
@@ -106,6 +114,9 @@ jobs:
     name: Lighthouse
     needs: build
     runs-on: ubuntu-latest
+    env:
+      # Gate jobs build and serve locally; deploy jobs take the real URL from the Vercel project.
+      NEXT_PUBLIC_SITE_URL: http://localhost:3210
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -140,6 +151,9 @@ jobs:
     name: Link check
     needs: build
     runs-on: ubuntu-latest
+    env:
+      # Gate jobs build and serve locally; deploy jobs take the real URL from the Vercel project.
+      NEXT_PUBLIC_SITE_URL: http://localhost:3210
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -164,20 +178,78 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  quality-report:
-    name: Quality report
-    # Main pushes only, and even when a gate failed (/quality must show failures, never a stale pass),
-    # but not when the run itself was cancelled: cancelled is not a verdict on the commit.
+  deploy-preview:
+    name: Preview deploy
+    # Same-repository PRs only: forks and Dependabot get no Actions secrets. Runs only when every gate passed.
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]'
+    needs: [static, build, e2e, lighthouse, links]
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - name: Deploy preview (build here, upload prebuilt)
+        id: deploy
+        run: pnpm exec bash scripts/vercel-deploy.sh preview
+      - name: Smoke and security headers on the preview
+        run: pnpm exec playwright test tests/smoke tests/security --project=chromium
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.deploy.outputs.url }}
+      - name: Lighthouse on the preview
+        run: |
+          pnpm exec tsx scripts/lighthouse-remote.ts "$PREVIEW_URL" preview
+          export CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")"
+          pnpm exec lhci autorun --config=lighthouserc.remote.json
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+      - name: Summary
+        if: ${{ !cancelled() && steps.deploy.outputs.url }}
+        run: |
+          echo "Preview: $PREVIEW_URL" >> "$GITHUB_STEP_SUMMARY"
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: preview-checks
+          path: |
+            playwright-report/
+            .lighthouseci/
+          include-hidden-files: true
+          retention-days: 14
+
+  release:
+    name: Release
+    # Main pushes only. The report is written even when a gate failed (/quality must show failures, never
+    # a stale pass), but production is deployed only when every gate passed (D1). A cancelled run is not a
+    # verdict on the commit, so it writes nothing.
     if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     needs: [static, build, e2e, lighthouse, links]
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - uses: actions/checkout@v7
         with:
-          # The write token is not left in .git/config while dependencies install; the push step
-          # supplies it explicitly.
+          # The write token is not left in .git/config while dependencies install and the deploy runs;
+          # the push step supplies it explicitly.
           persist-credentials: false
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - uses: actions/setup-node@v7
@@ -211,7 +283,41 @@ jobs:
             {"static":"${{ needs.static.result }}","build":"${{ needs.build.result }}",
             "e2e":"${{ needs.e2e.result }}","lighthouse":"${{ needs.lighthouse.result }}",
             "links":"${{ needs.links.result }}"}
+      - name: Deploy production (with this report and the CV from the same build)
+        id: deploy
+        if: >-
+          needs.static.result == 'success' && needs.build.result == 'success' &&
+          needs.e2e.result == 'success' && needs.lighthouse.result == 'success' &&
+          needs.links.result == 'success'
+        run: |
+          pnpm exec playwright install --with-deps chromium
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          pnpm exec bash scripts/vercel-deploy.sh production
+      - name: Smoke and security headers on production
+        if: ${{ steps.deploy.outcome == 'success' }}
+        run: pnpm exec playwright test tests/smoke tests/security --project=chromium
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.deploy.outputs.site_url }}
+          EXPECTED_COMMIT: ${{ github.sha }}
+      - name: Lighthouse on production
+        if: ${{ steps.deploy.outcome == 'success' }}
+        run: |
+          pnpm exec tsx scripts/lighthouse-remote.ts "$SITE_URL" production
+          export CHROME_PATH="$(node -e "console.log(require('@playwright/test').chromium.executablePath())")"
+          pnpm exec lhci autorun --config=lighthouserc.remote.json
+        env:
+          SITE_URL: ${{ steps.deploy.outputs.site_url }}
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() && steps.deploy.outcome == 'success' }}
+        with:
+          name: production-checks
+          path: |
+            playwright-report/
+            .lighthouseci/
+          include-hidden-files: true
+          retention-days: 30
       - name: Commit the report
+        if: ${{ !cancelled() }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
