@@ -101,6 +101,7 @@ until supplied.
 | C23 | Production on `https://vincentjerico.vercel.app` (Vercel project `vincentjerico`); no custom domain yet (**Vincent, 2026-11-04**) | A domain later is one `NEXT_PUBLIC_SITE_URL` update in Vercel and a redeploy |
 | C24 | Preview deployments are public (Vercel Authentication off for previews) | The repository is public, so previews expose nothing new; Vercel serves them `noindex`; CI can smoke-test and run Lighthouse on them without a bypass secret |
 | C25 | Every response sends `Access-Control-Allow-Origin` set to the site's own origin | Vercel serves static files with `Access-Control-Allow-Origin: *` unless the project sets a value; the security header spec caught it on the first production deploy. The site's own origin grants no other site access, which keeps spec Section 10's "no wildcard CORS" |
+| C26 | Lighthouse against a deployment (preview and production) allows blocking time up to 300 ms and a performance score of 0.93 or higher; the local-build gate keeps 250 ms and 0.95 (**Vincent, 2026-11-05**) | On the CI runner the one hydration task measures about 40 ms longer against Vercel than against a local server for the same build: the first preview run put `/about` at 278–285 ms (score 0.94). A local build with and without `VERCEL=1`, and the preview with Vercel's scripts blocked, measured the same, so the gap is the hosting path, not the code. Blocking time is 30% of the score, and 300 ms alone scores 0.94, so 0.93 is the matching minimum. Code regressions are still caught by the strict local gate |
 
 ---
 
