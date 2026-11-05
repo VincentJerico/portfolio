@@ -2,12 +2,19 @@ import type { Project } from '@/content/schema';
 import { CiBadge } from '@/components/ui/CiBadge';
 import { SeverityChip } from '@/components/ui/SeverityChip';
 import { StatusChip } from '@/components/ui/StatusChip';
-import { formatProjectPeriod } from '@/lib/format';
+import { formatDay, formatProjectPeriod } from '@/lib/format';
+import type { RepoMeta } from '@/lib/github';
 import { severityCounts } from '@/lib/labels';
 import { InlineCode } from '@/components/ui/InlineCode';
 
 /** Control-panel header of a test report (spec 7.3.3). Counts come from the listed findings. */
-export function RunSummaryPanel({ project }: { project: Project }) {
+export function RunSummaryPanel({
+  project,
+  github,
+}: {
+  project: Project;
+  github?: RepoMeta | null;
+}) {
   const period = formatProjectPeriod(project);
   const counts = severityCounts(project.findings);
   const rows: [string, React.ReactNode][] = [];
@@ -24,6 +31,29 @@ export function RunSummaryPanel({ project }: { project: Project }) {
       ))}
     </ul>,
   ]);
+  if (github) {
+    rows.push([
+      'Last commit',
+      <time key="lc" dateTime={github.lastCommit}>
+        {formatDay(github.lastCommit)}
+      </time>,
+    ]);
+    if (github.topics.length > 0) {
+      rows.push([
+        'Topics',
+        <ul key="topics" aria-label="GitHub topics" className="flex flex-wrap gap-1.5">
+          {github.topics.map((topic) => (
+            <li
+              key={topic}
+              className="rounded-chip bg-surface-2 px-2 py-0.5 font-mono text-xs text-ink"
+            >
+              {topic}
+            </li>
+          ))}
+        </ul>,
+      ]);
+    }
+  }
   if (counts.length > 0) {
     rows.push([
       'Findings',
@@ -67,6 +97,7 @@ export function RunSummaryPanel({ project }: { project: Project }) {
           </div>
         ))}
       </dl>
+      {github && <p className="px-5 pb-4 text-sm text-ink-muted">From GitHub, refreshed daily.</p>}
       {(project.repo || project.liveUrl) && (
         <div className="flex flex-wrap gap-x-6 border-t border-line px-5 py-2">
           {project.repo && (
