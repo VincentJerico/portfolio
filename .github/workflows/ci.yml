@@ -322,9 +322,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/generated/quality.json
-          git diff --cached --quiet && exit 0
-          git commit -m "chore(quality): update report [skip ci]"
           # main requires pull requests; on a personal account only a deploy key can bypass that ruleset
           # (GitHub Actions cannot), so the report is pushed with the release deploy key.
           if [ -z "$RELEASE_DEPLOY_KEY" ]; then
@@ -333,11 +330,12 @@ jobs:
           fi
           key="$RUNNER_TEMP/release_deploy_key"
           known="$RUNNER_TEMP/known_hosts"
+          trap 'rm -f "$key"' EXIT
           ( umask 077 && printf '%s\n' "$RELEASE_DEPLOY_KEY" > "$key" )
           # GitHub's published SSH host key, so the push cannot go to an impersonated host.
           echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" > "$known"
+          # Main may have moved during the run; the script skips or rebuilds the report accordingly.
           GIT_SSH_COMMAND="ssh -i $key -o IdentitiesOnly=yes -o UserKnownHostsFile=$known -o StrictHostKeyChecking=yes" \
-            git push "git@github.com:${GITHUB_REPOSITORY}.git" HEAD:main
-          rm -f "$key"
+            bash scripts/push-quality-report.sh "git@github.com:${GITHUB_REPOSITORY}.git" "$GITHUB_SHA"
         env:
           RELEASE_DEPLOY_KEY: ${{ secrets.RELEASE_DEPLOY_KEY }}
