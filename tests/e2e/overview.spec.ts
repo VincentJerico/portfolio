@@ -113,3 +113,47 @@ test.describe('portrait card', () => {
     await expect(back).toHaveAttribute('inert', '');
   });
 });
+
+test.describe('cursor swarm', () => {
+  const drawn = () => {
+    const canvas = document.querySelector<HTMLCanvasElement>('canvas[data-cursor-swarm]')!;
+    const { data } = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height);
+    return data.some((value) => value !== 0);
+  };
+
+  test('renders only for a fine pointer, hidden from assistive tech', async ({ page }) => {
+    await page.goto('/');
+    await waitForHydration(page);
+    const fine = await page.evaluate(() => matchMedia('(pointer: fine)').matches);
+    const swarm = page.locator('canvas[data-cursor-swarm]');
+    await expect(swarm).toHaveCount(Number(fine));
+    await expect(page.locator('canvas[data-cursor-swarm]:not([aria-hidden="true"])')).toHaveCount(
+      0,
+    );
+  });
+
+  test.describe('with a mouse', () => {
+    test.use({ hasTouch: false, isMobile: false });
+
+    test(
+      'gathers around the mouse and clears once it leaves',
+      { tag: '@chromium-only' },
+      async ({ page }) => {
+        await page.goto('/');
+        await waitForHydration(page);
+        const box = (await page.locator('section[aria-labelledby="hero-heading"]').boundingBox())!;
+        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 8 });
+        await expect.poll(() => page.evaluate(drawn)).toBe(true);
+        await page.mouse.move(box.x + box.width / 2, Math.max(1, box.y - 8), { steps: 4 });
+        await expect.poll(() => page.evaluate(drawn), { timeout: 5000 }).toBe(false);
+      },
+    );
+  });
+
+  test('is not rendered under reduced motion', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    await waitForHydration(page);
+    await expect(page.locator('canvas[data-cursor-swarm]')).toHaveCount(0);
+  });
+});

@@ -102,3 +102,12 @@ the PR including Lighthouse.
 - **Dynamic system.** Fluid spacing tokens (`gap-block`, `gap-section`) set the vertical rhythm on
   every page.
 - **Color split.** Kept at 70/20/10, Vincent's correction of the original 60/20/10.
+
+## 7. Cursor swarm (Vincent, 2026-11-07)
+
+The overview hero gets the cursor-swarm effect, adapted as a swarm of test workers. A canvas behind the
+hero draws 36 small accent-colored agents with short trails. Each orbits the pointer on its own ring
+and phase and keeps a little distance from its neighbors, so the swarm reads as a cloud rather than a
+dot. When the pointer leaves, the agents scatter, fade, and the animation loop stops. It runs only for a
+mouse or pen, never under reduced motion, pauses when the hero is off-screen, and is hidden from
+assistive tech. Decision C37 records it as the single exception to CSS-only motion.

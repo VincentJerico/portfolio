@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Inspectable } from '@/components/bughunt/Inspectable';
 import { CaseStudyCard } from '@/components/content/CaseStudyCard';
+import { CursorSwarm } from '@/components/content/CursorSwarm';
 import { PortraitCard } from '@/components/content/PortraitCard';
 import { ProjectCard } from '@/components/content/ProjectCard';
 import { QaAreaGrid } from '@/components/content/QaAreaGrid';
@@ -57,8 +58,9 @@ export default function OverviewPage() {
       {/* 1. Hero */}
       <section
         aria-labelledby="hero-heading"
-        className="grid items-start gap-10 md:grid-cols-[1fr_auto]"
+        className="relative isolate grid items-start gap-10 md:grid-cols-[1fr_auto]"
       >
+        <CursorSwarm />
         <div className="measure min-w-0">
           <h1 id="hero-heading">{profile.fullName}</h1>
           <p className="mt-5 text-xl font-semibold text-ink lg:text-2xl">{profile.headline}</p>
