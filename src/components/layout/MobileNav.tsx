@@ -75,6 +75,8 @@ export function MobileNav({ fullName, identity, nav, links }: MobileNavProps) {
     dialog.addEventListener('click', onClick);
     dialog.addEventListener('keydown', onKeyDown);
     desktop.addEventListener('change', onViewport);
+    // The invoker opens the drawer without JavaScript, so it may already be open at hydration.
+    onToggle();
     return () => {
       dialog.removeEventListener('toggle', onToggle);
       dialog.removeEventListener('close', onClose);
@@ -84,8 +86,12 @@ export function MobileNav({ fullName, identity, nav, links }: MobileNavProps) {
     };
   }, []);
 
+  // Close on navigation only. Running this on mount would shut a drawer opened before hydration.
+  const shownPath = useRef(pathname);
   useEffect(() => {
-    if (dialogRef.current?.open) dialogRef.current.close();
+    if (shownPath.current === pathname) return;
+    shownPath.current = pathname;
+    dialogRef.current?.close();
   }, [pathname]);
 
   return (
