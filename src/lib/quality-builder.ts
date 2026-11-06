@@ -25,8 +25,13 @@ export interface PlaywrightReport {
 
 export interface LighthouseRun {
   url: string;
-  isRepresentativeRun: boolean;
   summary: { performance: number; accessibility: number; 'best-practices': number; seo: number };
+}
+
+function median(values: number[]): number {
+  const sorted = values.toSorted((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
 }
 
 export interface BuildInputs {
@@ -86,15 +91,19 @@ export function buildQualityReport(inputs: BuildInputs): QualityReport {
         { expected: 0, unexpected: 0, flaky: 0, skipped: 0 },
       )
     : undefined;
-  const lighthouse = (inputs.lighthouse ?? [])
-    .filter((run) => run.isRepresentativeRun)
-    .map((run) => ({
-      route: new URL(run.url).pathname,
-      performance: Math.round(run.summary.performance * 100),
-      accessibility: Math.round(run.summary.accessibility * 100),
-      bestPractices: Math.round(run.summary['best-practices'] * 100),
-      seo: Math.round(run.summary.seo * 100),
-    }));
+  // Per-score medians across each route's runs: what lighthouserc.json asserts (C27).
+  const runsByUrl = Map.groupBy(inputs.lighthouse ?? [], (run) => run.url);
+  const lighthouse = [...runsByUrl].map(([url, runs]) => {
+    const score = (key: keyof LighthouseRun['summary']) =>
+      Math.round(median(runs.map((run) => run.summary[key])) * 100);
+    return {
+      route: new URL(url).pathname,
+      performance: score('performance'),
+      accessibility: score('accessibility'),
+      bestPractices: score('best-practices'),
+      seo: score('seo'),
+    };
+  });
 
   const gates: QualityReport['gates'] = [
     {
