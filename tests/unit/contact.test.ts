@@ -8,7 +8,9 @@ import {
 } from '@/lib/contact/config';
 import { MailError, resendMailer, testMailer, type Mailer } from '@/lib/contact/mailer';
 import { hashedLimiter, memoryLimiter, type RateLimiter } from '@/lib/contact/rate-limit';
+import { ContactInput, fieldErrorsFrom } from '@/lib/contact/schema';
 import { submitContact } from '@/lib/contact/submit';
+import { blurError, type ContactField } from '@/lib/contact/types';
 
 function form(fields: Record<string, string>): FormData {
   const data = new FormData();
@@ -316,5 +318,31 @@ describe('mailers', () => {
     await expect(
       testMailer().send({ ...msg, message: 'e2e-mailer-failure now' }),
     ).rejects.toThrow();
+  });
+});
+
+describe('blurError', () => {
+  it('agrees with the server schema at every limit', () => {
+    const cases: [ContactField, string, boolean][] = [
+      ['name', '', false],
+      ['name', '   ', false],
+      ['name', 'A', false],
+      ['name', 'a'.repeat(100), false],
+      ['name', 'a'.repeat(101), false],
+      ['email', 'sender@example.com', false],
+      ['email', 'not-an-email', true],
+      ['message', 'too short', false],
+      ['message', 'long enough', false],
+      ['message', 'a'.repeat(5000), false],
+      ['message', 'a'.repeat(5001), false],
+    ];
+    for (const [field, value, typeMismatch] of cases) {
+      const valid = { name: 'Test Sender', email: 'sender@example.com', message: 'Hello there.' };
+      const parsed = ContactInput.safeParse({ ...valid, [field]: value });
+      const serverError = parsed.success ? undefined : fieldErrorsFrom(parsed.error)[field];
+      expect(blurError(field, value, typeMismatch), `${field}: "${value.slice(0, 12)}"`).toBe(
+        serverError,
+      );
+    }
   });
 });

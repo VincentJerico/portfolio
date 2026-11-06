@@ -46,8 +46,8 @@ test('invalid submit announces errors and focuses the first invalid field', asyn
   ).toBeVisible();
   const name = field(page, 'Name');
   await expect(name).toHaveAttribute('aria-invalid', 'true');
-  const describedBy = await name.getAttribute('aria-describedby');
-  await expect(page.locator(`[id="${describedBy}"]`)).toHaveText('Enter your name.');
+  const [errorId] = (await name.getAttribute('aria-describedby'))!.split(' ');
+  await expect(page.locator(`[id="${errorId}"]`)).toHaveText('Enter your name.');
   await expect(name).toBeFocused();
 });
 
@@ -178,3 +178,52 @@ for (const scheme of ['light', 'dark'] as const) {
     });
   });
 }
+
+test('labels sit beside their fields on wide screens and above them on narrow ones', async ({
+  page,
+}) => {
+  await open(page);
+  const label = await page.locator('label[for="contact-email"]').boundingBox();
+  const input = await field(page, 'Email').boundingBox();
+  const wide = page.viewportSize()!.width >= 640;
+  expect(label!.x + label!.width <= input!.x, 'label beside field').toBe(wide);
+  expect(label!.y + label!.height <= input!.y, 'label above field').toBe(!wide);
+});
+
+test('each field has a hint, and the email field asks for an email keyboard', async ({ page }) => {
+  await open(page);
+  for (const label of ['Name', 'Email', 'Message']) {
+    await expect(field(page, label)).toHaveAccessibleDescription(/\S/);
+  }
+  await expect(field(page, 'Email')).toHaveAttribute('inputmode', 'email');
+  await expect(field(page, 'Email')).toHaveAttribute('autocapitalize', 'none');
+});
+
+test('a field is checked when it loses focus and cleared once fixed', async ({ page }) => {
+  await open(page);
+  const email = field(page, 'Email');
+  await email.fill('not-an-email');
+  await field(page, 'Message').focus();
+  await expect(email).toHaveAttribute('aria-invalid', 'true');
+  await expect(email).toHaveAccessibleDescription(/^Enter a valid email address\./);
+  await email.fill('sender@example.com');
+  await expect(email).not.toHaveAttribute('aria-invalid');
+});
+
+test('an untouched empty field is not flagged on blur', async ({ page }) => {
+  await open(page);
+  await field(page, 'Name').focus();
+  await field(page, 'Email').focus();
+  await expect(field(page, 'Name')).not.toHaveAttribute('aria-invalid');
+});
+
+test('the message counter tracks typing and resets after a send', async ({ page }) => {
+  await open(page);
+  const count = page.getByTestId('message-count');
+  await expect(count).toHaveText('0 / 5,000');
+  await fillValid(page);
+  await expect(count).toHaveText('30 / 5,000');
+  await page.getByRole('button', { name: 'Send message' }).click();
+  await expect(page.getByRole('status').filter({ hasText: SENT })).toBeVisible();
+  await expect(count).toHaveText('0 / 5,000');
+});
