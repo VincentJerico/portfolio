@@ -47,9 +47,9 @@
   }
 
   :root {
-    --dur-fast: 140ms;
-    --dur-base: 220ms;
-    --dur-slow: 360ms;
+    --dur-fast: 180ms;
+    --dur-base: 320ms;
+    --dur-slow: 560ms;
   }
 
   /* Fluid between the spec's mobile and desktop sizes (4.1): 40/64, 24/30, 18/20 px from 375 to 1440 px. */
@@ -292,6 +292,7 @@
   .lift {
     transition:
       translate var(--dur-base) var(--ease-snap),
+      box-shadow var(--dur-base) var(--ease-snap),
       border-color var(--dur-base) var(--ease-snap);
   }
   .lift:focus-within {
@@ -299,7 +300,8 @@
   }
   @media (hover: hover) {
     .lift:hover {
-      translate: 0 -2px;
+      translate: 0 -5px;
+      box-shadow: 0 14px 30px -16px color-mix(in srgb, var(--accent) 55%, transparent);
       border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
     }
   }
@@ -307,11 +309,18 @@
   .press {
     transition:
       scale var(--dur-fast) var(--ease-snap),
+      translate var(--dur-fast) var(--ease-snap),
       filter var(--dur-fast),
       background-color var(--dur-fast);
   }
+  @media (hover: hover) {
+    .press:hover:not([aria-disabled='true']) {
+      translate: 0 -2px;
+    }
+  }
   .press:active:not([aria-disabled='true']) {
-    scale: 0.97;
+    translate: 0 0;
+    scale: 0.94;
   }
 
   /* Pending placeholder for the moments a visitor actually waits (an external badge, queued checks).
@@ -369,7 +378,7 @@
   60% {
     box-shadow:
       inset 0 0 0 1.5px var(--pass),
-      0 0 0 4px color-mix(in srgb, var(--pass) 25%, transparent);
+      0 0 0 7px color-mix(in srgb, var(--pass) 30%, transparent);
   }
   to {
     background-color: var(--pass);
@@ -395,7 +404,7 @@
   background: linear-gradient(
     100deg,
     transparent 30%,
-    color-mix(in srgb, var(--accent) 16%, transparent) 50%,
+    color-mix(in srgb, var(--accent) 30%, transparent) 50%,
     transparent 70%
   );
   translate: 110% 0;
@@ -443,7 +452,8 @@
 }
 @keyframes stream-in {
   from {
-    translate: -0.75rem 0;
+    translate: -2.5rem 0;
+    filter: blur(3px);
   }
 }
 @keyframes draw-x {
@@ -483,8 +493,9 @@
 }
 
 /* Dialogs (palette, ticket, evidence) scale in and out; the backdrop fades. The drawer has its own
-   slide. Only the backdrop changes opacity, so dialog text is never scanned half-faded. */
-@media (prefers-reduced-motion: no-preference) {
+   slide. Only the backdrop changes opacity, so dialog text is never scanned half-faded. Screen only:
+   print and the generated CV must render every element in its final state. */
+@media screen and (prefers-reduced-motion: no-preference) {
   dialog:not(.drawer) {
     transition:
       scale var(--dur-base) var(--ease-snap),
@@ -493,13 +504,13 @@
       display var(--dur-base) allow-discrete;
   }
   dialog:not(.drawer):not([open]) {
-    scale: 0.97;
-    translate: 0 0.5rem;
+    scale: 0.9;
+    translate: 0 1.5rem;
   }
   @starting-style {
     dialog[open]:not(.drawer) {
-      scale: 0.97;
-      translate: 0 0.5rem;
+      scale: 0.9;
+      translate: 0 1.5rem;
     }
   }
   dialog::backdrop {
@@ -532,25 +543,25 @@
     block-size: auto;
   }
 
-  /* Page headers rise in once, line by line, on load. Transform only: the title paints at once, so
-     LCP is unaffected. */
+  /* Page headers rise in once, line by line, on load, sharpening from a blur. No opacity: the title
+     paints at once, so LCP is unaffected and axe never scans faded text. */
   main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > * {
     animation: header-rise var(--dur-slow) var(--ease-snap) both;
   }
   main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(2) {
-    animation-delay: 60ms;
+    animation-delay: 90ms;
   }
   main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(3) {
-    animation-delay: 120ms;
+    animation-delay: 180ms;
   }
   main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(n + 4) {
-    animation-delay: 180ms;
+    animation-delay: 270ms;
   }
 
   /* Thumbnails lean in on hover. */
   main button:hover > img,
   main a:hover > img {
-    scale: 1.02;
+    scale: 1.05;
   }
   main button > img,
   main a > img {
@@ -559,18 +570,20 @@
 }
 @keyframes header-rise {
   from {
-    translate: 0 0.6rem;
+    translate: 0 1.5rem;
+    filter: blur(6px);
   }
 }
 
 /* On scroll, everywhere in the content: sections rise into place, list items and table rows stream
-   in. Transform only, final state without support or under reduced motion. */
+   in, sharpening from a blur. Transform and blur only, never opacity, so text contrast never drops;
+   final state without support or under reduced motion. */
 @supports (animation-timeline: view()) {
   @media screen and (prefers-reduced-motion: no-preference) {
     main section:not([aria-labelledby='hero-heading']) {
       animation: section-rise linear both;
       animation-timeline: view();
-      animation-range: cover 0px cover 240px;
+      animation-range: cover 0px cover 380px;
     }
     main :is(li, tr) {
       animation: stream-in linear both;
@@ -581,7 +594,8 @@
 }
 @keyframes section-rise {
   from {
-    translate: 0 1.25rem;
+    translate: 0 4rem;
+    filter: blur(4px);
   }
 }
 
@@ -614,7 +628,8 @@
 }
 @keyframes vt-rise {
   from {
-    translate: 0 10px;
+    translate: 0 28px;
+    filter: blur(4px);
   }
 }
 @keyframes vt-via-blur {
