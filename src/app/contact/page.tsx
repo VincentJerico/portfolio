@@ -5,7 +5,7 @@ import { GitHubIcon } from '@/components/ui/GitHubIcon';
 import { ButtonLink } from '@/components/ui/Button';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { ContactForm } from '@/components/contact/ContactForm';
-import { contactConfig } from '@/lib/contact/config';
+import { isContactConfigured } from '@/lib/contact/config';
 import { profile } from '@/content';
 
 export const metadata: Metadata = pageMetadata({
@@ -40,7 +40,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {contactConfig() !== null && (
+      {isContactConfigured() && (
         <section aria-labelledby="message-heading">
           <h2 id="message-heading" className="label-mono text-ink-muted">
             Send a message

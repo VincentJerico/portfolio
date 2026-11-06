@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { clientKeyFrom } from '@/lib/contact/client-key';
-import { contactConfig, isTestBuild, limiterKeySecret } from '@/lib/contact/config';
+import {
+  contactConfig,
+  isContactConfigured,
+  isTestBuild,
+  limiterKeySecret,
+} from '@/lib/contact/config';
 import { MailError, resendMailer, testMailer, type Mailer } from '@/lib/contact/mailer';
 import { hashedLimiter, memoryLimiter, type RateLimiter } from '@/lib/contact/rate-limit';
 import { submitContact } from '@/lib/contact/submit';
@@ -244,6 +249,32 @@ describe('contactConfig', () => {
         KV_REST_API_TOKEN: 't',
       }),
     ).not.toBeNull();
+  });
+
+  // Vercel's Upstash integration stores its variables as Sensitive; `vercel pull` (our CI build) only
+  // receives a placeholder, while the deployed functions get the real values at runtime.
+  const PULLED = {
+    RESEND_API_KEY: 'k',
+    CONTACT_TO_EMAIL: 'a@b.c',
+    KV_REST_API_URL: '[Sensitive]',
+    KV_REST_API_TOKEN: '[Sensitive]',
+  };
+
+  it('isContactConfigured decides visibility from presence alone, without building clients', () => {
+    expect(isContactConfigured({})).toBe(false);
+    expect(isContactConfigured({ RESEND_API_KEY: 'k', CONTACT_TO_EMAIL: 'a@b.c' })).toBe(false);
+    expect(isContactConfigured({ E2E_SELFTEST: '1' })).toBe(true);
+    expect(isContactConfigured(PULLED)).toBe(true);
+  });
+
+  it('contactConfig never throws on placeholder values; it reports them and returns null', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      expect(contactConfig(PULLED)).toBeNull();
+      expect(spy).toHaveBeenCalledWith('contact: invalid configuration');
+    } finally {
+      spy.mockRestore();
+    }
   });
 });
 
