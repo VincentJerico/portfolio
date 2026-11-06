@@ -19,7 +19,7 @@ export function ProjectCard({ project, huntPrefix }: { project: Project; huntPre
       className="h-full"
       plantedClassName="translate-x-[3px] print:translate-x-0"
     >
-      <article className="lift group flex h-full flex-col rounded-card border border-line bg-surface p-5 shadow-card">
+      <article className="lift scan group flex h-full flex-col rounded-card border border-line bg-surface p-5 shadow-card">
         <p className="label-mono flex items-center gap-2 text-ink-muted">
           <span aria-hidden="true" className="size-1.5 rounded-full bg-accent" />
           Suite {suite} · {categoryLabel(project.category)}

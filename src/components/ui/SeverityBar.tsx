@@ -16,7 +16,7 @@ const FILL: Record<Severity, string> = {
  */
 export function SeverityBar({ counts }: { counts: { severity: Severity; count: number }[] }) {
   return (
-    <div aria-hidden="true" data-severity-bar className="flex h-2 w-full max-w-sm gap-0.5">
+    <div aria-hidden="true" data-severity-bar className="draw-x flex h-2 w-full max-w-sm gap-0.5">
       {counts.map(({ severity, count }) => (
         <span
           key={severity}

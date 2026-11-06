@@ -170,6 +170,7 @@
     --bg: #ffffff;
     --surface: #ffffff;
     --surface-2: #ffffff;
+    --secondary: #ffffff;
     --border: #bbbbbb;
     --text: #000000;
     --text-muted: #333333;
@@ -189,11 +190,24 @@
     display: none !important;
   }
 
+  /* Archivo and Martian Mono run wider than the original pairing; narrower widths and a slightly
+     tighter leading keep the CV within two A4 pages (resume.spec). */
   html,
   body {
-    font-size: 10.5pt;
+    font-size: 10pt;
+    line-height: 1.4;
+    font-stretch: 88%;
     background: #ffffff !important;
     color: #000000 !important;
+  }
+
+  code,
+  kbd,
+  samp,
+  pre,
+  .font-mono,
+  .label-mono {
+    font-stretch: 75%;
   }
 
   main {
@@ -360,6 +374,214 @@
   to {
     background-color: var(--pass);
     box-shadow: inset 0 0 0 1.5px var(--pass);
+  }
+}
+
+/* Content motion, linked to scroll and tied to the runner idea: cards are scanned as they come into
+   view, result rows stream in, the timeline draws down and severity bars fill. Only transforms move,
+   and the scan passes behind the text, so contrast and hit targets never change. Without scroll-driven
+   animation support, or under reduced motion, everything shows in its final state. */
+.scan {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.scan::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    color-mix(in srgb, var(--accent) 16%, transparent) 50%,
+    transparent 70%
+  );
+  translate: 110% 0;
+}
+.timeline-track {
+  position: relative;
+}
+.timeline-track::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -1px;
+  width: 1px;
+  background-color: color-mix(in srgb, var(--accent) 70%, transparent);
+  transform-origin: top;
+}
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .scan::after {
+      animation: scan-sweep linear both;
+      animation-timeline: view();
+      animation-range: entry 25% cover 55%;
+    }
+    .draw-x {
+      transform-origin: left;
+      animation: draw-x linear both;
+      animation-timeline: view();
+      animation-range: entry 40% cover 45%;
+    }
+    .timeline-track::before {
+      animation: draw-y linear both;
+      animation-timeline: view();
+      animation-range: cover 10% cover 70%;
+    }
+  }
+}
+@keyframes scan-sweep {
+  from {
+    translate: -110% 0;
+  }
+  to {
+    translate: 110% 0;
+  }
+}
+@keyframes stream-in {
+  from {
+    translate: -0.75rem 0;
+  }
+}
+@keyframes draw-x {
+  from {
+    scale: 0 1;
+  }
+}
+@keyframes draw-y {
+  from {
+    scale: 1 0;
+  }
+}
+
+/* Transitions on every interactive part: colour, border, underline, shadow and transform changes
+   ease instead of snapping. Reduced motion collapses them through the global rule above. */
+@layer base {
+  a,
+  button,
+  summary,
+  input,
+  textarea,
+  select,
+  label,
+  [role='option'] {
+    transition-property:
+      color, background-color, border-color, text-decoration-color, outline-color, box-shadow,
+      translate, scale, rotate, filter;
+    transition-duration: var(--dur-fast);
+    transition-timing-function: var(--ease-snap);
+  }
+  a {
+    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  }
+  a:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+/* Dialogs (palette, ticket, evidence) scale in and out; the backdrop fades. The drawer has its own
+   slide. Only the backdrop changes opacity, so dialog text is never scanned half-faded. */
+@media (prefers-reduced-motion: no-preference) {
+  dialog:not(.drawer) {
+    transition:
+      scale var(--dur-base) var(--ease-snap),
+      translate var(--dur-base) var(--ease-snap),
+      overlay var(--dur-base) allow-discrete,
+      display var(--dur-base) allow-discrete;
+  }
+  dialog:not(.drawer):not([open]) {
+    scale: 0.97;
+    translate: 0 0.5rem;
+  }
+  @starting-style {
+    dialog[open]:not(.drawer) {
+      scale: 0.97;
+      translate: 0 0.5rem;
+    }
+  }
+  dialog::backdrop {
+    transition:
+      opacity var(--dur-base) ease-out,
+      overlay var(--dur-base) allow-discrete,
+      display var(--dur-base) allow-discrete;
+  }
+  dialog:not([open])::backdrop {
+    opacity: 0;
+  }
+  @starting-style {
+    dialog[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  /* Defect tickets and other disclosures open and close smoothly where details content can animate. */
+  :root {
+    interpolate-size: allow-keywords;
+  }
+  details::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition:
+      block-size var(--dur-base) var(--ease-snap),
+      content-visibility var(--dur-base) allow-discrete;
+  }
+  details[open]::details-content {
+    block-size: auto;
+  }
+
+  /* Page headers rise in once, line by line, on load. Transform only: the title paints at once, so
+     LCP is unaffected. */
+  main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > * {
+    animation: header-rise var(--dur-slow) var(--ease-snap) both;
+  }
+  main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(2) {
+    animation-delay: 60ms;
+  }
+  main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(3) {
+    animation-delay: 120ms;
+  }
+  main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(n + 4) {
+    animation-delay: 180ms;
+  }
+
+  /* Thumbnails lean in on hover. */
+  main button:hover > img,
+  main a:hover > img {
+    scale: 1.02;
+  }
+  main button > img,
+  main a > img {
+    transition: scale var(--dur-base) var(--ease-snap);
+  }
+}
+@keyframes header-rise {
+  from {
+    translate: 0 0.6rem;
+  }
+}
+
+/* On scroll, everywhere in the content: sections rise into place, list items and table rows stream
+   in. Transform only, final state without support or under reduced motion. */
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    main section:not([aria-labelledby='hero-heading']) {
+      animation: section-rise linear both;
+      animation-timeline: view();
+      animation-range: cover 0px cover 240px;
+    }
+    main :is(li, tr) {
+      animation: stream-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+  }
+}
+@keyframes section-rise {
+  from {
+    translate: 0 1.25rem;
   }
 }
 

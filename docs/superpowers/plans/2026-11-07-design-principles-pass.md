@@ -103,11 +103,19 @@ the PR including Lighthouse.
   every page.
 - **Color split.** Kept at 70/20/10, Vincent's correction of the original 60/20/10.
 
-## 7. Cursor swarm (Vincent, 2026-11-07)
+## 7. Motion in every component (Vincent, 2026-11-07)
 
-The overview hero gets the cursor-swarm effect, adapted as a swarm of test workers. A canvas behind the
-hero draws 36 small accent-colored agents with short trails. Each orbits the pointer on its own ring
-and phase and keeps a little distance from its neighbors, so the swarm reads as a cloud rather than a
-dot. When the pointer leaves, the agents scatter, fade, and the animation loop stops. It runs only for a
-mouse or pen, never under reduced motion, pauses when the hero is off-screen, and is hidden from
-assistive tech. Decision C37 records it as the single exception to CSS-only motion.
+A cursor-swarm trial (arrow cursors flocking after the mouse, adapted from Vincent's reference reel)
+was built, then removed at his request in favour of transitions and animations across every component
+and piece of content. Decision C37.
+
+- **Transitions.** Every link, button, summary, input and chip transitions colour, background,
+  border, underline, shadow and transform with shared timing tokens.
+- **Dialogs.** The command palette, ticket and evidence dialogs scale in; their backdrops fade.
+- **Tickets.** Defect tickets expand and collapse smoothly where the browser supports animating
+  `details` content.
+- **Page headers.** The kicker, title and lead rise in once on load, staggered.
+- **On scroll.** Sections rise into place, list items and table rows stream in, cards are scanned by
+  a sweep behind their text, the timeline draws down and severity bars fill.
+- **Safety.** Content motion is transform-only, so axe never meets half-faded text and hit targets do
+  not shift; everything is off under reduced motion and in print.
