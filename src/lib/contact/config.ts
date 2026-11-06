@@ -32,7 +32,9 @@ function secrets(env: Record<string, string | undefined>) {
  * Vercel env, where Sensitive variables (the Upstash integration's) arrive as placeholders, while the
  * deployed functions receive the real values at runtime.
  */
-export function isContactConfigured(env: Record<string, string | undefined> = process.env): boolean {
+export function isContactConfigured(
+  env: Record<string, string | undefined> = process.env,
+): boolean {
   if (isTestBuild(env)) return true;
   const { apiKey, to, url, token } = secrets(env);
   return Boolean(apiKey && to && url && token);
