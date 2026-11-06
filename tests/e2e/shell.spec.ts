@@ -5,6 +5,11 @@ import { tabKey } from '../helpers/keys';
 const MOBILE = { width: 375, height: 812 };
 const DESKTOP = { width: 1280, height: 800 };
 
+// Next's client scripts only: CSS shares the chunk path, and holding it would block the first paint.
+function isNextScript(url: URL) {
+  return url.pathname.startsWith('/_next/static/') && url.pathname.endsWith('.js');
+}
+
 async function activeIsInside(page: Page, selector: string) {
   return page.evaluate(
     (sel) => !!document.querySelector(sel)?.contains(document.activeElement),
@@ -97,6 +102,25 @@ test.describe('mobile drawer', () => {
     await expect(page.locator('#site-drawer')).toBeHidden();
     await expect(menu).toHaveAttribute('aria-expanded', 'false');
     await expect(menu).toBeFocused();
+  });
+
+  test('a drawer opened before hydration stays open once the page hydrates', async ({ page }) => {
+    // The menu opens natively through an invoker command, so a fast tap on a slow phone can open
+    // the drawer before React hydrates. Hold the scripts to make that window deterministic.
+    let releaseScripts!: () => void;
+    const scriptsHeld = new Promise<void>((resolve) => (releaseScripts = resolve));
+    await page.route(isNextScript, async (route) => {
+      await scriptsHeld;
+      await route.continue();
+    });
+    await page.goto('/', { waitUntil: 'commit' });
+    const menu = page.getByRole('button', { name: 'Menu', exact: true });
+    await menu.click();
+    await expect(page.locator('#site-drawer')).toBeVisible();
+    releaseScripts();
+    // aria-expanded only turns true once React has hydrated and synced with the open dialog.
+    await expect(menu).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('#site-drawer')).toBeVisible();
   });
 
   test('focus stays inside the open drawer while tabbing both ways', async ({
