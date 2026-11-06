@@ -98,7 +98,7 @@ export function MobileNav({ fullName, identity, nav, links }: MobileNavProps) {
     <>
       <header
         data-print-hide
-        className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-surface/95 px-4 backdrop-blur lg:hidden"
+        className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-secondary/95 px-4 backdrop-blur lg:hidden"
       >
         <span
           aria-hidden="true"
@@ -128,7 +128,7 @@ export function MobileNav({ fullName, identity, nav, links }: MobileNavProps) {
         id={DRAWER_ID}
         aria-label="Site menu"
         closedby="any"
-        className="drawer m-0 h-dvh max-h-none w-[min(20rem,85vw)] max-w-none overflow-y-auto border-r border-line bg-surface p-0 text-ink backdrop:bg-black/60 lg:hidden"
+        className="drawer m-0 h-dvh max-h-none w-[min(20rem,85vw)] max-w-none overflow-y-auto border-r border-line bg-secondary p-0 text-ink backdrop:bg-black/60 lg:hidden"
       >
         <div className="flex min-h-full flex-col gap-6 px-5 py-5">
           <div className="flex items-start justify-between gap-3">

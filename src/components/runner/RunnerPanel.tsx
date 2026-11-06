@@ -127,6 +127,18 @@ export function RunnerPanel({ path, onClose }: { path: string; onClose: () => vo
               {CHECKS[rows.length]?.name}
             </li>
           )}
+          {!done &&
+            CHECKS.slice(rows.length + 1).map((check) => (
+              <li
+                key={check.name}
+                aria-hidden="true"
+                data-queued
+                className="flex items-center gap-3 text-ink-muted"
+              >
+                <span className="skeleton h-6 w-[4.5rem]" />
+                {check.name}
+              </li>
+            ))}
         </ol>
         <div className="mt-5 border-t border-line pt-4">
           <p role="status" aria-live="polite" className="text-sm font-medium text-ink">

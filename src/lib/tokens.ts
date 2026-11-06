@@ -2,6 +2,7 @@ export const TOKEN_NAMES = [
   'bg',
   'surface',
   'surface-2',
+  'secondary',
   'border',
   'text',
   'text-muted',
@@ -22,7 +23,7 @@ export interface TokenPair {
   use: string;
 }
 
-const SURFACES = ['bg', 'surface', 'surface-2'] as const;
+const SURFACES = ['bg', 'surface', 'surface-2', 'secondary'] as const;
 const TEXT_ROLES: { fg: TokenName; use: string }[] = [
   { fg: 'text', use: 'body text' },
   { fg: 'text-muted', use: 'secondary text' },
@@ -39,6 +40,7 @@ export const TOKEN_PAIRS: TokenPair[] = [
   { fg: 'bg', bg: 'accent', min: 4.5, use: 'primary button label' },
   { fg: 'focus-ring', bg: 'bg', min: 3, use: 'focus indicator' },
   { fg: 'focus-ring', bg: 'surface', min: 3, use: 'focus indicator' },
+  { fg: 'focus-ring', bg: 'secondary', min: 3, use: 'focus indicator' },
 ];
 
 function readBlock(css: string, selector: string): ThemeTokens {

@@ -5,6 +5,7 @@
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-secondary: var(--secondary);
   --color-line: var(--border);
   --color-ink: var(--text);
   --color-ink-muted: var(--text-muted);
@@ -18,9 +19,12 @@
   --font-mono: var(--font-plex-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --font-display: var(--font-instrument-serif), Georgia, 'Times New Roman', serif;
 
+  --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
+
   --radius-card: 6px;
   --radius-chip: 4px;
   --shadow-card: var(--shadow);
+  --shadow-lift: var(--shadow-lift);
 }
 
 @layer base {
@@ -39,38 +43,36 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  :root {
+    --dur-fast: 140ms;
+    --dur-base: 220ms;
+    --dur-slow: 360ms;
+  }
+
+  /* Fluid between the spec's mobile and desktop sizes (4.1): 40/64, 24/30, 18/20 px from 375 to 1440 px. */
   h1 {
     font-family: var(--font-display);
     font-weight: 400;
-    font-size: 2.5rem;
+    font-size: clamp(2.5rem, 1.972rem + 2.254vw, 4rem);
     line-height: 1.05;
     letter-spacing: -0.01em;
   }
 
   h2 {
     font-weight: 600;
-    font-size: 1.5rem;
+    font-size: clamp(1.5rem, 1.368rem + 0.563vw, 1.875rem);
     line-height: 1.25;
   }
 
   h3 {
     font-weight: 600;
-    font-size: 1.125rem;
+    font-size: clamp(1.125rem, 1.081rem + 0.188vw, 1.25rem);
     line-height: 1.35;
   }
 
   @media (min-width: 1024px) {
     body {
       font-size: 1.0625rem;
-    }
-    h1 {
-      font-size: 4rem;
-    }
-    h2 {
-      font-size: 1.875rem;
-    }
-    h3 {
-      font-size: 1.25rem;
     }
   }
 
@@ -247,5 +249,157 @@
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none !important;
+  }
+}
+
+/* Motion (2026-11-07 design pass). Only transform-like properties, shadows and colours animate. */
+@layer components {
+  /* Cards: lift and pick up the accent on hover, keep the accent border while a child has focus. */
+  .lift {
+    transition:
+      translate var(--dur-base) var(--ease-snap),
+      box-shadow var(--dur-base) var(--ease-snap),
+      border-color var(--dur-base) var(--ease-snap);
+  }
+  .lift:focus-within {
+    border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+  }
+  @media (hover: hover) {
+    .lift:hover {
+      translate: 0 -2px;
+      box-shadow: var(--shadow-lift);
+      border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+    }
+  }
+
+  /* A trailing arrow that nudges forward when its link (or the card around it) is hovered or focused. */
+  .nudge {
+    transition: translate var(--dur-base) var(--ease-snap);
+  }
+  :is(a, .group):is(:hover, :focus-visible) .nudge {
+    translate: 3px 0;
+  }
+
+  .press {
+    transition:
+      scale var(--dur-fast) var(--ease-snap),
+      filter var(--dur-fast),
+      background-color var(--dur-fast);
+  }
+  .press:active:not([aria-disabled='true']) {
+    scale: 0.97;
+  }
+
+  /* Pending placeholder for the moments a visitor actually waits (an external badge, queued checks).
+     The sweep is a transformed pseudo-element so it stays on the compositor. Children paint above it. */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-chip);
+    background-color: var(--surface-2);
+  }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--text) 9%, transparent),
+      transparent
+    );
+    translate: -100% 0;
+    animation: skeleton-sweep 1.4s var(--ease-snap) infinite;
+  }
+  .skeleton > * {
+    position: relative;
+    z-index: 1;
+  }
+  @keyframes skeleton-sweep {
+    to {
+      translate: 100% 0;
+    }
+  }
+}
+
+/* On scroll: each section rises into place and its status dot turns from pending to pass. Text never
+   fades or clips, so axe never scans it half-drawn and hit testing is unchanged. Without scroll-driven
+   animation support, or under reduced motion, everything shows in its final state. */
+.reveal-dot {
+  background-color: var(--pass);
+}
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal-rise linear both;
+      animation-timeline: view();
+      animation-range: cover 0px cover 280px;
+    }
+    .reveal-dot {
+      animation: dot-pass linear both;
+      animation-timeline: view();
+      animation-range: cover 140px cover 320px;
+    }
+  }
+}
+@keyframes reveal-rise {
+  from {
+    translate: 0 1.5rem;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+@keyframes dot-pass {
+  from {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1.5px var(--text-muted);
+  }
+  60% {
+    box-shadow:
+      inset 0 0 0 1.5px var(--pass),
+      0 0 0 4px color-mix(in srgb, var(--pass) 25%, transparent);
+  }
+  to {
+    background-color: var(--pass);
+    box-shadow: inset 0 0 0 1.5px var(--pass);
+  }
+}
+
+/* Route change: the old page leaves quickly, the new one rises in once it has gone. A project's name
+   morphs from its card into the report title (.morph). */
+::view-transition-old(.page-exit) {
+  animation: var(--dur-fast) ease-out both vt-fade-out;
+}
+::view-transition-new(.page-enter) {
+  animation:
+    var(--dur-base) ease-out var(--dur-fast) both vt-fade-in,
+    var(--dur-slow) var(--ease-snap) both vt-rise;
+}
+::view-transition-group(.morph) {
+  animation-duration: var(--dur-slow);
+  animation-timing-function: var(--ease-snap);
+}
+::view-transition-image-pair(.morph) {
+  animation-name: vt-via-blur;
+}
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes vt-rise {
+  from {
+    translate: 0 10px;
+  }
+}
+@keyframes vt-via-blur {
+  30% {
+    filter: blur(3px);
   }
 }

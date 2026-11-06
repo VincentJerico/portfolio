@@ -1,9 +1,9 @@
 import { ArrowRight, Download, ExternalLink, Mail } from 'lucide-react';
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Inspectable } from '@/components/bughunt/Inspectable';
 import { CaseStudyCard } from '@/components/content/CaseStudyCard';
+import { PortraitCard } from '@/components/content/PortraitCard';
 import { ProjectCard } from '@/components/content/ProjectCard';
 import { QaAreaGrid } from '@/components/content/QaAreaGrid';
 import { RunnerHeroBlock } from '@/components/content/RunnerHeroBlock';
@@ -102,21 +102,18 @@ export default function OverviewPage() {
         </div>
         <div className="flex w-full min-w-0 flex-col items-start gap-4 md:w-[22rem] md:items-end">
           {profile.photo && (
-            <figure className="w-full max-w-[240px] justify-self-start rounded-card border border-line bg-surface p-2 shadow-card ">
-              <Image
-                src={profile.photo}
-                alt={profile.fullName}
-                width={510}
-                height={680}
-                sizes="240px"
-                loading="eager"
-                fetchPriority="high"
-                className="aspect-[3/4] w-full rounded-[4px] object-cover object-[50%_35%]"
-              />
-              <figcaption className="mt-2 px-1 font-mono text-[0.6875rem] text-ink-muted">
-                fixture · vincent-portrait.jpg · 510×680
-              </figcaption>
-            </figure>
+            <PortraitCard
+              photo={profile.photo}
+              name={profile.fullName}
+              facts={[
+                { label: 'role', value: profile.role },
+                { label: 'company', value: profile.company },
+                { label: 'location', value: profile.location },
+                { label: 'languages', value: (profile.languages ?? []).join(', ') },
+                { label: 'goal', value: profile.goal },
+                { label: 'next', value: profile.nextDirections.join(', ') },
+              ].filter((fact) => fact.value)}
+            />
           )}
         </div>
       </section>
@@ -227,8 +224,7 @@ export default function OverviewPage() {
       {/* 8. Contact */}
       <Section id="contact" title="Contact">
         <div className="rounded-card border border-line bg-surface p-6 lg:p-8">
-          <p className="measure text-lg text-ink">{profile.tagline}</p>
-          <p className="mt-2 font-mono text-sm text-ink-muted">{profile.email}</p>
+          <p className="font-mono text-lg break-all text-ink">{profile.email}</p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <ButtonLink href={`mailto:${profile.email}`} variant="primary">
               <Mail aria-hidden="true" className="size-4" />

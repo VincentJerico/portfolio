@@ -13,7 +13,7 @@ export function Sidebar() {
   return (
     <aside
       data-print-hide
-      className="fixed inset-y-0 left-0 hidden w-[280px] flex-col gap-6 overflow-y-auto border-r border-line bg-surface px-3 py-6 lg:flex"
+      className="fixed inset-y-0 left-0 hidden w-[280px] flex-col gap-6 overflow-y-auto border-r border-line bg-secondary px-3 py-6 lg:flex"
     >
       <div className="px-2">
         <IdentityBlock />

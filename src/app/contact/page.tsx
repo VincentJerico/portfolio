@@ -18,9 +18,8 @@ export default function ContactPage() {
   return (
     <div className="flex flex-col gap-10">
       <header className="measure">
-        <p className="label-mono text-ink-muted">Contact</p>
+        <p className="label-mono text-ink-muted">{profile.location}</p>
         <h1 className="mt-4">Contact</h1>
-        <p className="mt-5 text-ink-muted">{profile.tagline}</p>
       </header>
 
       <section
@@ -77,7 +76,6 @@ export default function ContactPage() {
             </li>
           )}
         </ul>
-        <p className="mt-4 text-sm text-ink-muted">{profile.location}</p>
       </section>
     </div>
   );
