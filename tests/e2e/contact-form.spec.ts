@@ -227,3 +227,12 @@ test('the message counter tracks typing and resets after a send', async ({ page 
   await expect(page.getByRole('status').filter({ hasText: SENT })).toBeVisible();
   await expect(count).toHaveText('0 / 5,000');
 });
+
+test('the email field drops spaces and lowercases the domain', async ({ page }) => {
+  await open(page);
+  const email = field(page, 'Email');
+  await email.pressSequentially('Sender @ Example.COM');
+  await expect(email).toHaveValue('Sender@Example.COM');
+  await field(page, 'Message').focus();
+  await expect(email).toHaveValue('Sender@example.com');
+});

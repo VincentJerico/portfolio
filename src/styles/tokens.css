@@ -19,7 +19,6 @@
   --fail: #f85149;
   --focus-ring: #58a6ff;
   --shadow: none;
-  --shadow-lift: 0 8px 24px -12px rgb(88 166 255 / 0.35);
 }
 
 .light {
@@ -37,5 +36,4 @@
   --fail: #bb1b2c;
   --focus-ring: #0a56d0;
   --shadow: 0 1px 2px rgb(13 26 48 / 0.07), 0 1px 1px rgb(13 26 48 / 0.04);
-  --shadow-lift: 0 10px 24px -12px rgb(10 86 208 / 0.4);
 }

@@ -45,11 +45,14 @@ function Row({
   active,
   visited,
   child = false,
+  showSpec = !child,
 }: {
   row: ExplorerRow;
   active: boolean;
   visited: boolean;
   child?: boolean;
+  /** The spec file name; dropped where the row also carries a folder toggle and room runs out. */
+  showSpec?: boolean;
 }) {
   return (
     <>
@@ -70,10 +73,10 @@ function Row({
         </span>
         <span
           aria-hidden="true"
-          className="ml-auto flex shrink-0 items-center gap-1.5 font-mono text-[0.6875rem] text-ink-muted"
+          className="ml-auto flex shrink-0 items-center gap-1.5 font-mono text-[0.6875rem] tracking-tight text-ink-muted [font-stretch:75%]"
         >
           {visited && <Check className="size-3 text-accent" />}
-          {!child && <span className="hidden xl:inline">{row.spec}</span>}
+          {showSpec && <span className="hidden xl:inline">{row.spec}</span>}
           {row.duration && <span>{row.duration}</span>}
         </span>
       </Link>
@@ -112,6 +115,7 @@ export function TestExplorerNav({ rows, projects, summary, idPrefix }: TestExplo
                     row={row}
                     active={isActive(pathname, row.href)}
                     visited={isVisited(row.href)}
+                    showSpec={!isFolder}
                   />
                   {isFolder && (
                     <button
@@ -152,9 +156,19 @@ export function TestExplorerNav({ rows, projects, summary, idPrefix }: TestExplo
           })}
         </ul>
       </nav>
-      <p className="px-2.5 font-mono text-[0.6875rem] text-ink-muted">
-        You&apos;ve covered {covered} of {rows.length} pages
-      </p>
+      <div className="flex flex-col gap-1.5 px-2.5">
+        <p className="font-mono text-[0.6875rem] text-ink-muted">
+          You&apos;ve covered {covered} of {rows.length} pages
+        </p>
+        {/* Decorative coverage bar; the sentence above carries the numbers. */}
+        <div aria-hidden="true" className="h-1 overflow-hidden rounded-full bg-line">
+          <div
+            data-coverage-bar
+            className="h-full origin-left rounded-full bg-accent transition-transform duration-500 ease-[var(--ease-snap)]"
+            style={{ transform: `scaleX(${rows.length ? covered / rows.length : 0})` }}
+          />
+        </div>
+      </div>
     </div>
   );
 }

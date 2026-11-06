@@ -16,7 +16,7 @@ export const metadata: Metadata = pageMetadata({
 
 export default function ContactPage() {
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-block">
       <header className="measure">
         <p className="label-mono text-ink-muted">{profile.location}</p>
         <h1 className="mt-4">Contact</h1>

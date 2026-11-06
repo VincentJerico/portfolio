@@ -15,16 +15,19 @@
   --color-fail: var(--fail);
   --color-focus: var(--focus-ring);
 
-  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  --font-display: var(--font-instrument-serif), Georgia, 'Times New Roman', serif;
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-martian-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
 
   --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Fluid rhythm, 375 to 1440 px: between page blocks, and between overview sections. */
+  --spacing-block: clamp(2.5rem, 2.148rem + 1.502vw, 3.5rem);
+  --spacing-section: clamp(4rem, 3.296rem + 3.005vw, 6rem);
 
   --radius-card: 6px;
   --radius-chip: 4px;
   --shadow-card: var(--shadow);
-  --shadow-lift: var(--shadow-lift);
 }
 
 @layer base {
@@ -52,20 +55,22 @@
   /* Fluid between the spec's mobile and desktop sizes (4.1): 40/64, 24/30, 18/20 px from 375 to 1440 px. */
   h1 {
     font-family: var(--font-display);
-    font-weight: 400;
+    font-weight: 800;
+    font-stretch: 72%;
     font-size: clamp(2.5rem, 1.972rem + 2.254vw, 4rem);
-    line-height: 1.05;
-    letter-spacing: -0.01em;
+    line-height: 0.98;
+    letter-spacing: -0.005em;
   }
 
   h2 {
-    font-weight: 600;
+    font-weight: 700;
+    font-stretch: 85%;
     font-size: clamp(1.5rem, 1.368rem + 0.563vw, 1.875rem);
     line-height: 1.25;
   }
 
   h3 {
-    font-weight: 600;
+    font-weight: 650;
     font-size: clamp(1.125rem, 1.081rem + 0.188vw, 1.25rem);
     line-height: 1.35;
   }
@@ -98,12 +103,27 @@
   }
 }
 
+/* Labels read like runner output, in sentence case: no tracked-out all-caps eyebrows. */
 @utility label-mono {
   font-family: var(--font-mono);
-  font-weight: 500;
+  font-weight: 450;
+  font-stretch: 87.5%;
   font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+@layer base {
+  code,
+  kbd,
+  samp,
+  pre,
+  .font-mono {
+    font-stretch: 87.5%;
+  }
+  .font-display {
+    font-weight: 700;
+    font-stretch: 80%;
+  }
 }
 
 @utility measure {
@@ -258,7 +278,6 @@
   .lift {
     transition:
       translate var(--dur-base) var(--ease-snap),
-      box-shadow var(--dur-base) var(--ease-snap),
       border-color var(--dur-base) var(--ease-snap);
   }
   .lift:focus-within {
@@ -267,17 +286,8 @@
   @media (hover: hover) {
     .lift:hover {
       translate: 0 -2px;
-      box-shadow: var(--shadow-lift);
       border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
     }
-  }
-
-  /* A trailing arrow that nudges forward when its link (or the card around it) is hovered or focused. */
-  .nudge {
-    transition: translate var(--dur-base) var(--ease-snap);
-  }
-  :is(a, .group):is(:hover, :focus-visible) .nudge {
-    translate: 3px 0;
   }
 
   .press {
@@ -322,32 +332,19 @@
   }
 }
 
-/* On scroll: each section rises into place and its status dot turns from pending to pass. Text never
-   fades or clips, so axe never scans it half-drawn and hit testing is unchanged. Without scroll-driven
-   animation support, or under reduced motion, everything shows in its final state. */
+/* On scroll: each section's status dot turns from pending to pass as it comes into view, the one
+   scroll-linked moment on the page. Without scroll-driven animation support, or under reduced motion,
+   the dot shows as passed. */
 .reveal-dot {
   background-color: var(--pass);
 }
 @supports (animation-timeline: view()) {
   @media screen and (prefers-reduced-motion: no-preference) {
-    .reveal {
-      animation: reveal-rise linear both;
-      animation-timeline: view();
-      animation-range: cover 0px cover 280px;
-    }
     .reveal-dot {
       animation: dot-pass linear both;
       animation-timeline: view();
       animation-range: cover 140px cover 320px;
     }
-  }
-}
-@keyframes reveal-rise {
-  from {
-    translate: 0 1.5rem;
-  }
-  to {
-    translate: 0 0;
   }
 }
 @keyframes dot-pass {

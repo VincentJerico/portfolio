@@ -77,3 +77,28 @@ Unit tests for the token rules. E2E tests for the horizontal form at desktop and
 validation, the character count, and both themes passing axe. Then the full gate:
 `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e`, and CI on
 the PR including Lighthouse.
+
+## 6. Second round (Vincent, 2026-11-07: "implement all", fonts not preferred, avoid AI slop)
+
+- **Fonts.** Archivo (variable width and weight) replaces Instrument Serif and IBM Plex Sans. Headings
+  are set condensed and heavy like a spec-sheet label; body text runs at normal width. Martian Mono
+  (variable width, set slightly condensed) replaces IBM Plex Mono for runner data. OG images and the
+  icon follow.
+- **Less generic.** Labels are sentence case instead of tracked-out all caps. The per-section slide-up,
+  the glow under hovered cards and the arrows appended to card links are gone. The scroll-linked
+  moment is the section status dot alone. The hero's eyebrow label, which repeated the role a third
+  time, is gone.
+- **Input mask.** The email field drops whitespace as it is typed or pasted and lowercases the domain
+  on blur.
+- **Loading.** A placeholder sheet holds the runner's place while its code downloads, and lazy
+  evidence thumbnails show a pending placeholder until they paint.
+- **Type, search and scroll.** /projects has a labelled search box (name, hook, summary, stack) that
+  combines with the category chips.
+- **Visuals.** Each report's run summary shows a segmented severity bar beside the severity chips. The
+  sidebar shows a coverage bar under "You've covered N of M pages". Both are decorative because the
+  text beside them carries the numbers.
+- **Hierarchy.** The hero intro's first sentence leads in body ink and the rest steps back. The split
+  happens only at sentence ends, so the wording stays exactly as written in the data file.
+- **Dynamic system.** Fluid spacing tokens (`gap-block`, `gap-section`) set the vertical rhythm on
+  every page.
+- **Color split.** Kept at 70/20/10, Vincent's correction of the original 60/20/10.

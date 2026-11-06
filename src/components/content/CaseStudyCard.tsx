@@ -1,4 +1,3 @@
-import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import type { CaseStudy } from '@/content/schema';
 import { StatusChip } from '@/components/ui/StatusChip';
@@ -16,10 +15,9 @@ export function CaseStudyCard({ study }: { study: CaseStudy }) {
       )}
       <Link
         href={`/work/${study.slug}`}
-        className="mt-auto inline-flex min-h-11 items-center gap-1.5 pt-4 font-semibold"
+        className="mt-auto inline-flex min-h-11 items-center pt-4 font-semibold"
       >
         Read the case study<span className="sr-only">: {study.title}</span>
-        <ArrowRight aria-hidden="true" className="nudge size-4" />
       </Link>
     </article>
   );

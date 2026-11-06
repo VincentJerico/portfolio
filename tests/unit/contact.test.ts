@@ -10,7 +10,7 @@ import { MailError, resendMailer, testMailer, type Mailer } from '@/lib/contact/
 import { hashedLimiter, memoryLimiter, type RateLimiter } from '@/lib/contact/rate-limit';
 import { ContactInput, fieldErrorsFrom } from '@/lib/contact/schema';
 import { submitContact } from '@/lib/contact/submit';
-import { blurError, type ContactField } from '@/lib/contact/types';
+import { blurError, finishEmail, maskEmail, type ContactField } from '@/lib/contact/types';
 
 function form(fields: Record<string, string>): FormData {
   const data = new FormData();
@@ -344,5 +344,15 @@ describe('blurError', () => {
         serverError,
       );
     }
+  });
+});
+
+describe('email mask', () => {
+  it('drops whitespace as it is typed or pasted', () => {
+    expect(maskEmail(' sender @ example.com ')).toBe('sender@example.com');
+  });
+  it('lowercases only the domain when the field is left', () => {
+    expect(finishEmail('Sender.Name@Example.COM')).toBe('Sender.Name@example.com');
+    expect(finishEmail('no-at-sign')).toBe('no-at-sign');
   });
 });

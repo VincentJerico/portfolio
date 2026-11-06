@@ -34,8 +34,11 @@ export default function OverviewPage() {
   const asOf = metrics[0]?.asOf;
 
   const school = visible(education)[0]?.school;
+  // The intro's first sentence leads; the rest steps back. Split only where a sentence ends.
+  const [introLead, ...introSentences] = profile.intro.split(/(?<=\.)\s+(?=[A-Z])/);
+  const introRest = introSentences.join(' ');
   return (
-    <div className="flex flex-col gap-20 lg:gap-24">
+    <div className="flex flex-col gap-section">
       <JsonLd
         data={{
           '@context': 'https://schema.org',
@@ -57,14 +60,10 @@ export default function OverviewPage() {
         className="grid items-start gap-10 md:grid-cols-[1fr_auto]"
       >
         <div className="measure min-w-0">
-          <p className="label-mono text-ink-muted">
-            {profile.role} · {profile.company}
-          </p>
-          <h1 id="hero-heading" className="mt-4">
-            {profile.fullName}
-          </h1>
+          <h1 id="hero-heading">{profile.fullName}</h1>
           <p className="mt-5 text-xl font-semibold text-ink lg:text-2xl">{profile.headline}</p>
-          <p className="mt-4 text-ink-muted">{profile.intro}</p>
+          <p className="mt-4 text-lg text-ink">{introLead}</p>
+          {introRest && <p className="mt-2 text-ink-muted">{introRest}</p>}
           <div className="mt-8 flex flex-wrap gap-3">
             <Inspectable as="span" id="overview-view-projects" label="View projects button">
               <ButtonLink href="/projects" variant="primary">

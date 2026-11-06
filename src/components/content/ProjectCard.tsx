@@ -1,4 +1,3 @@
-import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { ViewTransition } from 'react';
 import type { Project } from '@/content/schema';
@@ -37,10 +36,9 @@ export function ProjectCard({ project, huntPrefix }: { project: Project; huntPre
         <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 pt-5">
           <Link
             href={`/projects/${project.slug}`}
-            className="inline-flex min-h-11 items-center gap-1.5 font-semibold"
+            className="inline-flex min-h-11 items-center font-semibold"
           >
             Read the report<span className="sr-only"> for {project.name}</span>
-            <ArrowRight aria-hidden="true" className="nudge size-4" />
           </Link>
           {project.repo && (
             <a href={project.repo} className="inline-flex min-h-11 items-center text-sm">

@@ -15,6 +15,8 @@ import { sendContact } from '@/app/contact/actions';
 import { Button } from '@/components/ui/Button';
 import {
   blurError,
+  finishEmail,
+  maskEmail,
   FIELD_LIMITS,
   HONEYPOT_FIELD,
   type ContactField,
@@ -62,11 +64,17 @@ export function ContactForm({ email }: { email: string }) {
   }
 
   function onBlur(event: FocusEvent<FieldControl>) {
-    if (event.target.value !== '') check(event.target);
+    const control = event.target;
+    if (control.name === 'email') control.value = finishEmail(control.value);
+    if (control.value !== '') check(control);
   }
 
   function onInput(event: FormEvent<FieldControl>) {
     const control = event.currentTarget;
+    if (control.name === 'email') {
+      const masked = maskEmail(control.value);
+      if (masked !== control.value) control.value = masked;
+    }
     if (control.name === 'message') setMessageLength(control.value.length);
     if (blurErrors[control.name as ContactField]) check(control);
   }

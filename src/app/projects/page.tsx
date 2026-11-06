@@ -20,7 +20,7 @@ export default function ProjectsPage() {
   }));
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-block">
       <header className="measure">
         <p className="label-mono text-ink-muted">Test suites · public repos</p>
         <h1 className="mt-4">Projects</h1>
@@ -35,6 +35,7 @@ export default function ProjectsPage() {
           cards={projects.map((project) => ({
             slug: project.slug,
             category: project.category,
+            text: [project.name, project.hook, project.summary, ...project.stack].join(' '),
             card: <ProjectCard project={project} huntPrefix="projects" />,
           }))}
         />

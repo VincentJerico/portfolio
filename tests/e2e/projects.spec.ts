@@ -25,6 +25,30 @@ test.describe('projects index', () => {
     await expect(page).toHaveURL(/\/projects$/);
   });
 
+  test('typing searches name, tools and results, and combines with the category', async ({
+    page,
+  }) => {
+    await page.goto('/projects');
+    const cards = page.locator('main article');
+    const search = page.getByRole('searchbox', { name: 'Search projects' });
+    const target = all.find((p) => p.category === 'security')!;
+    const byStack = all.filter((p) =>
+      [p.name, p.hook, p.summary, ...p.stack].join(' ').toLowerCase().includes('playwright'),
+    );
+
+    await search.fill('playwright');
+    await expect(cards).toHaveCount(byStack.length);
+    await search.fill(target.name);
+    await expect(cards).toHaveCount(1);
+    await expect(cards.first()).toContainText(target.name);
+
+    await search.fill('no-such-project-anywhere');
+    await expect(page.getByText('No projects match "no-such-project-anywhere".')).toBeVisible();
+    await page.getByRole('button', { name: 'Show all projects' }).click();
+    await expect(search).toHaveValue('');
+    await expect(cards).toHaveCount(all.length);
+  });
+
   test('an unknown category shows everything with All pressed', async ({ page }) => {
     await page.goto('/projects?category=nope');
     await expect(page.locator('main article')).toHaveCount(all.length);

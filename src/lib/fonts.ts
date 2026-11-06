@@ -1,26 +1,20 @@
-import { IBM_Plex_Mono, IBM_Plex_Sans, Instrument_Serif } from 'next/font/google';
+import { Archivo, Martian_Mono } from 'next/font/google';
 
-// Plex Sans is variable (one file for 400 body and 600 headings).
-export const plexSans = IBM_Plex_Sans({
+// One variable file each. Archivo's width axis does the display work: headings are set condensed and
+// heavy like a spec-sheet label, body text at normal width. Martian Mono, set slightly condensed,
+// carries the test-runner data.
+export const archivo = Archivo({
   subsets: ['latin'],
+  axes: ['wdth'],
   display: 'swap',
-  variable: '--font-plex-sans',
+  variable: '--font-archivo',
 });
 
-export const plexMono = IBM_Plex_Mono({
+export const martianMono = Martian_Mono({
   subsets: ['latin'],
-  weight: ['500'],
+  axes: ['wdth'],
   display: 'swap',
-  variable: '--font-plex-mono',
+  variable: '--font-martian-mono',
 });
 
-export const instrumentSerif = Instrument_Serif({
-  subsets: ['latin'],
-  weight: ['400'],
-  display: 'swap',
-  variable: '--font-instrument-serif',
-});
-
-export const fontVariables = [plexSans.variable, plexMono.variable, instrumentSerif.variable].join(
-  ' ',
-);
+export const fontVariables = [archivo.variable, martianMono.variable].join(' ');

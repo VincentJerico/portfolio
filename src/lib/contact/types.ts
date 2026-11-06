@@ -45,3 +45,14 @@ export function blurError(
   if (length < min || typeMismatch) return FIELD_ERROR_COPY[field].missing;
   return undefined;
 }
+
+/** Email input mask: an address never contains whitespace, so typed or pasted spaces are dropped. */
+export function maskEmail(value: string): string {
+  return value.replace(/\s+/g, '');
+}
+
+/** On leaving the email field: domains are case-insensitive, so the part after the last @ is lowercased. */
+export function finishEmail(value: string): string {
+  const at = value.lastIndexOf('@');
+  return at < 0 ? value : value.slice(0, at + 1) + value.slice(at + 1).toLowerCase();
+}
