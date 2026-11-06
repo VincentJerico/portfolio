@@ -6,7 +6,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 export interface PaletteItem {
   href: string;
   label: string;
-  group: 'Pages' | 'Projects' | 'Findings' | 'Case studies';
+  group: 'Pages' | 'Projects' | 'Findings' | 'Case studies' | 'Notes';
   /** Extra text that should match a query but isn't shown. */
   keywords?: string;
 }

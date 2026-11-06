@@ -18,7 +18,7 @@ describe('isActive', () => {
 });
 
 describe('NAV_ITEMS', () => {
-  it('lists the eight spec sections in order', () => {
+  it('lists the nine sections in order', () => {
     expect(NAV_ITEMS.map((item) => item.label)).toEqual([
       'Overview',
       'Projects',
@@ -27,6 +27,7 @@ describe('NAV_ITEMS', () => {
       'About',
       'Resume',
       'Quality',
+      'Notes',
       'Contact',
     ]);
   });

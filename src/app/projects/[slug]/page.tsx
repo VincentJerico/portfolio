@@ -12,6 +12,7 @@ import { RunSummaryPanel } from '@/components/content/RunSummaryPanel';
 import { TicketOpener } from '@/components/content/TicketOpener';
 import { Section } from '@/components/content/Section';
 import { InlineCode } from '@/components/ui/InlineCode';
+import { repoMeta } from '@/lib/github';
 import { projectBySlug, projectsInOrder } from '@/lib/content';
 import { categoryLabel } from '@/lib/labels';
 import { pageMetadata } from '@/lib/seo';
@@ -19,6 +20,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 import { profile } from '@/content';
 
 export const dynamicParams = false;
+export const revalidate = 86400;
 
 export function generateStaticParams() {
   return projectsInOrder().map(({ slug }) => ({ slug }));
@@ -60,6 +62,7 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
   const { slug } = await params;
   const project = projectBySlug(slug);
   if (!project) notFound();
+  const github = project.repo ? await repoMeta(project.repo) : null;
 
   // The run summary already shows the target; don't repeat it under Context.
   const context = project.context.filter((line) => line !== `Target: ${project.target}`);
@@ -104,7 +107,7 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
         <p className="measure text-lg text-ink-muted">{project.summary}</p>
       </header>
 
-      <RunSummaryPanel project={project} />
+      <RunSummaryPanel project={project} github={github} />
 
       <ResultCallout text={project.hook} />
 

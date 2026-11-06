@@ -1,13 +1,19 @@
 // Server-side only: the command palette's index and the P2 reading order for this build.
 import type { PaletteItem } from '@/components/palette/CommandPalette';
+import { visibleNotes } from '@/content/notes';
+import type { Note } from '@/content/schema';
 import { approvedCaseStudies, projectsInOrder } from './content';
 import { navItems } from './nav-items';
 import { readingOrder, type Step } from './next-spec';
 
-export function paletteItems(): PaletteItem[] {
+export function paletteItems(notes: readonly Note[] = visibleNotes()): PaletteItem[] {
   const projects = projectsInOrder();
   return [
-    ...navItems().map((item) => ({ href: item.href, label: item.label, group: 'Pages' as const })),
+    ...navItems(notes).map((item) => ({
+      href: item.href,
+      label: item.label,
+      group: 'Pages' as const,
+    })),
     ...projects.map((p) => ({
       href: `/projects/${p.slug}`,
       label: p.name,
@@ -27,6 +33,12 @@ export function paletteItems(): PaletteItem[] {
       label: c.title,
       group: 'Case studies' as const,
       keywords: c.industry,
+    })),
+    ...notes.map((n) => ({
+      href: `/notes/${n.slug}`,
+      label: n.title,
+      group: 'Notes' as const,
+      keywords: n.summary,
     })),
   ];
 }

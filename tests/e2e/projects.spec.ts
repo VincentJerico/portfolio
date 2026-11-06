@@ -117,3 +117,23 @@ test.describe('test report pages', () => {
     );
   });
 });
+
+test.describe('GitHub data (test builds use the fixture)', () => {
+  test('a project with a repo shows last commit and topics', async ({ page }) => {
+    await page.goto('/projects/accessibility-testing');
+    const summary = page.getByRole('region', { name: 'Run summary' });
+    await expect(summary.getByText('Last commit', { exact: true })).toBeVisible();
+    await expect(summary.locator('time')).toHaveText('1 Jan 2000');
+    await expect(summary.locator('time')).toHaveAttribute('datetime', '2000-01-01');
+    await expect(
+      page.getByRole('list', { name: 'GitHub topics' }).getByText('fixture-topic'),
+    ).toBeVisible();
+    await expect(summary.getByText('From GitHub, refreshed daily.')).toBeVisible();
+  });
+
+  test('a project without a repo shows neither', async ({ page }) => {
+    await page.goto('/projects/legatalink');
+    await expect(page.getByText('Last commit', { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('list', { name: 'GitHub topics' })).toHaveCount(0);
+  });
+});

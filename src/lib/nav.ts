@@ -13,6 +13,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { href: '/about', label: 'About', spec: 'about.spec' },
   { href: '/resume', label: 'Resume', spec: 'resume.spec' },
   { href: '/quality', label: 'Quality', spec: 'quality.spec' },
+  { href: '/notes', label: 'Notes', spec: 'notes/' },
   { href: '/contact', label: 'Contact', spec: 'contact.spec' },
 ];
 

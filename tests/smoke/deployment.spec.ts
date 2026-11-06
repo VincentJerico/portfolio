@@ -18,6 +18,18 @@ test('every page in the sitemap loads, and the sitemap never lists /selftest', a
   expect(failures).toEqual([]);
 });
 
+test('the contact page offers the form (a missing secret hides it)', async ({ request }) => {
+  const html = await (await request.get('/contact')).text();
+  expect(html).toContain('Send a message');
+});
+
+test('notes do not exist until the first note is published', async ({ request }) => {
+  const xml = await (await request.get('/sitemap.xml')).text();
+  expect(xml).not.toContain('/notes');
+  expect((await request.get('/notes')).status()).toBe(404);
+  expect((await request.get('/notes/opengraph-image')).status()).toBe(404);
+});
+
 test('the planted-defect page does not exist on a deployment', async ({ request }) => {
   expect((await request.get('/selftest')).status()).toBe(404);
 });
