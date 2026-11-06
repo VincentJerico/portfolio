@@ -60,7 +60,7 @@ messages to `vincentjericoalcuran@gmail.com`; a read-only GitHub token for the A
 - Create: `src/lib/github.ts`, `src/lib/github-fixture.ts`, `tests/unit/github.test.ts`
 - Modify: `src/app/projects/[slug]/page.tsx` (fetch + render + `export const revalidate = 86400`),
   `tests/e2e/projects.spec.ts`, `.env.example`
-- Docs: `docs/04-DECISIONS.md` C27
+- Docs: `docs/04-DECISIONS.md` C28
 
 **Interfaces:**
 - Produces: `type RepoMeta = { lastCommit: string /* YYYY-MM-DD */; topics: string[] }`,
@@ -96,7 +96,7 @@ messages to `vincentjericoalcuran@gmail.com`; a read-only GitHub token for the A
   `Last commit` with `1 Jan 2000` (fixture) and a `GitHub topics` list containing `fixture-topic`; on a project
   without `repo` (LegataLink) neither appears.
 - [ ] **Step 7: Config.** `.env.example`: `GH_DATA_TOKEN=` with a comment "Optional. Fine-grained, public
-  repositories read-only. Server only." (Actions secret names cannot start with `GITHUB_`.) Decision C27 in
+  repositories read-only. Server only." (Actions secret names cannot start with `GITHUB_`.) Decision C28 in
   `docs/04-DECISIONS.md`: GitHub fields come from the API, refreshed daily, omitted when unavailable; test builds
   use a fixture.
 - [ ] **Step 8: Gates** (`pnpm lint && pnpm format:check && pnpm typecheck && pnpm test`) and **commit**
@@ -156,7 +156,7 @@ messages to `vincentjericoalcuran@gmail.com`; a read-only GitHub token for the A
 **Files:**
 - Create: `src/components/contact/ContactForm.tsx` (`'use client'`), `tests/e2e/contact-form.spec.ts`
 - Modify: `src/app/contact/page.tsx`, `tests/smoke/deployment.spec.ts`, `.env.example`, `README.md`,
-  `docs/04-DECISIONS.md` (C28)
+  `docs/04-DECISIONS.md` (C29)
 
 **Interfaces:**
 - Consumes: `sendContact`, `ContactState`, `contactConfig` (Task 2).
@@ -193,7 +193,7 @@ messages to `vincentjericoalcuran@gmail.com`; a read-only GitHub token for the A
   "Send a message" heading (catches a missing secret after deploy).
 - [ ] **Step 7: Docs.** `.env.example`: `RESEND_API_KEY=`, `CONTACT_TO_EMAIL=`, `UPSTASH_REDIS_REST_URL=`,
   `UPSTASH_REDIS_REST_TOKEN=` (server only). README: one paragraph on the form and which env vars enable it.
-  Decision C28: Upstash rate limit 5 per 10 minutes per IP; Resend onboarding sender to the account address;
+  Decision C29: Upstash rate limit 5 per 10 minutes per IP; Resend onboarding sender to the account address;
   form hidden when unconfigured; test build uses stand-ins.
 - [ ] **Step 8: Gates incl. `pnpm test:e2e`, commit** `feat(contact): contact form with announced states`.
 
@@ -235,7 +235,7 @@ messages to `vincentjericoalcuran@gmail.com`; a read-only GitHub token for the A
   Notes. Smoke (deployed): `/notes` returns 404 and the sitemap has no `/notes` while no note is published.
 - [ ] **Step 5: Run** unit + E2E — PASS. Update `tests/e2e/shell.spec.ts` tab-stop count to use `navItems()`.
 - [ ] **Step 6: Docs.** README: "Adding a note" (create `src/content/notes/<slug>.mdx`, add the registry entry
-  with `status: 'published'`, gates check the rest). Decision C29: notes hidden until the first published note;
+  with `status: 'published'`, gates check the rest). Decision C30: notes hidden until the first published note;
   content is Vincent's own writing only.
 - [ ] **Step 7: Gates incl. E2E, commit** `feat(notes): MDX notes section, hidden until the first note`.
 

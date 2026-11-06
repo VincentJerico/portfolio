@@ -6,7 +6,7 @@ import { NAV_ITEMS, type NavItem } from './nav';
 
 /**
  * Nav items for this build: Client Work is hidden when no case study is approved (spec 4.3),
- * and Notes until the first note is visible (decision C29).
+ * and Notes until the first note is visible (decision C30).
  */
 export function navItems(notes: readonly Note[] = visibleNotes()): NavItem[] {
   const hasClientWork = approvedCaseStudies().length > 0;

@@ -3,7 +3,7 @@ import { Note } from './schema';
 
 // Notes are Vincent's own writing. Add a published note: see "Adding a note" in README.md.
 // The selftest note is visible only in the CI test build (E2E_SELFTEST=1); until a note is
-// published, /notes does not exist (decision C29).
+// published, /notes does not exist (decision C30).
 const raw: z.input<typeof Note>[] = [
   {
     slug: 'selftest-pipeline',

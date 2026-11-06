@@ -55,7 +55,6 @@ const inputs: BuildInputs = {
   lighthouse: [
     {
       url: 'http://localhost:3300/',
-      isRepresentativeRun: true,
       summary: { performance: 1, accessibility: 1, 'best-practices': 1, seo: 1 },
     },
   ],
@@ -86,6 +85,20 @@ describe('buildQualityReport', () => {
   it('carries Lighthouse scores per route', () => {
     expect(report.lighthouse).toEqual([
       { route: '/', performance: 100, accessibility: 100, bestPractices: 100, seo: 100 },
+    ]);
+  });
+
+  it('reports the median of each score across runs, as the gate asserts it', () => {
+    const run = (performance: number, accessibility: number) => ({
+      url: 'http://localhost:3300/about',
+      summary: { performance, accessibility, 'best-practices': 1, seo: 1 },
+    });
+    const median = buildQualityReport({
+      ...inputs,
+      lighthouse: [run(0.93, 1), run(0.99, 0.98), run(0.98, 1)],
+    });
+    expect(median.lighthouse).toEqual([
+      { route: '/about', performance: 98, accessibility: 100, bestPractices: 100, seo: 100 },
     ]);
   });
 

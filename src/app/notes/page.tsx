@@ -13,7 +13,7 @@ export const metadata: Metadata = pageMetadata({
 
 export default function NotesPage() {
   const notes = visibleNotes();
-  // The section does not exist until the first note is published (decision C29).
+  // The section does not exist until the first note is published (decision C30).
   if (notes.length === 0) notFound();
 
   return (
