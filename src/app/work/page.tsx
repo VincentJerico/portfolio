@@ -17,7 +17,7 @@ export default function ClientWorkPage() {
   const studies = approvedCaseStudies();
 
   return (
-    <div className="flex flex-col gap-block">
+    <div className="flex flex-col gap-rhythm">
       <header className="measure">
         <p className="label-mono text-ink-muted">Client work</p>
         <h1 className="mt-4">Client Work</h1>

@@ -60,7 +60,7 @@ export default function QualityPage() {
   const real = !report.sample;
 
   return (
-    <div className="flex flex-col gap-block">
+    <div className="flex flex-col gap-rhythm">
       <header className="measure flex flex-col gap-4">
         <p className="label-mono text-ink-muted">quality.spec</p>
         <h1>Quality</h1>

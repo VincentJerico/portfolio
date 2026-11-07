@@ -1,6 +1,6 @@
 import { expect, test } from '../helpers/test';
 import { metrics, profile } from '../../src/content';
-import { projectsInOrder } from '../../src/lib/content';
+import { projectsInOrder, testedAreas } from '../../src/lib/content';
 import { waitForHydration } from '../helpers/hydration';
 
 test.describe('overview', () => {
@@ -32,6 +32,18 @@ test.describe('overview', () => {
     for (const [i, metric] of metrics.entries()) {
       await expect(sources.nth(i)).toHaveAttribute('href', metric.source.href);
     }
+  });
+
+  test('the masthead states location, tested areas and CI coverage from the data', async ({
+    page,
+  }) => {
+    const mast = page.getByRole('region', { name: 'At a glance' });
+    const ci = metrics.find((m) => m.id === 'ci-repos')!;
+    const values = mast.locator('dd');
+    await expect(values.nth(0)).toHaveText(profile.location);
+    await expect(values.nth(1)).toHaveText(testedAreas().join(' · '));
+    await expect(values.nth(2)).toContainText(ci.value);
+    await expect(values.nth(2)).toContainText(ci.label);
   });
 
   test('featured projects appear in order and link to their reports', async ({ page }) => {

@@ -73,7 +73,7 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
   const next = ordered[index + 1];
 
   return (
-    <article className="flex flex-col gap-block">
+    <article className="flex flex-col gap-rhythm">
       <JsonLd
         data={{
           '@context': 'https://schema.org',

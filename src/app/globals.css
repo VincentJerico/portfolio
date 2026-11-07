@@ -21,8 +21,9 @@
 
   --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
 
-  /* Fluid rhythm, 375 to 1440 px: between page blocks, and between overview sections. */
-  --spacing-block: clamp(2.5rem, 2.148rem + 1.502vw, 3.5rem);
+  /* Fluid rhythm, 375 to 1440 px: between page blocks, and between overview sections. Not named
+     "block": Tailwind would turn that into an inline-block width utility. */
+  --spacing-rhythm: clamp(2.5rem, 2.148rem + 1.502vw, 3.5rem);
   --spacing-section: clamp(4rem, 3.296rem + 3.005vw, 6rem);
 
   --radius-card: 6px;

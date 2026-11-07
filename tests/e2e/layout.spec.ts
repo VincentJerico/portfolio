@@ -60,6 +60,20 @@ test.describe('layout', () => {
     });
   }
 
+  test('the inline-block utility sets display only, never a width', async ({ page }) => {
+    await page.goto('/');
+    // A spacing token named "block" once made Tailwind emit inline-block as an inline-size rule.
+    const width = await page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.className = 'inline-block';
+      document.body.append(probe);
+      const value = getComputedStyle(probe).width;
+      probe.remove();
+      return value;
+    });
+    expect(width).toBe('0px');
+  });
+
   test('the portrait card holds all its fixture data when flipped', async ({ page }) => {
     await page.goto('/');
     await waitForHydration(page);

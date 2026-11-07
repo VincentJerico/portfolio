@@ -20,7 +20,7 @@ export default function ProjectsPage() {
   }));
 
   return (
-    <div className="flex flex-col gap-block">
+    <div className="flex flex-col gap-rhythm">
       <header className="measure">
         <p className="label-mono text-ink-muted">Test suites · public repos</p>
         <h1 className="mt-4">Projects</h1>
