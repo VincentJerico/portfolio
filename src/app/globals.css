@@ -342,7 +342,7 @@
       transparent
     );
     translate: -100% 0;
-    animation: skeleton-sweep 1.4s var(--ease-snap) infinite;
+    animation: skeleton-sweep 1.4s var(--ease-snap) 4;
   }
   .skeleton > * {
     position: relative;
@@ -542,8 +542,9 @@
     block-size: auto;
   }
 
-  /* Page headers rise in once, line by line, on load, sharpening from a blur. No opacity: the title
-     paints at once, so LCP is unaffected and axe never scans faded text. */
+  /* Page headers rise in once, line by line, on load. Transform only: no opacity (the title paints at
+     once, so LCP is unaffected and axe never scans faded text) and no filter, whose per-frame repaint
+     during load pushed blocking time over budget. */
   main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > * {
     animation: header-rise var(--dur-slow) var(--ease-snap) both;
   }
@@ -569,8 +570,7 @@
 }
 @keyframes header-rise {
   from {
-    translate: 0 1.5rem;
-    filter: blur(6px);
+    translate: 0 3rem;
   }
 }
 
