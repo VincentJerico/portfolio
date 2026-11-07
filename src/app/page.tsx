@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Inspectable } from '@/components/bughunt/Inspectable';
 import { CaseStudyCard } from '@/components/content/CaseStudyCard';
+import { FlipCard } from '@/components/content/FlipCard';
 import { PortraitCard } from '@/components/content/PortraitCard';
 import { ProjectCard } from '@/components/content/ProjectCard';
 import { QaAreaGrid } from '@/components/content/QaAreaGrid';
@@ -17,6 +18,7 @@ import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
 import { education, experience, metrics, profile, qaAreas, skills, timeline } from '@/content';
 import { approvedCaseStudies, projectsInOrder, visible } from '@/lib/content';
 import { formatDay, formatPeriod } from '@/lib/format';
+import { categoryLabel } from '@/lib/labels';
 import { getEnv } from '@/lib/env';
 import { pageMetadata } from '@/lib/seo';
 import { JsonLd } from '@/components/seo/JsonLd';
@@ -25,6 +27,14 @@ export const metadata: Metadata = pageMetadata({ description: profile.oneLiner, 
 
 export default function OverviewPage() {
   const featured = projectsInOrder().filter((project) => project.featured);
+  // Areas the public suites cover, in project order; the hub and capstone are not testing areas.
+  const testedAreas = [
+    ...new Set(
+      projectsInOrder()
+        .filter((p) => p.category !== 'hub' && p.category !== 'capstone')
+        .map((p) => categoryLabel(p.category)),
+    ),
+  ];
   const caseStudies = approvedCaseStudies().slice(0, 3);
   const role = visible(experience).find((item) => item.hasCaseStudies);
   const latestEvents = visible(timeline)
@@ -62,6 +72,7 @@ export default function OverviewPage() {
         <div className="measure min-w-0">
           <h1 id="hero-heading">{profile.fullName}</h1>
           <p className="mt-5 text-xl font-semibold text-ink lg:text-2xl">{profile.headline}</p>
+          <FlipCard lead="My suites cover" words={testedAreas} />
           <p className="mt-4 text-lg text-ink">{introLead}</p>
           {introRest && <p className="mt-2 text-ink-muted">{introRest}</p>}
           <div className="mt-8 flex flex-wrap gap-3">
@@ -99,7 +110,7 @@ export default function OverviewPage() {
             <RunnerHeroBlock metrics={metrics} />
           </div>
         </div>
-        <div className="flex w-full min-w-0 flex-col items-start gap-4 md:w-[22rem] md:items-end">
+        <div className="flex w-full min-w-0 flex-col items-start gap-4 md:w-[12.5rem] md:items-end lg:w-[13.5rem] xl:w-[15rem]">
           {profile.photo && (
             <PortraitCard
               photo={profile.photo}
