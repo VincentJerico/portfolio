@@ -453,7 +453,6 @@
 @keyframes stream-in {
   from {
     translate: -2.5rem 0;
-    filter: blur(3px);
   }
 }
 @keyframes draw-x {
@@ -575,7 +574,7 @@
   }
 }
 
-/* On scroll, everywhere in the content: sections rise into place, list items and table rows stream
+/* On scroll: sections rise into place, timeline entries and table rows stream
    in, sharpening from a blur. Transform and blur only, never opacity, so text contrast never drops;
    final state without support or under reduced motion. */
 @supports (animation-timeline: view()) {
@@ -585,7 +584,8 @@
       animation-timeline: view();
       animation-range: cover 0px cover 380px;
     }
-    main :is(li, tr) {
+    /* Scoped, not every li: one scroll timeline per list item cost measurable blocking time. */
+    main :is(.timeline-track > li, tbody > tr) {
       animation: stream-in linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 100%;
@@ -595,7 +595,6 @@
 @keyframes section-rise {
   from {
     translate: 0 4rem;
-    filter: blur(4px);
   }
 }
 

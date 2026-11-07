@@ -117,7 +117,9 @@ test.describe('portrait card', () => {
 test.describe('content motion', () => {
   const animations = () =>
     [
-      ...document.querySelectorAll<HTMLElement>('main section, main header > *, main li, main tr'),
+      ...document.querySelectorAll<HTMLElement>(
+        'main section, main header > *, main .timeline-track > li, main tbody > tr',
+      ),
     ].map((el) => getComputedStyle(el).animationName);
 
   test('sections, headers, list items and rows are still under reduced motion', async ({
