@@ -1,6 +1,7 @@
 import { expect, test } from '../helpers/test';
 import { metrics, profile } from '../../src/content';
 import { projectsInOrder } from '../../src/lib/content';
+import { waitForHydration } from '../helpers/hydration';
 
 test.describe('overview', () => {
   test.beforeEach(async ({ page }) => {
@@ -90,5 +91,44 @@ test.describe('hero runner block', () => {
     await expect(lastLine).toBeVisible();
     const clip = await lastLine.evaluate((el) => getComputedStyle(el).clipPath);
     expect(['none', 'inset(0px)']).toContain(clip);
+  });
+});
+
+test.describe('portrait card', () => {
+  test('flips to its fixture data and back, exposing only the face on show', async ({ page }) => {
+    await page.goto('/');
+    await waitForHydration(page);
+    const flip = page.getByRole('button', { name: 'Flip card' });
+    const back = page.getByTestId('portrait-back');
+    const portrait = page.getByRole('img', { name: profile.fullName });
+
+    await expect(flip).toHaveAttribute('aria-pressed', 'false');
+    await expect(back).toHaveAttribute('inert', '');
+    await flip.click();
+    await expect(flip).toHaveAttribute('aria-pressed', 'true');
+    await expect(back).not.toHaveAttribute('inert');
+    await expect(back).toContainText(profile.location);
+    await expect(portrait.locator('xpath=ancestor::figure')).toHaveAttribute('inert', '');
+    await flip.click();
+    await expect(back).toHaveAttribute('inert', '');
+  });
+});
+
+test.describe('content motion', () => {
+  const animations = () =>
+    [
+      ...document.querySelectorAll<HTMLElement>(
+        'main section, main header > *, main .timeline-track > li, main tbody > tr',
+      ),
+    ].map((el) => getComputedStyle(el).animationName);
+
+  test('sections, headers, list items and rows are still under reduced motion', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/projects/accessibility-testing');
+    const names = await page.evaluate(animations);
+    expect(names.length).toBeGreaterThan(0);
+    expect(names.filter((name) => name !== 'none')).toEqual([]);
   });
 });

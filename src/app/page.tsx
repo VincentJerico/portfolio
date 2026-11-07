@@ -1,9 +1,9 @@
 import { ArrowRight, Download, ExternalLink, Mail } from 'lucide-react';
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Inspectable } from '@/components/bughunt/Inspectable';
 import { CaseStudyCard } from '@/components/content/CaseStudyCard';
+import { PortraitCard } from '@/components/content/PortraitCard';
 import { ProjectCard } from '@/components/content/ProjectCard';
 import { QaAreaGrid } from '@/components/content/QaAreaGrid';
 import { RunnerHeroBlock } from '@/components/content/RunnerHeroBlock';
@@ -34,8 +34,11 @@ export default function OverviewPage() {
   const asOf = metrics[0]?.asOf;
 
   const school = visible(education)[0]?.school;
+  // The intro's first sentence leads; the rest steps back. Split only where a sentence ends.
+  const [introLead, ...introSentences] = profile.intro.split(/(?<=\.)\s+(?=[A-Z])/);
+  const introRest = introSentences.join(' ');
   return (
-    <div className="flex flex-col gap-20 lg:gap-24">
+    <div className="flex flex-col gap-section">
       <JsonLd
         data={{
           '@context': 'https://schema.org',
@@ -57,14 +60,10 @@ export default function OverviewPage() {
         className="grid items-start gap-10 md:grid-cols-[1fr_auto]"
       >
         <div className="measure min-w-0">
-          <p className="label-mono text-ink-muted">
-            {profile.role} · {profile.company}
-          </p>
-          <h1 id="hero-heading" className="mt-4">
-            {profile.fullName}
-          </h1>
+          <h1 id="hero-heading">{profile.fullName}</h1>
           <p className="mt-5 text-xl font-semibold text-ink lg:text-2xl">{profile.headline}</p>
-          <p className="mt-4 text-ink-muted">{profile.intro}</p>
+          <p className="mt-4 text-lg text-ink">{introLead}</p>
+          {introRest && <p className="mt-2 text-ink-muted">{introRest}</p>}
           <div className="mt-8 flex flex-wrap gap-3">
             <Inspectable as="span" id="overview-view-projects" label="View projects button">
               <ButtonLink href="/projects" variant="primary">
@@ -102,21 +101,18 @@ export default function OverviewPage() {
         </div>
         <div className="flex w-full min-w-0 flex-col items-start gap-4 md:w-[22rem] md:items-end">
           {profile.photo && (
-            <figure className="w-full max-w-[240px] justify-self-start rounded-card border border-line bg-surface p-2 shadow-card ">
-              <Image
-                src={profile.photo}
-                alt={profile.fullName}
-                width={510}
-                height={680}
-                sizes="240px"
-                loading="eager"
-                fetchPriority="high"
-                className="aspect-[3/4] w-full rounded-[4px] object-cover object-[50%_35%]"
-              />
-              <figcaption className="mt-2 px-1 font-mono text-[0.6875rem] text-ink-muted">
-                fixture · vincent-portrait.jpg · 510×680
-              </figcaption>
-            </figure>
+            <PortraitCard
+              photo={profile.photo}
+              name={profile.fullName}
+              facts={[
+                { label: 'role', value: profile.role },
+                { label: 'company', value: profile.company },
+                { label: 'location', value: profile.location },
+                { label: 'languages', value: (profile.languages ?? []).join(', ') },
+                { label: 'goal', value: profile.goal },
+                { label: 'next', value: profile.nextDirections.join(', ') },
+              ].filter((fact) => fact.value)}
+            />
           )}
         </div>
       </section>
@@ -227,8 +223,7 @@ export default function OverviewPage() {
       {/* 8. Contact */}
       <Section id="contact" title="Contact">
         <div className="rounded-card border border-line bg-surface p-6 lg:p-8">
-          <p className="measure text-lg text-ink">{profile.tagline}</p>
-          <p className="mt-2 font-mono text-sm text-ink-muted">{profile.email}</p>
+          <p className="font-mono text-lg break-all text-ink">{profile.email}</p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <ButtonLink href={`mailto:${profile.email}`} variant="primary">
               <Mail aria-hidden="true" className="size-4" />

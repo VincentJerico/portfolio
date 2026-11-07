@@ -1,13 +1,16 @@
-/* Design tokens (spec 4.1). Dark "control panel" is the default for no-JS visitors and crawlers;
-   next-themes adds .light or .dark to <html>. Contrast of every pair is enforced by
-   tests/unit/tokens.test.ts. */
+/* Design tokens (spec 4.1, amended by the 2026-11-07 design pass). Dark "control panel" is the default for
+   no-JS visitors and crawlers; next-themes adds .light or .dark to <html>.
+   Colour split 70/20/10: neutrals (bg, surface, surface-2) / secondary (sidebar, top bar, run summary band)
+   / accent (links, primary actions, focus). pass, warn and fail mark status only.
+   tests/unit/tokens.test.ts enforces AA contrast for every pair and bans pure black and white. */
 
 :root {
   color-scheme: dark;
   --bg: #0b0f14;
-  --surface: #11161d;
-  --surface-2: #161c24;
-  --border: #232b36;
+  --surface: #10161f;
+  --surface-2: #16202c;
+  --secondary: #121d30;
+  --border: #243246;
   --text: #e6edf3;
   --text-muted: #9aa4af;
   --accent: #58a6ff;
@@ -20,16 +23,17 @@
 
 .light {
   color-scheme: light;
-  --bg: #fafaf7;
-  --surface: #ffffff;
-  --surface-2: #f2f2ee;
-  --border: #e3e3de;
-  --text: #111418;
-  --text-muted: #555d66;
-  --accent: #0b5fd8;
-  --pass: #1a7f37;
-  --warn: #956400; /* spec #9A6700 was 4.34:1 on surface-2; nearest passing shade */
-  --fail: #cf222e;
-  --focus-ring: #0b5fd8;
-  --shadow: 0 1px 2px rgb(17 20 24 / 0.06), 0 1px 1px rgb(17 20 24 / 0.04);
+  --bg: #f2f6fc;
+  --surface: #fafcff;
+  --surface-2: #e7eef9;
+  --secondary: #dce6f8;
+  --border: #c8d4ea;
+  --text: #0d1a30;
+  --text-muted: #435270;
+  --accent: #0a56d0;
+  --pass: #0b6b2e;
+  --warn: #7f5300;
+  --fail: #bb1b2c;
+  --focus-ring: #0a56d0;
+  --shadow: 0 1px 2px rgb(13 26 48 / 0.07), 0 1px 1px rgb(13 26 48 / 0.04);
 }

@@ -21,6 +21,8 @@
     "cv": "tsx scripts/build-cv-pdf.ts"
   },
   "dependencies": {
+    "@fontsource/archivo": "^5.3.0",
+    "@fontsource/martian-mono": "^5.3.0",
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
     "@next/mdx": "^16.4.5",
@@ -39,9 +41,6 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
-    "@fontsource/ibm-plex-mono": "^5.3.0",
-    "@fontsource/ibm-plex-sans": "^5.3.0",
-    "@fontsource/instrument-serif": "^5.3.0",
     "@lhci/cli": "^0.16.0",
     "@playwright/test": "^1.64.1",
     "@tailwindcss/turbopack": "^4",

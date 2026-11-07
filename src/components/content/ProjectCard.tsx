@@ -1,11 +1,15 @@
 import Link from 'next/link';
+import { ViewTransition } from 'react';
 import type { Project } from '@/content/schema';
 import { categoryLabel } from '@/lib/labels';
 import { Chips } from '@/components/ui/Chips';
 import { CiBadge } from '@/components/ui/CiBadge';
 import { Inspectable } from '@/components/bughunt/Inspectable';
 
-/** A project shown as a test "suite" (spec 7.1.3). */
+/**
+ * A project shown as a test "suite" (spec 7.1.3). The hook (the result) leads; the summary lives on the
+ * report. The name morphs into the report's title on navigation.
+ */
 export function ProjectCard({ project, huntPrefix }: { project: Project; huntPrefix: string }) {
   const suite = String(project.order).padStart(2, '0');
   return (
@@ -15,15 +19,16 @@ export function ProjectCard({ project, huntPrefix }: { project: Project; huntPre
       className="h-full"
       plantedClassName="translate-x-[3px] print:translate-x-0"
     >
-      <article className="group flex h-full flex-col rounded-card border border-line bg-surface p-5 shadow-card transition-colors hover:border-accent/60">
+      <article className="lift scan group flex h-full flex-col rounded-card border border-line bg-surface p-5 shadow-card">
         <p className="label-mono flex items-center gap-2 text-ink-muted">
           <span aria-hidden="true" className="size-1.5 rounded-full bg-accent" />
           Suite {suite} · {categoryLabel(project.category)}
         </p>
-        <h3 className="mt-3 font-mono text-base font-medium break-words text-ink">
-          {project.name}
-        </h3>
-        <p className="mt-2 text-[0.9375rem] text-ink-muted">{project.summary}</p>
+        <ViewTransition name={`project-title-${project.slug}`} share="morph" default="none">
+          <h3 className="mt-3 font-mono text-base font-medium break-words text-ink">
+            {project.name}
+          </h3>
+        </ViewTransition>
         <p className="mt-3 text-[0.9375rem] font-semibold text-ink">{project.hook}</p>
         <div className="mt-4">
           <Chips items={project.stack} max={4} label={`${project.name} stack`} />

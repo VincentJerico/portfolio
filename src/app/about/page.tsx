@@ -21,7 +21,7 @@ export default function AboutPage() {
   const capstone = degree?.capstoneSlug ? projectBySlug(degree.capstoneSlug) : undefined;
 
   return (
-    <div className="flex flex-col gap-16">
+    <div className="flex flex-col gap-block">
       <header className="measure flex flex-col gap-4">
         <p className="label-mono text-ink-muted">About</p>
         <h1>About</h1>
