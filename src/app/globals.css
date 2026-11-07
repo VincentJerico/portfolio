@@ -964,6 +964,36 @@
     var(--dur-base) ease-out var(--dur-fast) both vt-fade-in,
     var(--dur-slow) var(--ease-snap) both vt-rise;
 }
+/* The curtain: the old page lifts and clips away upward; an accent band sweeps up just ahead of the
+   new page, which is revealed from the bottom. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(.page-curtain-out) {
+    animation: var(--dur-base) var(--ease-snap) both vt-curtain-out;
+  }
+  ::view-transition-image-pair(.page-curtain-in) {
+    background: var(--accent);
+    animation: 520ms var(--ease-snap) both vt-curtain-band;
+  }
+  ::view-transition-new(.page-curtain-in) {
+    animation: 520ms var(--ease-snap) 90ms both vt-curtain-in;
+  }
+}
+@keyframes vt-curtain-out {
+  to {
+    translate: 0 -2rem;
+    clip-path: inset(0 0 100% 0);
+  }
+}
+@keyframes vt-curtain-band {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+}
+@keyframes vt-curtain-in {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+}
 ::view-transition-group(.morph) {
   animation-duration: var(--dur-slow);
   animation-timing-function: var(--ease-snap);

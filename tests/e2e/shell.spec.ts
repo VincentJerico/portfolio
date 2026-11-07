@@ -252,3 +252,30 @@ test.describe('not found', () => {
     expect(response?.status()).toBe(404);
   });
 });
+
+test.describe('route curtain', () => {
+  test('page changes use the curtain classes, and report links keep the morph', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const rules = await page.evaluate(() =>
+      [...document.styleSheets]
+        .flatMap((sheet) => {
+          try {
+            return [...sheet.cssRules].map((rule) => rule.cssText);
+          } catch {
+            return [];
+          }
+        })
+        .join('\n'),
+    );
+    // Chrome serializes the class selector as (*.page-curtain-in).
+    expect(rules).toMatch(/view-transition-new\(\*?\.page-curtain-in\)/);
+    await page
+      .getByRole('link', { name: /^Read the report for/ })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/projects\/[a-z0-9-]+$/);
+    await expect(page.locator('h1')).toHaveCount(1);
+  });
+});
