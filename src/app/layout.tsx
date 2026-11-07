@@ -7,6 +7,7 @@ import { HuntBanner } from '@/components/bughunt/HuntBanner';
 import { NextSpec } from '@/components/content/NextSpec';
 import { SiteChecksChip } from '@/components/explorer/SiteChecksChip';
 import { TestExplorerNav } from '@/components/explorer/TestExplorerNav';
+import { Boot, BOOT_SCRIPT } from '@/components/layout/Boot';
 import { IdentityBlock } from '@/components/layout/IdentityBlock';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { PullCord } from '@/components/layout/PullCord';
@@ -43,7 +44,11 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   const { order, reportsWithNext } = siteReadingOrder();
   return (
     <html lang="en" className={fontVariables} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: BOOT_SCRIPT }} />
+      </head>
       <body>
+        <Boot />
         <ThemeProvider>
           <BugHuntProvider>
             <SkipLink />

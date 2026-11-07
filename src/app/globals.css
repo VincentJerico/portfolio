@@ -539,6 +539,11 @@
   main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > * {
     animation: header-rise 720ms var(--ease-snap) both;
   }
+  /* The page title rises out of its own line: it moves up while its clip opens from the top, so it
+     looks masked by the line it sits on. Clip, not opacity, so the title still counts as painted. */
+  main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > h1 {
+    animation: line-rise 720ms var(--ease-snap) both;
+  }
   main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(2) {
     animation-delay: 90ms;
   }
@@ -559,9 +564,83 @@
     transition: scale var(--dur-base) var(--ease-snap);
   }
 }
+@keyframes line-rise {
+  from {
+    translate: 0 100%;
+    clip-path: inset(-0.25em -1em 100% -1em);
+  }
+  to {
+    clip-path: inset(-0.25em -1em -0.3em -1em);
+  }
+}
 @keyframes header-rise {
   from {
     translate: 0 3rem;
+  }
+}
+
+/* First-visit boot (Boot.tsx): counters run to 100%, a hairline splits the screen, the overlay lifts.
+   It shows only while the head script has set <html data-boot>. */
+@property --boot-n {
+  syntax: '<integer>';
+  inherits: false;
+  initial-value: 0;
+}
+[data-boot-overlay] {
+  display: none;
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  html[data-boot] [data-boot-overlay] {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    background: var(--bg);
+    animation:
+      boot-lift 500ms var(--ease-snap) 900ms both,
+      boot-gone 1ms linear 1400ms forwards;
+  }
+  .boot-count {
+    position: absolute;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    counter-reset: boot var(--boot-n);
+    animation: boot-count 800ms steps(100) both;
+  }
+  .boot-count::after {
+    content: counter(boot) '%';
+  }
+  .boot-line {
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    height: 1px;
+    background: var(--text);
+    scale: 0 1;
+    animation: boot-split 600ms var(--ease-snap) 250ms both;
+  }
+}
+@keyframes boot-count {
+  to {
+    --boot-n: 100;
+  }
+}
+@keyframes boot-split {
+  to {
+    scale: 1 1;
+  }
+}
+@keyframes boot-lift {
+  to {
+    translate: 0 -100%;
+  }
+}
+@keyframes boot-gone {
+  from,
+  to {
+    visibility: hidden;
   }
 }
 
