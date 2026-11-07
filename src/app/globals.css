@@ -723,6 +723,32 @@
     }
   }
 
+  /* Coverage map: lines and labels in the mono face; hovering an area lights its line. */
+  .cov-line {
+    stroke: var(--border);
+    stroke-width: 1;
+    stroke-dasharray: 1;
+    transition:
+      stroke var(--dur-fast),
+      stroke-width var(--dur-fast);
+  }
+  .cov-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    fill: var(--text-muted);
+    transition: fill var(--dur-fast);
+  }
+  .cov-node {
+    fill: var(--text);
+  }
+  .cov-area:hover .cov-line {
+    stroke: var(--accent);
+    stroke-width: 2;
+  }
+  .cov-area:hover .cov-label {
+    fill: var(--text);
+  }
+
   /* Touch screens have no hover: the result shows on the closed door. */
   .door-hook-touch {
     display: none;
@@ -738,6 +764,17 @@
 }
 @supports (animation-timeline: view()) {
   @media screen and (prefers-reduced-motion: no-preference) {
+    /* The map draws from the centre out as it scrolls in, one area after another. */
+    .cov-line {
+      animation: cov-draw linear both;
+      animation-timeline: view();
+      animation-range: entry calc(10% + var(--i) * 2%) cover calc(40% + var(--i) * 2%);
+    }
+    .cov-label {
+      animation: cov-rise linear both;
+      animation-timeline: view();
+      animation-range: entry calc(20% + var(--i) * 2%) cover calc(45% + var(--i) * 2%);
+    }
     .tm-year {
       animation: year-roll linear both;
       animation-timeline: view();
@@ -747,6 +784,16 @@
       animation: dust-drift linear both;
       animation-timeline: view();
     }
+  }
+}
+@keyframes cov-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+@keyframes cov-rise {
+  from {
+    translate: 0 6px;
   }
 }
 @keyframes flip-page {
