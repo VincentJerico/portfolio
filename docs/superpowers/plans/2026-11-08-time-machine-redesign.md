@@ -174,3 +174,9 @@ The words are the project category labels in project order, de-duplicated:
 - **Door swing.** The panel opens 80 degrees, and the back side has 24% left padding, so the result
   text clears the open door.
 - **Breadcrumb.** The report breadcrumb keeps "Projects"; "Back to the suites" was not needed.
+- **Content stays in its box (Vincent, 2026-11-08).** The door's back held more than the closed door,
+  so the CI badge hung out below it. Both sides of the door, and both faces of the portrait card, now
+  share one grid cell, so each is as tall as its longer side. The door front adds the suite's summary
+  (the result stays behind the door; touch screens show the result instead). The hero terminal wraps
+  long results under the suite name, and the career path uses two columns until 1280 px.
+  `tests/e2e/layout.spec.ts` fails if anything spills out of a bordered box at 320 to 1280 px.

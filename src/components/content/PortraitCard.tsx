@@ -14,7 +14,9 @@ interface PortraitCardProps {
 /**
  * The hero portrait as a test fixture that flips to show its data. The button is the accessible
  * control; clicking the card is a pointer shortcut. The hidden face is inert, so focus and screen
- * readers only ever meet the face on show. Reduced motion turns the flip into an instant swap.
+ * readers only ever meet the face on show. Reduced motion turns the flip into an instant swap. Both
+ * faces share one grid cell, so the card is as tall as the longer face and the fixture data is never
+ * cut off; when the back is the taller one, the photo grows to match.
  */
 export function PortraitCard({ photo, name, facts }: PortraitCardProps) {
   const [flipped, setFlipped] = useState(false);
@@ -25,11 +27,11 @@ export function PortraitCard({ photo, name, facts }: PortraitCardProps) {
       <div className="group w-full [perspective:1000px]" onClick={toggle}>
         <div
           data-flipped={flipped || undefined}
-          className="relative w-full cursor-pointer transition-transform duration-500 ease-[var(--ease-snap)] [transform-style:preserve-3d] group-hover:[transform:rotateY(-6deg)] data-flipped:[transform:rotateY(180deg)] data-flipped:group-hover:[transform:rotateY(174deg)]"
+          className="relative grid w-full cursor-pointer transition-transform duration-500 ease-[var(--ease-snap)] [transform-style:preserve-3d] group-hover:[transform:rotateY(-6deg)] data-flipped:[transform:rotateY(180deg)] data-flipped:group-hover:[transform:rotateY(174deg)]"
         >
           <figure
             inert={flipped}
-            className="rounded-card border border-line bg-surface p-2 shadow-card [backface-visibility:hidden]"
+            className="col-start-1 row-start-1 flex flex-col rounded-card border border-line bg-surface p-2 shadow-card [backface-visibility:hidden]"
           >
             <Image
               src={photo}
@@ -39,7 +41,7 @@ export function PortraitCard({ photo, name, facts }: PortraitCardProps) {
               sizes="240px"
               loading="eager"
               fetchPriority="high"
-              className="aspect-[3/4] w-full rounded-[4px] object-cover object-[50%_35%] grayscale transition-[filter] duration-500 group-hover:grayscale-0"
+              className="aspect-[3/4] w-full flex-1 rounded-[4px] object-cover object-[50%_35%] grayscale transition-[filter] duration-500 group-hover:grayscale-0"
             />
             <figcaption className="mt-2 px-1 font-mono text-[0.6875rem] text-ink-muted">
               fixture · vincent-portrait.jpg · 510×680
@@ -48,14 +50,14 @@ export function PortraitCard({ photo, name, facts }: PortraitCardProps) {
           <div
             inert={!flipped}
             data-testid="portrait-back"
-            className="absolute inset-0 flex flex-col overflow-hidden rounded-card border border-line bg-secondary p-4 [backface-visibility:hidden] [transform:rotateY(180deg)] print:hidden"
+            className="col-start-1 row-start-1 flex min-w-0 flex-col rounded-card border border-line bg-secondary p-3.5 [backface-visibility:hidden] [transform:rotateY(180deg)] print:hidden"
           >
             <p className="label-mono text-ink-muted">fixture · vincent.json</p>
-            <dl className="mt-3 flex flex-col gap-2.5 font-mono text-[0.8125rem]">
+            <dl className="mt-2.5 flex flex-col gap-2 font-mono text-[0.75rem] leading-snug">
               {facts.map(({ label, value }) => (
                 <div key={label}>
                   <dt className="text-xs text-ink-muted">{label}</dt>
-                  <dd className="text-ink">{value}</dd>
+                  <dd className="break-words text-ink">{value}</dd>
                 </div>
               ))}
             </dl>

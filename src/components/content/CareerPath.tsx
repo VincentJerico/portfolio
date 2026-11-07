@@ -10,7 +10,7 @@ const STEPS = [
 
 export function CareerPath() {
   return (
-    <ol aria-label="Career path" className="grid gap-3 md:grid-cols-4">
+    <ol aria-label="Career path" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {STEPS.map((step, i) => (
         <li
           key={step.label}
@@ -26,8 +26,8 @@ export function CareerPath() {
           >
             {step.done ? <Check className="size-4" /> : i + 1}
           </span>
-          <span className="flex flex-col gap-1">
-            <span className="font-semibold text-ink">{step.label}</span>
+          <span className="flex min-w-0 flex-col gap-1">
+            <span className="font-semibold break-words text-ink">{step.label}</span>
             <span className="label-mono text-ink-muted">{step.done ? 'done' : 'next'}</span>
           </span>
         </li>

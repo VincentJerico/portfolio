@@ -694,6 +694,9 @@
     .door-hook-touch {
       display: block;
     }
+    .door-summary {
+      display: none;
+    }
   }
 }
 @supports (animation-timeline: view()) {
