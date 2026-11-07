@@ -65,7 +65,7 @@ export function FlipCard({ lead, words }: { lead: string; words: string[] }) {
               {words[index]}
             </span>
           </span>
-          <span className="shrink-0 pb-1 font-mono text-[0.625rem] text-ink-muted">
+          <span className="shrink-0 pb-1 font-mono text-[0.6875rem] text-ink-muted">
             {pad(index + 1)} / {pad(words.length)}
           </span>
         </div>

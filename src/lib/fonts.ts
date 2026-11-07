@@ -1,21 +1,18 @@
-import { Host_Grotesk } from 'next/font/google';
-import localFont from 'next/font/local';
+import { Geist, Geist_Mono } from 'next/font/google';
 
-// Decision C39: a quiet Swiss sans for everything people read, and a pixel monospace for everything
-// the test runner says. Host Grotesk is one variable file (weight 300 to 800). Departure Mono is not on
-// Google Fonts, so its OFL-licensed file ships in src/fonts; it is drawn on an 11 px grid, so mono
-// text uses 11 px or 13.75 px (see globals.css).
-export const hostGrotesk = Host_Grotesk({
+// Decision C39: Geist for everything people read and Geist Mono for everything the test runner says.
+// Both are variable (weight 100 to 900) and built for legibility at small sizes, which the dense
+// runner labels need (Vincent picked them over a pixel mono that read poorly at 11 px).
+export const geist = Geist({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-host-grotesk',
+  variable: '--font-geist',
 });
 
-export const departureMono = localFont({
-  src: '../fonts/departure-mono/DepartureMono-Regular.woff2',
+export const geistMono = Geist_Mono({
+  subsets: ['latin'],
   display: 'swap',
-  variable: '--font-departure-mono',
-  fallback: ['ui-monospace', 'Menlo', 'monospace'],
+  variable: '--font-geist-mono',
 });
 
-export const fontVariables = [hostGrotesk.variable, departureMono.variable].join(' ');
+export const fontVariables = [geist.variable, geistMono.variable].join(' ');

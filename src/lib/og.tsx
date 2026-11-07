@@ -8,12 +8,11 @@ export const OG_SIZE = { width: 1200, height: 630 };
 const font = (pkg: string, file: string) =>
   readFile(join(process.cwd(), 'node_modules/@fontsource', pkg, 'files', file));
 
-// The OG renderer reads woff, not woff2; Departure Mono's woff ships beside its woff2 in src/fonts.
 const fonts = Promise.all([
-  font('host-grotesk', 'host-grotesk-latin-400-normal.woff'),
-  font('host-grotesk', 'host-grotesk-latin-700-normal.woff'),
-  readFile(join(process.cwd(), 'src/fonts/departure-mono/DepartureMono-Regular.woff')),
-  font('host-grotesk', 'host-grotesk-latin-800-normal.woff'),
+  font('geist', 'geist-latin-400-normal.woff'),
+  font('geist', 'geist-latin-700-normal.woff'),
+  font('geist-mono', 'geist-mono-latin-400-normal.woff'),
+  font('geist', 'geist-latin-800-normal.woff'),
 ]);
 
 // Dark theme tokens (src/styles/tokens.css).
@@ -46,7 +45,7 @@ export async function renderOgImage({
         justifyContent: 'space-between',
         background: C.bg,
         padding: 56,
-        fontFamily: 'Host Grotesk',
+        fontFamily: 'Geist',
         color: C.text,
       }}
     >
@@ -55,7 +54,7 @@ export async function renderOgImage({
           display: 'flex',
           alignItems: 'center',
           gap: 16,
-          fontFamily: 'Departure Mono',
+          fontFamily: 'Geist Mono',
           fontSize: 22,
           color: C.muted,
         }}
@@ -67,7 +66,7 @@ export async function renderOgImage({
         <div
           style={{
             display: 'flex',
-            fontFamily: 'Host Grotesk',
+            fontFamily: 'Geist',
             fontWeight: 800,
             fontSize: 80,
             lineHeight: 1,
@@ -96,14 +95,12 @@ export async function renderOgImage({
           alignItems: 'center',
           borderTop: `1px solid ${C.border}`,
           paddingTop: 24,
-          fontFamily: 'Departure Mono',
+          fontFamily: 'Geist Mono',
           fontSize: 22,
           color: C.muted,
         }}
       >
-        <div
-          style={{ display: 'flex', color: C.text, fontFamily: 'Host Grotesk', fontWeight: 700 }}
-        >
+        <div style={{ display: 'flex', color: C.text, fontFamily: 'Geist', fontWeight: 700 }}>
           Vincent Jerico Alcuran
         </div>
         <div style={{ display: 'flex' }}>Software QA/QC Engineer · path to SDET</div>
@@ -112,10 +109,10 @@ export async function renderOgImage({
     {
       ...OG_SIZE,
       fonts: [
-        { name: 'Host Grotesk', data: sans, weight: 400, style: 'normal' },
-        { name: 'Host Grotesk', data: sansBold, weight: 700, style: 'normal' },
-        { name: 'Host Grotesk', data: display, weight: 800, style: 'normal' },
-        { name: 'Departure Mono', data: mono, weight: 400, style: 'normal' },
+        { name: 'Geist', data: sans, weight: 400, style: 'normal' },
+        { name: 'Geist', data: sansBold, weight: 700, style: 'normal' },
+        { name: 'Geist', data: display, weight: 800, style: 'normal' },
+        { name: 'Geist Mono', data: mono, weight: 400, style: 'normal' },
       ],
     },
   );
