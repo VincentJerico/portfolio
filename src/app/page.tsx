@@ -110,7 +110,7 @@ export default function OverviewPage() {
             <RunnerHeroBlock metrics={metrics} />
           </div>
         </div>
-        <div className="flex w-full min-w-0 flex-col items-start gap-4 md:w-[22rem] md:items-end">
+        <div className="flex w-full min-w-0 flex-col items-start gap-4 md:w-[12.5rem] md:items-end lg:w-[13.5rem] xl:w-[15rem]">
           {profile.photo && (
             <PortraitCard
               photo={profile.photo}

@@ -46,7 +46,7 @@ export function SuiteDoor({ project }: { project: Project }) {
             )}
           </div>
         </div>
-        <div className="door-panel pointer-events-none relative z-10 flex h-full flex-col rounded-card border border-line bg-surface p-5 shadow-card">
+        <div className="door-panel pointer-events-none relative z-10 flex h-full flex-col rounded-card border border-line bg-surface py-5 pr-10 pl-5 shadow-card">
           <p className="door-plate self-start rounded-chip border border-line bg-surface-2 px-2 py-1 font-mono text-[0.6875rem] text-ink-muted">
             suite {suite} · {categoryLabel(project.category)}
           </p>

@@ -452,7 +452,7 @@
 }
 @keyframes stream-in {
   from {
-    translate: -2.5rem 0;
+    translate: -3rem 0;
   }
 }
 @keyframes draw-x {
@@ -546,7 +546,7 @@
      once, so LCP is unaffected and axe never scans faded text) and no filter, whose per-frame repaint
      during load pushed blocking time over budget. */
   main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > * {
-    animation: header-rise var(--dur-slow) var(--ease-snap) both;
+    animation: header-rise 720ms var(--ease-snap) both;
   }
   main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(2) {
     animation-delay: 90ms;
@@ -574,9 +574,8 @@
   }
 }
 
-/* On scroll: sections rise into place, timeline entries and table rows stream
-   in, sharpening from a blur. Transform and blur only, never opacity, so text contrast never drops;
-   final state without support or under reduced motion. */
+/* On scroll: sections rise into place, timeline entries and table rows stream in. Transform only,
+   never opacity, so text contrast never drops; final state without support or under reduced motion. */
 @supports (animation-timeline: view()) {
   @media screen and (prefers-reduced-motion: no-preference) {
     main section:not([aria-labelledby='hero-heading']) {
@@ -594,7 +593,7 @@
 }
 @keyframes section-rise {
   from {
-    translate: 0 4rem;
+    translate: 0 5rem;
   }
 }
 
@@ -673,7 +672,7 @@
   }
   .door-handle {
     position: absolute;
-    right: 1rem;
+    right: 0.875rem;
     top: 50%;
     width: 0.5rem;
     height: 2.75rem;
@@ -769,8 +768,8 @@
 }
 @keyframes vt-rise {
   from {
-    translate: 0 28px;
-    filter: blur(4px);
+    translate: 0 48px;
+    filter: blur(8px);
   }
 }
 @keyframes vt-via-blur {

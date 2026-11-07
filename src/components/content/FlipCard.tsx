@@ -46,21 +46,26 @@ export function FlipCard({ lead, words }: { lead: string; words: string[] }) {
       <p aria-hidden="true" className="text-2xl font-semibold text-ink-muted lg:text-3xl">
         {lead}
       </p>
-      <div aria-hidden="true" data-flip-card className="relative [perspective:700px]">
+      <div aria-hidden="true" data-flip-card className="relative max-w-full [perspective:700px]">
         <div className="flex justify-around px-3" data-flip-rings>
           {Array.from({ length: RINGS }, (_, i) => (
             <span key={i} className="flip-ring" />
           ))}
         </div>
-        <div className="relative -mt-1.5 min-w-[13rem] rounded-card border border-line bg-surface px-5 pt-4 pb-3 shadow-[0_6px_0_-2px_var(--border),0_12px_24px_-12px_rgb(0_0_0/0.5)]">
-          <span
-            key={index}
-            data-flip-word
-            className="flip-page block text-2xl font-bold [font-stretch:85%] text-ink lg:text-3xl"
-          >
-            {words[index]}
+        <div className="relative -mt-1.5 flex max-w-full min-w-[13rem] items-end justify-between gap-5 rounded-card border border-line bg-surface px-5 pt-4 pb-3 shadow-[0_6px_0_-2px_var(--border),0_12px_24px_-12px_rgb(0_0_0/0.5)]">
+          {/* Every word sits in one grid cell, invisible, so the card keeps the longest word's size
+              and nothing around it shifts when a page turns. */}
+          <span className="grid text-2xl font-bold [font-stretch:85%] text-ink lg:text-3xl">
+            {words.map((word) => (
+              <span key={word} className="invisible col-start-1 row-start-1">
+                {word}
+              </span>
+            ))}
+            <span key={index} data-flip-word className="flip-page col-start-1 row-start-1">
+              {words[index]}
+            </span>
           </span>
-          <span className="absolute right-3 bottom-1.5 font-mono text-[0.625rem] text-ink-muted">
+          <span className="shrink-0 pb-1 font-mono text-[0.625rem] text-ink-muted">
             {pad(index + 1)} / {pad(words.length)}
           </span>
         </div>
