@@ -118,6 +118,21 @@ test.describe('time machine', () => {
   });
 });
 
+test.describe('time machine years', () => {
+  test('every year shows all four digits at every width', async ({ page }) => {
+    await page.goto('/about');
+    for (const width of [768, 1024, 1280, 1536, 1920]) {
+      await page.setViewportSize({ width, height: 900 });
+      const clipped = await page
+        .locator('.tm-year-window')
+        .evaluateAll((windows) =>
+          windows.filter((el) => el.scrollWidth > el.clientWidth + 1).map((el) => el.textContent),
+        );
+      expect(clipped, `clipped years at ${width} px`).toEqual([]);
+    }
+  });
+});
+
 test.describe('suite doors', () => {
   test('each project is a door with one report link of touch size', async ({ page }) => {
     await page.goto('/projects');
