@@ -22,15 +22,36 @@ export function RunSummaryPanel({
   if (project.target) rows.push(['Target', <InlineCode key="t" text={project.target} />]);
   if (period) rows.push(['Period', period]);
   if (project.commits !== undefined) rows.push(['Commits', String(project.commits)]);
+  // The tools scroll slowly in a marquee: the real list plus an aria-hidden copy for the loop. It
+  // pauses on hover and focus; under reduced motion and in print the copy goes and the list wraps.
+  const chip = 'shrink-0 rounded-chip bg-surface-2 px-2 py-0.5 font-mono text-xs text-ink';
   rows.push([
     'Tools',
-    <ul key="tools" className="flex flex-wrap gap-1.5">
-      {project.stack.map((tool) => (
-        <li key={tool} className="rounded-chip bg-surface-2 px-2 py-0.5 font-mono text-xs text-ink">
-          {tool}
-        </li>
-      ))}
-    </ul>,
+    <div
+      key="tools"
+      data-marquee
+      className="marquee"
+      style={
+        { '--marquee-dur': `${Math.max(12, project.stack.length * 2.5)}s` } as React.CSSProperties
+      }
+    >
+      <div className="marquee-track">
+        <ul className="marquee-list">
+          {project.stack.map((tool) => (
+            <li key={tool} className={chip}>
+              {tool}
+            </li>
+          ))}
+        </ul>
+        <ul aria-hidden="true" className="marquee-list marquee-copy">
+          {project.stack.map((tool) => (
+            <li key={tool} className={chip}>
+              {tool}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>,
   ]);
   if (github) {
     rows.push([
@@ -93,11 +114,11 @@ export function RunSummaryPanel({
           )}
         </div>
       </div>
-      <dl className="grid gap-x-8 gap-y-4 px-5 py-5 sm:grid-cols-[8rem_1fr]">
+      <dl className="grid gap-x-8 gap-y-4 px-5 py-5 grid-cols-[minmax(0,1fr)] sm:grid-cols-[8rem_minmax(0,1fr)]">
         {rows.map(([term, value]) => (
           <div key={term} className="contents">
             <dt className="label-mono pt-0.5 text-ink-muted">{term}</dt>
-            <dd className="text-[0.9375rem] text-ink">{value}</dd>
+            <dd className="min-w-0 text-[0.9375rem] text-ink">{value}</dd>
           </div>
         ))}
       </dl>

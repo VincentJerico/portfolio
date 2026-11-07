@@ -161,3 +161,19 @@ test.describe('GitHub data (test builds use the fixture)', () => {
     await expect(page.getByRole('list', { name: 'GitHub topics' })).toHaveCount(0);
   });
 });
+
+test.describe('report tools marquee', () => {
+  test('tools scroll in a marquee that screen readers and print read as one list', async ({
+    page,
+  }) => {
+    const project = projectsInOrder()[0]!;
+    await page.goto(`/projects/${project.slug}`);
+    const marquee = page.locator('[data-marquee]');
+    await expect(marquee.locator('ul:not([aria-hidden])').getByRole('listitem')).toHaveCount(
+      project.stack.length,
+    );
+    await expect(marquee.locator('ul[aria-hidden="true"]')).toHaveCount(1);
+    await page.emulateMedia({ media: 'print' });
+    await expect(marquee.locator('ul[aria-hidden="true"]')).toBeHidden();
+  });
+});
