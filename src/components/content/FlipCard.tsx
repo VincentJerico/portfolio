@@ -55,7 +55,7 @@ export function FlipCard({ lead, words }: { lead: string; words: string[] }) {
         <div className="relative -mt-1.5 flex max-w-full min-w-[13rem] items-end justify-between gap-5 rounded-card border border-line bg-surface px-5 pt-4 pb-3 shadow-[0_6px_0_-2px_var(--border),0_12px_24px_-12px_rgb(0_0_0/0.5)]">
           {/* Every word sits in one grid cell, invisible, so the card keeps the longest word's size
               and nothing around it shifts when a page turns. */}
-          <span className="grid text-2xl font-bold [font-stretch:85%] text-ink lg:text-3xl">
+          <span className="grid text-2xl font-bold text-ink lg:text-3xl">
             {words.map((word) => (
               <span key={word} className="invisible col-start-1 row-start-1">
                 {word}

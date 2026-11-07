@@ -1,20 +1,21 @@
-import { Archivo, Martian_Mono } from 'next/font/google';
+import { Host_Grotesk } from 'next/font/google';
+import localFont from 'next/font/local';
 
-// One variable file each. Archivo's width axis does the display work: headings are set condensed and
-// heavy like a spec-sheet label, body text at normal width. Martian Mono, set slightly condensed,
-// carries the test-runner data.
-export const archivo = Archivo({
+// Decision C39: a quiet Swiss sans for everything people read, and a pixel monospace for everything
+// the test runner says. Host Grotesk is one variable file (weight 300 to 800). Departure Mono is not on
+// Google Fonts, so its OFL-licensed file ships in src/fonts; it is drawn on an 11 px grid, so mono
+// text uses 11 px or 13.75 px (see globals.css).
+export const hostGrotesk = Host_Grotesk({
   subsets: ['latin'],
-  axes: ['wdth'],
   display: 'swap',
-  variable: '--font-archivo',
+  variable: '--font-host-grotesk',
 });
 
-export const martianMono = Martian_Mono({
-  subsets: ['latin'],
-  axes: ['wdth'],
+export const departureMono = localFont({
+  src: '../fonts/departure-mono/DepartureMono-Regular.woff2',
   display: 'swap',
-  variable: '--font-martian-mono',
+  variable: '--font-departure-mono',
+  fallback: ['ui-monospace', 'Menlo', 'monospace'],
 });
 
-export const fontVariables = [archivo.variable, martianMono.variable].join(' ');
+export const fontVariables = [hostGrotesk.variable, departureMono.variable].join(' ');

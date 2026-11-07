@@ -166,10 +166,7 @@ importers:
 
   .:
     dependencies:
-      '@fontsource/archivo':
-        specifier: ^5.3.0
-        version: 5.3.0
-      '@fontsource/martian-mono':
+      '@fontsource/host-grotesk':
         specifier: ^5.3.0
         version: 5.3.0
       '@mdx-js/loader':
@@ -750,11 +747,8 @@ packages:
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
 
-  '@fontsource/archivo@5.3.0':
-    resolution: {integrity: sha512-5DIMgPVJRi62OqdOVoogCFxP73EkNM/E0YVTSDIQlDEJfDbxqZduwM/YoNZwC9Sx1CDgpKinqf8ckRY1QNIecw==}
-
-  '@fontsource/martian-mono@5.3.0':
-    resolution: {integrity: sha512-0iTnU6SZi6j5z4ymwlZGep6akvp/xWm+r+WyZO9hMfDJWX+dsFLipQp9zO02S0lkUQ+zAahcZNy3XLiNP+gVqQ==}
+  '@fontsource/host-grotesk@5.3.0':
+    resolution: {integrity: sha512-/4lcEvSbI3IELjz7UHW5Z1tXuRwOJACKK1ynJKSR28/MscudnKjxXIPQYfRmguv4niURtuksL0Hiusx+SPZS8w==}
 
   '@formatjs/ecma402-abstract@2.3.6':
     resolution: {integrity: sha512-HJnTFeRM2kVFVr5gr5kH1XP6K0JcJtE7Lzvtr3FS/so5f1kpsqqqxy5JF+FRaO6H2qmcMfAUIox7AJteieRtVw==}
@@ -6171,9 +6165,7 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
-  '@fontsource/archivo@5.3.0': {}
-
-  '@fontsource/martian-mono@5.3.0': {}
+  '@fontsource/host-grotesk@5.3.0': {}
 
   '@formatjs/ecma402-abstract@2.3.6':
     dependencies:

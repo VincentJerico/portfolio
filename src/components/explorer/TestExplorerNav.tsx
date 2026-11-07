@@ -73,7 +73,7 @@ function Row({
         </span>
         <span
           aria-hidden="true"
-          className="ml-auto flex shrink-0 items-center gap-1.5 font-mono text-[0.6875rem] tracking-tight text-ink-muted [font-stretch:75%]"
+          className="ml-auto flex shrink-0 items-center gap-1.5 font-mono text-[0.6875rem] tracking-tight text-ink-muted"
         >
           {visited && <Check className="size-3 text-accent" />}
           {showSpec && <span className="hidden xl:inline">{row.spec}</span>}

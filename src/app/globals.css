@@ -15,9 +15,9 @@
   --color-fail: var(--fail);
   --color-focus: var(--focus-ring);
 
-  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-martian-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-host-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-departure-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-display: var(--font-host-grotesk), ui-sans-serif, system-ui, sans-serif;
 
   --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
 
@@ -56,21 +56,20 @@
   h1 {
     font-family: var(--font-display);
     font-weight: 800;
-    font-stretch: 72%;
     font-size: clamp(2.5rem, 1.972rem + 2.254vw, 4rem);
     line-height: 0.98;
-    letter-spacing: -0.005em;
+    letter-spacing: -0.025em;
   }
 
   h2 {
     font-weight: 700;
-    font-stretch: 85%;
     font-size: clamp(1.5rem, 1.368rem + 0.563vw, 1.875rem);
     line-height: 1.25;
+    letter-spacing: -0.015em;
   }
 
   h3 {
-    font-weight: 650;
+    font-weight: 600;
     font-size: clamp(1.125rem, 1.081rem + 0.188vw, 1.25rem);
     line-height: 1.35;
   }
@@ -106,24 +105,26 @@
 /* Labels read like runner output, in sentence case: no tracked-out all-caps eyebrows. */
 @utility label-mono {
   font-family: var(--font-mono);
-  font-weight: 450;
-  font-stretch: 87.5%;
-  font-size: 0.75rem;
+  font-weight: 400;
+  font-size: 0.6875rem;
   letter-spacing: 0;
 }
 
 @layer base {
-  code,
-  kbd,
-  samp,
-  pre,
-  .font-mono {
-    font-stretch: 87.5%;
-  }
   .font-display {
     font-weight: 700;
-    font-stretch: 80%;
   }
+}
+
+/* Departure Mono is drawn on an 11 px grid: small mono text snaps to 11 px and 13.75 px so the pixels
+   stay crisp. Unlayered, so it wins over the text-size utilities it corrects. */
+.font-mono.text-xs,
+.font-mono.text-\[0\.6875rem\],
+.font-mono.text-\[0\.625rem\] {
+  font-size: 0.6875rem;
+}
+.font-mono.text-sm {
+  font-size: 0.859375rem;
 }
 
 @utility measure {
@@ -190,24 +191,13 @@
     display: none !important;
   }
 
-  /* Archivo and Martian Mono run wider than the original pairing; narrower widths and a slightly
-     tighter leading keep the CV within two A4 pages (resume.spec). */
+  /* A slightly tighter leading keeps the CV within two A4 pages (resume.spec). */
   html,
   body {
     font-size: 10pt;
     line-height: 1.4;
-    font-stretch: 88%;
     background: #ffffff !important;
     color: #000000 !important;
-  }
-
-  code,
-  kbd,
-  samp,
-  pre,
-  .font-mono,
-  .label-mono {
-    font-stretch: 75%;
   }
 
   main {
@@ -628,10 +618,9 @@
   .tm-year {
     font-family: var(--font-display);
     font-weight: 800;
-    font-stretch: 70%;
     font-size: clamp(3.5rem, 1.6rem + 7vw, 8.5rem);
     line-height: 0.9;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.04em;
     color: var(--text);
     /* Three hard layers read as an extrusion at this size; a blurred layer cost paint time on every
        frame of the roll. */

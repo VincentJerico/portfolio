@@ -21,8 +21,7 @@
     "cv": "tsx scripts/build-cv-pdf.ts"
   },
   "dependencies": {
-    "@fontsource/archivo": "^5.3.0",
-    "@fontsource/martian-mono": "^5.3.0",
+    "@fontsource/host-grotesk": "^5.3.0",
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
     "@next/mdx": "^16.4.5",
