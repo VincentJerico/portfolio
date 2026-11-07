@@ -39,7 +39,7 @@ export function PortraitCard({ photo, name, facts }: PortraitCardProps) {
               sizes="240px"
               loading="eager"
               fetchPriority="high"
-              className="aspect-[3/4] w-full rounded-[4px] object-cover object-[50%_35%]"
+              className="aspect-[3/4] w-full rounded-[4px] object-cover object-[50%_35%] grayscale transition-[filter] duration-500 group-hover:grayscale-0"
             />
             <figcaption className="mt-2 px-1 font-mono text-[0.6875rem] text-ink-muted">
               fixture · vincent-portrait.jpg · 510×680

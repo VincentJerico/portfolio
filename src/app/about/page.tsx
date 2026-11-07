@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { CareerPath } from '@/components/content/CareerPath';
 import { QaAreaGrid } from '@/components/content/QaAreaGrid';
 import { Section } from '@/components/content/Section';
-import { Timeline } from '@/components/content/Timeline';
+import { TimeMachine } from '@/components/content/TimeMachine';
 import { certifications, education, experience, profile, qaAreas, timeline } from '@/content';
 import { projectBySlug, visible } from '@/lib/content';
 import { formatCertDate, formatMonth, formatPeriod } from '@/lib/format';
@@ -128,8 +128,8 @@ export default function AboutPage() {
         <QaAreaGrid areas={qaAreas} />
       </Section>
 
-      <Section id="timeline" title="Timeline">
-        <Timeline events={visible(timeline)} huntPrefix="about-timeline" />
+      <Section id="timeline" title="Timeline" kicker="Run log, oldest first">
+        <TimeMachine events={visible(timeline)} />
       </Section>
     </div>
   );

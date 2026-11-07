@@ -598,6 +598,148 @@
   }
 }
 
+/* Time machine redesign (2026-11-08): physical objects that answer the visitor. */
+@layer components {
+  /* Flip card: spiral rings over a plate whose word turns like a calendar page. */
+  .flip-ring {
+    position: relative;
+    z-index: 1;
+    width: 0.375rem;
+    height: 0.875rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--text-muted);
+    background: var(--bg);
+  }
+  .flip-page {
+    transform-origin: top;
+    animation: flip-page var(--dur-slow) var(--ease-snap) both;
+    backface-visibility: hidden;
+  }
+
+  /* Pull cord: a tug stretches it down and lets it spring back. */
+  .pull-cord-tug {
+    animation: cord-tug 700ms var(--ease-snap);
+  }
+
+  /* Time machine: a huge extruded year that rolls up into its window as its group arrives. */
+  .tm-year-window {
+    overflow: hidden;
+    padding: 0.25rem 1rem 0.75rem 0;
+  }
+  .tm-year {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-stretch: 70%;
+    font-size: clamp(3.5rem, 1.6rem + 7vw, 8.5rem);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    text-shadow:
+      1px 1px 0 var(--border),
+      2px 2px 0 var(--border),
+      3px 3px 0 var(--border),
+      4px 4px 0 var(--border),
+      5px 5px 0 var(--border),
+      6px 8px 14px rgb(0 0 0 / 0.35);
+  }
+  .time-machine {
+    isolation: isolate;
+  }
+  .time-machine::before {
+    content: '';
+    position: absolute;
+    inset: -2rem 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: radial-gradient(
+      color-mix(in srgb, var(--text-muted) 35%, transparent) 1px,
+      transparent 1.5px
+    );
+    background-size: 46px 46px;
+    mask-image: linear-gradient(transparent, black 15%, black 85%, transparent);
+  }
+
+  /* Suite doors: the panel swings open on its left hinge on hover or focus. */
+  .door-panel {
+    transform-origin: left center;
+    transition:
+      rotate var(--dur-slow) var(--ease-snap),
+      box-shadow var(--dur-slow) var(--ease-snap);
+    backface-visibility: hidden;
+  }
+  .suite-door:is(:hover, :focus-within) .door-panel {
+    rotate: y -80deg;
+    box-shadow: 18px 0 30px -18px rgb(0 0 0 / 0.6);
+  }
+  .door-handle {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    width: 0.5rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    background: linear-gradient(var(--text-muted), var(--border));
+    translate: 0 -50%;
+  }
+  .door-extra {
+    pointer-events: none;
+  }
+  .suite-door:is(:hover, :focus-within) .door-extra {
+    pointer-events: auto;
+  }
+  /* Touch screens have no hover: the result shows on the closed door. */
+  .door-hook-touch {
+    display: none;
+  }
+  @media (hover: none) {
+    .door-hook-touch {
+      display: block;
+    }
+  }
+}
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .tm-year {
+      animation: year-roll linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 90%;
+    }
+    .time-machine::before {
+      animation: dust-drift linear both;
+      animation-timeline: view();
+    }
+  }
+}
+@keyframes flip-page {
+  from {
+    rotate: x -95deg;
+  }
+}
+@keyframes cord-tug {
+  30% {
+    translate: 0 1.75rem;
+  }
+  55% {
+    translate: 0 -0.35rem;
+  }
+  75% {
+    translate: 0 0.2rem;
+  }
+}
+@keyframes year-roll {
+  from {
+    translate: 0 85%;
+  }
+}
+@keyframes dust-drift {
+  from {
+    background-position: 0 60px;
+  }
+  to {
+    background-position: 0 -60px;
+  }
+}
+
 /* Route change: the old page leaves quickly, the new one rises in once it has gone. A project's name
    morphs from its card into the report title (.morph). */
 ::view-transition-old(.page-exit) {

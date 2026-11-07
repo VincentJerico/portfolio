@@ -9,6 +9,7 @@ import { SiteChecksChip } from '@/components/explorer/SiteChecksChip';
 import { TestExplorerNav } from '@/components/explorer/TestExplorerNav';
 import { IdentityBlock } from '@/components/layout/IdentityBlock';
 import { MobileNav } from '@/components/layout/MobileNav';
+import { PullCord } from '@/components/layout/PullCord';
 import { RouteTransition } from '@/components/layout/RouteTransition';
 import { ShellLinks } from '@/components/layout/ShellLinks';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -69,6 +70,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
               }
             />
             <Sidebar />
+            <PullCord />
             <main id="main" tabIndex={-1} className="focus:outline-none lg:pl-[280px]">
               <div className="mx-auto w-full max-w-[1100px] px-4 py-10 sm:px-6 lg:px-12 lg:py-16">
                 <HuntBanner email={profile.email} />

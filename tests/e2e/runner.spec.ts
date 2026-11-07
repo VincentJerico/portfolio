@@ -147,9 +147,9 @@ test('self-test: the checks fail when the page is broken', async ({ page }) => {
     faint.textContent = 'Planted low-contrast text';
     faint.style.color = '#cccccc';
     faint.style.background = '#ffffff';
-    const h4 = document.createElement('h4');
-    h4.textContent = 'Planted skipped heading';
-    document.querySelector('main')!.append(img, faint, h4);
+    const h6 = document.createElement('h6');
+    h6.textContent = 'Planted skipped heading';
+    document.querySelector('main')!.append(img, faint, h6);
   });
   const panel = await runSuite(page);
   const a11y = panel.locator('[data-check="Accessibility"]');
