@@ -7,8 +7,9 @@ const subscribe = () => () => {};
 
 /**
  * A light-pull cord hanging from the top of the page: a tug switches between the light and dark
- * themes. It is a real toggle button for keyboards and screen readers, and stays in sync with the
- * sidebar's theme switch because both read next-themes.
+ * themes. It is the only theme switch from 1024px up (smaller screens use the drawer's toggle). It is
+ * a real toggle button for keyboards and screen readers. The cord starts 3rem above the viewport, so
+ * a tug pulls more cord into view instead of opening a gap at the top edge.
  */
 export function PullCord() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -23,7 +24,7 @@ export function PullCord() {
   return (
     <div
       data-print-hide
-      className="pointer-events-none fixed top-0 right-1 z-30 hidden flex-col items-center lg:flex"
+      className="pointer-events-none fixed -top-12 right-1 z-30 hidden flex-col items-center lg:flex"
     >
       <button
         type="button"
@@ -41,7 +42,7 @@ export function PullCord() {
           data-pull-cord
           className={`pull-cord flex flex-col items-center ${tug ? 'pull-cord-tug' : ''}`}
         >
-          <span className="h-20 w-px bg-ink-muted/70" />
+          <span className="h-40 w-px bg-ink-muted/70" />
           <span className="size-3 rounded-full border border-ink-muted bg-surface shadow-sm transition-colors group-hover:bg-accent" />
           <span className="h-3 w-1.5 rounded-b-full bg-ink-muted/70" />
         </span>

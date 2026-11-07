@@ -23,22 +23,28 @@ test.describe('theme', () => {
     await expect(page.locator('html')).toHaveClass(/\bdark\b/);
   });
 
-  test('toggle flips the theme, exposes aria-pressed and persists across reload', async ({
+  test('the light switch flips the theme, exposes aria-pressed and persists across reload', async ({
     page,
   }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.goto('/');
-    const toggle = page.getByRole('button', { name: 'Dark theme' });
-    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
-    await toggle.click();
+    // From 1024px up the pull cord is the only theme switch; aria-pressed means the light is on.
+    const cord = page.getByRole('button', { name: 'Light switch' });
+    await expect(cord).toHaveAttribute('aria-pressed', 'false');
+    await cord.click();
     await expect(page.locator('html')).toHaveClass(/\blight\b/);
-    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await expect(cord).toHaveAttribute('aria-pressed', 'true');
     await page.reload();
     await expect(page.locator('html')).toHaveClass(/\blight\b/);
-    await expect(page.getByRole('button', { name: 'Dark theme' })).toHaveAttribute(
+    await expect(page.getByRole('button', { name: 'Light switch' })).toHaveAttribute(
       'aria-pressed',
-      'false',
+      'true',
     );
+  });
+
+  test('the sidebar has no theme toggle of its own', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('aside').getByRole('button', { name: 'Dark theme' })).toHaveCount(0);
   });
 });
 
@@ -59,12 +65,11 @@ test.describe('theme switch appearance before hydration', () => {
 
   test('shows the on state when the page renders dark', async ({ page }) => {
     await page.goto('/');
-    const shift = await page.locator('aside [data-switch-knob]').evaluate((knob) => {
-      const track = knob.parentElement!.getBoundingClientRect();
-      const box = knob.getBoundingClientRect();
-      // Off: knob hugs the left edge (2px inset). On: it sits in the right half.
-      return box.left - track.left;
-    });
-    expect(shift).toBeGreaterThan(8);
+    // The drawer's switch is closed (not laid out), so read the knob's offset from its style:
+    // off hugs the left edge, on moves it 1rem right.
+    const shift = await page
+      .locator('#site-drawer [data-switch-knob]')
+      .evaluate((knob) => getComputedStyle(knob).translate);
+    expect(shift).toMatch(/^16px/);
   });
 });

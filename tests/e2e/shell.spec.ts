@@ -67,7 +67,7 @@ test.describe('desktop sidebar', () => {
     page,
     browserName,
   }) => {
-    // Skip link, nav links, Projects folder, theme toggle, GitHub, Email, run tests, site checks.
+    // Skip link, nav links, Projects folder, GitHub, Email, run tests, site checks, light switch.
     const shellTabStops = 1 + navItems().length + 1 + 1 + 2 + 1 + 1;
     await page.goto('/');
     for (let i = 0; i < shellTabStops; i++) {

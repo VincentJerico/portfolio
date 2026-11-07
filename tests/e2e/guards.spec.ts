@@ -38,7 +38,7 @@ test('controls activate with Enter and Space (F-1)', async ({ page }) => {
   await page.keyboard.press('Enter');
   await expect(all).toHaveAttribute('aria-pressed', 'true');
 
-  const toggle = page.locator('aside').getByRole('button', { name: 'Dark theme' });
+  const toggle = page.getByRole('button', { name: 'Light switch' });
   const before = await toggle.getAttribute('aria-pressed');
   await toggle.focus();
   await page.keyboard.press('Space');

@@ -65,10 +65,10 @@ test.describe('flip card', () => {
 });
 
 test.describe('pull cord', () => {
-  // The cord is a desktop object; the drawer carries the theme toggle below 1024px.
+  // The cord is the desktop theme switch; the drawer carries the theme toggle below 1024px.
   test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
 
-  test('the light switch flips the theme and the sidebar toggle follows', async ({ page }) => {
+  test('the light switch flips the theme and the drawer toggle follows', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.goto('/');
     await waitForHydration(page);
@@ -76,12 +76,19 @@ test.describe('pull cord', () => {
     await cord.click();
     await expect(page.locator('html')).toHaveClass(/\blight\b/);
     await expect(cord).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.getByRole('button', { name: 'Dark theme' })).toHaveAttribute(
-      'aria-pressed',
-      'false',
-    );
+    await expect(
+      page.getByRole('button', { name: 'Dark theme', includeHidden: true }),
+    ).toHaveAttribute('aria-pressed', 'false');
     await page.reload();
     await expect(page.locator('html')).toHaveClass(/\blight\b/);
+  });
+
+  test('the cord starts above the top edge by more than a tug pulls it down', async ({ page }) => {
+    await page.goto('/');
+    const string = page.locator('[data-pull-cord] > span').first();
+    const top = (await string.boundingBox())!.y;
+    // The tug keyframes move the cord down 1.75rem (28px) at most.
+    expect(top).toBeLessThan(-28);
   });
 });
 

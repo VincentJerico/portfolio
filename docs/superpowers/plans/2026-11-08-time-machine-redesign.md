@@ -180,3 +180,10 @@ The words are the project category labels in project order, de-duplicated:
   (the result stays behind the door; touch screens show the result instead). The hero terminal wraps
   long results under the suite name, and the career path uses two columns until 1280 px.
   `tests/e2e/layout.spec.ts` fails if anything spills out of a bordered box at 320 to 1280 px.
+- **One theme switch per screen size (Vincent, 2026-11-08).** The sidebar's theme toggle is gone; from
+  1024 px up the pull cord is the theme switch. The drawer keeps its toggle, because the cord is hidden
+  below 1024 px. The cord is longer and starts 3rem above the viewport, so a tug pulls more cord into
+  view instead of opening a gap at the top edge.
+- **Local time without Intl.** The clock is computed from Manila's fixed UTC+8 offset. Building an
+  `Intl.DateTimeFormat` for a time zone cost about 20 ms of main-thread time on a throttled phone, and
+  on slow CI runners it landed inside Lighthouse's blocking-time window.
