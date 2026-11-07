@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '../helpers/test';
 import { navItems } from '../../src/lib/nav-items';
+import { waitForHydration } from '../helpers/hydration';
 import { tabKey } from '../helpers/keys';
 
 const MOBILE = { width: 375, height: 812 };
@@ -87,6 +88,24 @@ test.describe('desktop sidebar', () => {
 
 test.describe('mobile drawer', () => {
   test.use({ viewport: MOBILE });
+
+  test('the drawer renders its contents on first open, and its theme toggle works', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.goto('/');
+    await waitForHydration(page);
+    const drawer = page.locator('#site-drawer');
+    // Closed, the drawer holds only a <noscript> copy, which costs nothing to hydrate.
+    await expect(
+      drawer.getByRole('button', { name: 'Dark theme', includeHidden: true }),
+    ).toHaveCount(0);
+    await page.getByRole('button', { name: 'Menu', exact: true }).click();
+    const toggle = drawer.getByRole('button', { name: 'Dark theme' });
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await toggle.click();
+    await expect(page.locator('html')).toHaveClass(/\blight\b/);
+  });
 
   test('menu button reflects state and Esc returns focus to it', async ({ page }) => {
     await page.goto('/');

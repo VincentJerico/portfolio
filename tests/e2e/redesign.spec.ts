@@ -68,7 +68,7 @@ test.describe('pull cord', () => {
   // The cord is the desktop theme switch; the drawer carries the theme toggle below 1024px.
   test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
 
-  test('the light switch flips the theme and the drawer toggle follows', async ({ page }) => {
+  test('the light switch flips the theme and the choice persists', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.goto('/');
     await waitForHydration(page);
@@ -76,9 +76,6 @@ test.describe('pull cord', () => {
     await cord.click();
     await expect(page.locator('html')).toHaveClass(/\blight\b/);
     await expect(cord).toHaveAttribute('aria-pressed', 'true');
-    await expect(
-      page.getByRole('button', { name: 'Dark theme', includeHidden: true }),
-    ).toHaveAttribute('aria-pressed', 'false');
     await page.reload();
     await expect(page.locator('html')).toHaveClass(/\blight\b/);
   });

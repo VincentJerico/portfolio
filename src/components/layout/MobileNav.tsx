@@ -34,6 +34,11 @@ interface MobileNavProps {
 
 export function MobileNav({ fullName, identity, nav, links }: MobileNavProps) {
   const [open, setOpen] = useState(false);
+  // The drawer's contents render on first open. Until then they ship only inside <noscript>, which
+  // React never hydrates, so this copy of the navigation costs nothing on page load (the sidebar is
+  // the copy on screen from 1024px up). Without JavaScript the browser shows the <noscript> copy, so
+  // the drawer still works.
+  const [opened, setOpened] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const menuRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
@@ -43,7 +48,10 @@ export function MobileNav({ fullName, identity, nav, links }: MobileNavProps) {
     if (!dialog) return;
     const desktop = window.matchMedia(DESKTOP_QUERY);
 
-    const onToggle = () => setOpen(dialog.open);
+    const onToggle = () => {
+      setOpen(dialog.open);
+      if (dialog.open) setOpened(true);
+    };
     const onClose = () => {
       setOpen(false);
       if (!desktop.matches) menuRef.current?.focus();
@@ -132,7 +140,7 @@ export function MobileNav({ fullName, identity, nav, links }: MobileNavProps) {
       >
         <div className="flex min-h-full flex-col gap-6 px-5 py-5">
           <div className="flex items-start justify-between gap-3">
-            {identity}
+            {opened ? identity : <noscript>{identity}</noscript>}
             <button
               type="button"
               commandfor={DRAWER_ID}
@@ -144,10 +152,19 @@ export function MobileNav({ fullName, identity, nav, links }: MobileNavProps) {
               <X aria-hidden="true" className="size-5" />
             </button>
           </div>
-          {nav}
+          {opened ? nav : <noscript>{nav}</noscript>}
           <div className="mt-auto flex flex-col gap-2 border-t border-line pt-4">
-            <ThemeToggle className="w-full" />
-            {links}
+            {opened ? (
+              <>
+                <ThemeToggle className="w-full" />
+                {links}
+              </>
+            ) : (
+              <noscript>
+                <ThemeToggle className="w-full" />
+                {links}
+              </noscript>
+            )}
           </div>
         </div>
       </dialog>

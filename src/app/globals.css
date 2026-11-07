@@ -633,21 +633,24 @@
     line-height: 0.9;
     letter-spacing: -0.02em;
     color: var(--text);
+    /* Three hard layers read as an extrusion at this size; a blurred layer cost paint time on every
+       frame of the roll. */
     text-shadow:
-      1px 1px 0 var(--border),
       2px 2px 0 var(--border),
-      3px 3px 0 var(--border),
       4px 4px 0 var(--border),
-      5px 5px 0 var(--border),
-      6px 8px 14px rgb(0 0 0 / 0.35);
+      6px 6px 0 var(--border);
   }
   .time-machine {
     isolation: isolate;
+    overflow: clip;
+    overflow-clip-margin: 2rem;
   }
+  /* The dust drifts by transform, so scrolling never repaints the grid. It is 120px taller than the
+     section so the drift never shows an edge. */
   .time-machine::before {
     content: '';
     position: absolute;
-    inset: -2rem 0;
+    inset: calc(-2rem - 60px) 0;
     z-index: -1;
     pointer-events: none;
     background-image: radial-gradient(
@@ -735,10 +738,10 @@
 }
 @keyframes dust-drift {
   from {
-    background-position: 0 60px;
+    translate: 0 60px;
   }
   to {
-    background-position: 0 -60px;
+    translate: 0 -60px;
   }
 }
 
