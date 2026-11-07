@@ -1,29 +1,30 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { clockAt } from '@/lib/clock';
 
 const TICK_MS = 30_000;
 
 /**
- * The visitor sees Vincent's local time, ticking by the minute. The first time-zone formatter loads
- * the browser's zone data, which cost about 17 ms of main-thread time during hydration (measured under
- * 4x CPU throttling), so the clock starts once the browser is idle, in its own small task. Until then,
- * and on the server, the slot is empty but width-reserved, so nothing shifts when the time fills in.
+ * The visitor sees Vincent's local time, ticking by the minute. The clock starts once the browser is
+ * idle, after hydration. Until then, and on the server, the slot is empty but width-reserved, so
+ * nothing shifts when the time fills in.
  */
-export function LocalTime({ timeZone, place }: { timeZone: string; place: string }) {
+export function LocalTime({
+  utcOffsetMinutes,
+  place,
+}: {
+  utcOffsetMinutes: number;
+  place: string;
+}) {
   const [time, setTime] = useState('');
 
   useEffect(() => {
     let interval = 0;
-    const tick = (format: Intl.DateTimeFormat) => setTime(format.format(new Date()).toLowerCase());
+    const tick = () => setTime(clockAt(new Date(), utcOffsetMinutes));
     const start = () => {
-      const format = new Intl.DateTimeFormat('en-US', {
-        timeZone,
-        hour: 'numeric',
-        minute: '2-digit',
-      });
-      tick(format);
-      interval = window.setInterval(() => tick(format), TICK_MS);
+      tick();
+      interval = window.setInterval(tick, TICK_MS);
     };
     const idle = 'requestIdleCallback' in window;
     const handle = idle
@@ -34,7 +35,7 @@ export function LocalTime({ timeZone, place }: { timeZone: string; place: string
       else window.clearTimeout(handle);
       window.clearInterval(interval);
     };
-  }, [timeZone]);
+  }, [utcOffsetMinutes]);
 
   return (
     <p data-local-time className="font-mono text-[0.6875rem] text-ink-muted">

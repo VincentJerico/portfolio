@@ -1,4 +1,5 @@
 import { profile } from '@/content';
+import { MANILA_UTC_OFFSET_MINUTES } from '@/lib/clock';
 import { LocalTime } from './LocalTime';
 
 export function IdentityBlock() {
@@ -9,7 +10,7 @@ export function IdentityBlock() {
         {profile.role} · path to {profile.goal}
       </p>
       <div className="mt-2">
-        <LocalTime timeZone="Asia/Manila" place={profile.location} />
+        <LocalTime utcOffsetMinutes={MANILA_UTC_OFFSET_MINUTES} place={profile.location} />
       </div>
     </div>
   );
