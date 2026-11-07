@@ -77,19 +77,17 @@ test.describe('overview', () => {
     );
   });
 
-  test('how I test draws a coverage map on wide screens and keeps the list for everyone', async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 1280, height: 800 });
+  test('how I test is a checklist of the 12 areas, readable at every width', async ({ page }) => {
     const section = page.getByRole('region', { name: 'How I test' });
-    await expect(section.getByRole('listitem')).toHaveCount(12);
-    const map = section.locator('svg.cov-map');
-    await expect(map).toHaveAttribute('aria-hidden', 'true');
-    await expect(map.locator('text')).toHaveCount(13); // 12 areas plus the centre label
-    await expect(map).toBeVisible();
-    await page.setViewportSize({ width: 375, height: 812 });
-    await expect(map).toBeHidden();
-    await expect(section.getByRole('listitem').first()).toBeVisible();
+    const items = section.getByRole('listitem');
+    await expect(section.locator('svg.cov-map')).toHaveCount(0);
+    for (const width of [375, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect(items).toHaveCount(12);
+      await expect(items.first()).toBeVisible();
+      await expect(items.last()).toBeVisible();
+      await expect(section.locator('[data-qa-check]')).toHaveCount(12);
+    }
   });
 
   test('timeline shows the latest six events, newest first', async ({ page }) => {

@@ -794,96 +794,9 @@
     }
   }
 
-  /* Coverage map: a scope of rings, lines from the hub and pass-coloured end nodes. Hovering an
-     area lights its line, grows its node and brightens its label. */
-  .cov-ring {
-    fill: none;
-    stroke: color-mix(in srgb, var(--text-muted) 35%, transparent);
-    stroke-width: 1;
-    stroke-dasharray: 2 6;
-    transform-box: view-box;
-    transform-origin: 50% 50%;
-  }
-  .cov-line {
-    stroke: color-mix(in srgb, var(--text-muted) 55%, transparent);
-    stroke-width: 1.25;
+  /* QA checklist: each check mark draws in as the section arrives (see the scroll rules below). */
+  .qa-check {
     stroke-dasharray: 1;
-    transition:
-      stroke var(--dur-fast),
-      stroke-width var(--dur-fast);
-  }
-  .cov-end {
-    fill: var(--pass);
-    transform-box: fill-box;
-    transform-origin: center;
-    transition: scale var(--dur-fast) var(--ease-snap);
-  }
-  .cov-label {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    fill: var(--text);
-    transition: fill var(--dur-fast);
-  }
-  .cov-num {
-    fill: var(--text-muted);
-  }
-  .cov-hub {
-    fill: var(--surface);
-    stroke: var(--accent);
-    stroke-width: 1.5;
-  }
-  .cov-hub-label {
-    fill: var(--text);
-  }
-  .cov-area:hover .cov-line {
-    stroke: var(--accent);
-    stroke-width: 2;
-  }
-  .cov-area:hover .cov-end {
-    scale: 1.6;
-  }
-  .cov-area:hover .cov-num {
-    fill: var(--accent);
-  }
-
-  /* Report tools marquee (RunSummaryPanel). Static and wrapped by default; it scrolls only on
-     screens that allow motion. */
-  .marquee-track {
-    display: flex;
-    gap: 0.375rem;
-  }
-  .marquee-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.375rem;
-  }
-  .marquee-copy {
-    display: none;
-  }
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .marquee {
-      overflow: hidden;
-      mask-image: linear-gradient(
-        90deg,
-        transparent,
-        black 1.5rem,
-        black calc(100% - 1.5rem),
-        transparent
-      );
-    }
-    .marquee-track {
-      width: max-content;
-      animation: marquee var(--marquee-dur, 16s) linear infinite;
-    }
-    .marquee-list {
-      flex-wrap: nowrap;
-    }
-    .marquee-copy {
-      display: flex;
-    }
-    .marquee:is(:hover, :focus-within) .marquee-track {
-      animation-play-state: paused;
-    }
   }
 
   /* Touch screens have no hover: the result shows on the closed door. */
@@ -901,26 +814,11 @@
 }
 @supports (animation-timeline: view()) {
   @media screen and (prefers-reduced-motion: no-preference) {
-    /* The map draws from the centre out as it scrolls in, one area after another. */
-    .cov-line {
-      animation: cov-draw linear both;
+    /* Checklist marks draw one after another as the grid scrolls in. */
+    .qa-check {
+      animation: qa-draw linear both;
       animation-timeline: view();
-      animation-range: entry calc(10% + var(--i) * 2%) cover calc(40% + var(--i) * 2%);
-    }
-    .cov-label {
-      animation: cov-rise linear both;
-      animation-timeline: view();
-      animation-range: entry calc(20% + var(--i) * 2%) cover calc(45% + var(--i) * 2%);
-    }
-    .cov-ring {
-      animation: cov-open linear both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 35%;
-    }
-    .cov-end {
-      animation: cov-land linear both;
-      animation-timeline: view();
-      animation-range: entry calc(25% + var(--i) * 2%) cover calc(42% + var(--i) * 2%);
+      animation-range: entry calc(30% + var(--i) * 3%) cover calc(42% + var(--i) * 3%);
     }
     .tm-year {
       animation: year-roll linear both;
@@ -933,24 +831,9 @@
     }
   }
 }
-@keyframes cov-draw {
+@keyframes qa-draw {
   from {
     stroke-dashoffset: 1;
-  }
-}
-@keyframes cov-open {
-  from {
-    scale: 0.4;
-  }
-}
-@keyframes cov-land {
-  from {
-    scale: 0;
-  }
-}
-@keyframes cov-rise {
-  from {
-    translate: 0 6px;
   }
 }
 @keyframes marquee {

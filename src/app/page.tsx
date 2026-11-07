@@ -7,7 +7,6 @@ import { FlipCard } from '@/components/content/FlipCard';
 import { Masthead } from '@/components/content/Masthead';
 import { PortraitCard } from '@/components/content/PortraitCard';
 import { ProjectIndex } from '@/components/content/ProjectIndex';
-import { CoverageMap } from '@/components/content/CoverageMap';
 import { QaAreaGrid } from '@/components/content/QaAreaGrid';
 import { RunnerHeroBlock } from '@/components/content/RunnerHeroBlock';
 import { Section } from '@/components/content/Section';
@@ -195,7 +194,6 @@ export default function OverviewPage() {
           </Link>
         }
       >
-        <CoverageMap areas={qaAreas} />
         <QaAreaGrid areas={qaAreas} />
       </Section>
 

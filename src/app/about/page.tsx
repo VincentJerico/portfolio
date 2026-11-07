@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { CareerPath } from '@/components/content/CareerPath';
-import { CoverageMap } from '@/components/content/CoverageMap';
 import { QaAreaGrid } from '@/components/content/QaAreaGrid';
 import { Section } from '@/components/content/Section';
 import { TimeMachine } from '@/components/content/TimeMachine';
@@ -126,7 +125,6 @@ export default function AboutPage() {
       )}
 
       <Section id="method" title="How I test" kicker="Checklist for every client build">
-        <CoverageMap areas={qaAreas} />
         <QaAreaGrid areas={qaAreas} />
       </Section>
 
