@@ -679,6 +679,50 @@
   .suite-door:is(:hover, :focus-within) .door-extra {
     pointer-events: auto;
   }
+  /* Project index: a panel sweeps up behind the row, the name slides over and the result opens. */
+  .index-row::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--secondary);
+    transform-origin: bottom;
+    scale: 1 0;
+    transition: scale var(--dur-base) var(--ease-snap);
+  }
+  .index-name {
+    transition: translate var(--dur-base) var(--ease-snap);
+  }
+  .index-hook {
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--dur-base) var(--ease-snap);
+  }
+  .index-row:is(:hover, :focus-within)::before {
+    scale: 1 1;
+  }
+  .index-row:is(:hover, :focus-within) .index-name {
+    translate: 0.75rem 0;
+  }
+  .index-row:is(:hover, :focus-within) .index-hook {
+    grid-template-rows: 1fr;
+  }
+  .index-row:is(:hover, :focus-within) [data-index-hook] {
+    padding-top: 0.375rem;
+  }
+  @media (hover: none) {
+    .index-hook {
+      grid-template-rows: 1fr;
+    }
+    [data-index-hook] {
+      padding-top: 0.375rem;
+    }
+  }
+  @media print {
+    .index-hook {
+      grid-template-rows: 1fr;
+    }
+  }
+
   /* Touch screens have no hover: the result shows on the closed door. */
   .door-hook-touch {
     display: none;

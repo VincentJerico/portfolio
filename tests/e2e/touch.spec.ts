@@ -13,13 +13,12 @@ async function expectTouchSized(targets: Locator, what: string) {
   }
 }
 
-test('metric source links and "+n" disclosures are touch sized', async ({ page }) => {
+test('metric source links are touch sized', async ({ page }) => {
   await page.goto('/');
   await expectTouchSized(
     page.locator('#run-summary').getByRole('link', { name: /^source/ }),
     'source link',
   );
-  await expectTouchSized(page.locator('main summary'), '"+n" disclosure');
 });
 
 test('severity chip links in a run summary are touch sized', async ({ page }) => {
@@ -30,14 +29,11 @@ test('severity chip links in a run summary are touch sized', async ({ page }) =>
   );
 });
 
-test('opening a "+n" disclosure keeps focus on it and it can close again', async ({ page }) => {
+test('home index rows show their result without hover', async ({ page }) => {
   await page.goto('/');
-  const summary = page.locator('main summary').first();
-  await summary.focus();
-  await page.keyboard.press('Enter');
-  await expect(summary).toBeFocused();
-  // innerText reflects what is rendered; the hidden "+n" label is excluded.
-  await expect(summary).toHaveText('fewer', { useInnerText: true });
-  await page.keyboard.press('Enter');
-  await expect(summary).toHaveText(/^\+\d+/, { useInnerText: true });
+  const first = page
+    .getByRole('region', { name: 'Featured projects' })
+    .getByRole('listitem')
+    .first();
+  await expect(first.locator('[data-index-hook]')).toBeVisible();
 });

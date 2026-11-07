@@ -1,6 +1,7 @@
 import { expect, test } from '../helpers/test';
 import { metrics, profile } from '../../src/content';
 import { projectsInOrder, testedAreas } from '../../src/lib/content';
+import { categoryLabel } from '../../src/lib/labels';
 import { waitForHydration } from '../helpers/hydration';
 
 test.describe('overview', () => {
@@ -53,6 +54,17 @@ test.describe('overview', () => {
     await expect(reports).toHaveCount(featured.length);
     for (const [i, project] of featured.entries()) {
       await expect(reports.nth(i)).toHaveAttribute('href', `/projects/${project.slug}`);
+    }
+  });
+
+  test('each index row shows its suite number, category and result', async ({ page }) => {
+    const featured = projectsInOrder().filter((p) => p.featured);
+    const rows = page.getByRole('region', { name: 'Featured projects' }).getByRole('listitem');
+    await expect(rows).toHaveCount(featured.length);
+    for (const [i, project] of featured.entries()) {
+      await expect(rows.nth(i)).toContainText(`suite ${String(project.order).padStart(2, '0')}`);
+      await expect(rows.nth(i)).toContainText(categoryLabel(project.category));
+      await expect(rows.nth(i)).toContainText(project.hook);
     }
   });
 

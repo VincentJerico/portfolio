@@ -6,7 +6,7 @@ import { CaseStudyCard } from '@/components/content/CaseStudyCard';
 import { FlipCard } from '@/components/content/FlipCard';
 import { Masthead } from '@/components/content/Masthead';
 import { PortraitCard } from '@/components/content/PortraitCard';
-import { ProjectCard } from '@/components/content/ProjectCard';
+import { ProjectIndex } from '@/components/content/ProjectIndex';
 import { QaAreaGrid } from '@/components/content/QaAreaGrid';
 import { RunnerHeroBlock } from '@/components/content/RunnerHeroBlock';
 import { Section } from '@/components/content/Section';
@@ -156,13 +156,7 @@ export default function OverviewPage() {
           </Link>
         }
       >
-        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {featured.map((project) => (
-            <li key={project.slug}>
-              <ProjectCard project={project} huntPrefix="overview" />
-            </li>
-          ))}
-        </ul>
+        <ProjectIndex projects={featured} huntPrefix="overview" />
       </Section>
 
       {/* 4. Client work teaser */}

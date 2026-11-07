@@ -28,6 +28,7 @@ export function SuiteDoor({ project }: { project: Project }) {
           <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 pt-4">
             <Link
               href={`/projects/${project.slug}`}
+              transitionTypes={['morph']}
               className="inline-flex min-h-11 items-center font-semibold after:absolute after:inset-0 after:content-['']"
             >
               Read the report<span className="sr-only"> for {project.name}</span>
