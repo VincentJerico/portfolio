@@ -794,9 +794,71 @@
     }
   }
 
+  /* Drawn underline: a faint line at rest keeps the link recognisable; on hover or focus an accent
+     line draws over it from the left. */
+  .draw-link {
+    text-decoration: none;
+    background-image:
+      linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--border), var(--border));
+    background-position:
+      0 100%,
+      0 100%;
+    background-repeat: no-repeat;
+    background-size:
+      0 1px,
+      100% 1px;
+    padding-bottom: 2px;
+    transition: background-size var(--dur-base) var(--ease-snap);
+  }
+  .draw-link:is(:hover, :focus-visible) {
+    background-size:
+      100% 1px,
+      100% 1px;
+  }
+
   /* QA checklist: each check mark draws in as the section arrives (see the scroll rules below). */
   .qa-check {
     stroke-dasharray: 1;
+  }
+
+  /* Report tools marquee (RunSummaryPanel). Static and wrapped by default; it scrolls only on
+     screens that allow motion. */
+  .marquee-track {
+    display: flex;
+    gap: 0.375rem;
+  }
+  .marquee-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+  .marquee-copy {
+    display: none;
+  }
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .marquee {
+      overflow: hidden;
+      mask-image: linear-gradient(
+        90deg,
+        transparent,
+        black 1.5rem,
+        black calc(100% - 1.5rem),
+        transparent
+      );
+    }
+    .marquee-track {
+      width: max-content;
+      animation: marquee var(--marquee-dur, 16s) linear infinite;
+    }
+    .marquee-list {
+      flex-wrap: nowrap;
+    }
+    .marquee-copy {
+      display: flex;
+    }
+    .marquee:is(:hover, :focus-within) .marquee-track {
+      animation-play-state: paused;
+    }
   }
 
   /* Touch screens have no hover: the result shows on the closed door. */

@@ -137,3 +137,15 @@ JavaScript added only where CSS cannot do the job, and only after hydration.
 - Gates: `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e`,
   then CI including Lighthouse, with screenshots in the PR.
 - Decision C39 recorded in `docs/04-DECISIONS.md`.
+
+## Changes made while building (2026-11-08)
+
+- **Fonts changed to Geist and Geist Mono** (Vincent): Departure Mono read poorly at 11 px. Small mono
+  text returns to 12 px; the 11 px grid rule is gone.
+- **Coverage map replaced by a checklist** (Vincent asked what it was for): with no data linking areas
+  to projects it could only restate the list. The areas are a three-column checklist whose marks draw
+  in on scroll.
+- **Headings rise out of their line as one piece** rather than line by line, which would need
+  JavaScript measurement on resize.
+- **The token `--spacing-block` is now `--spacing-rhythm`**: Tailwind generated an `inline-block` width
+  utility from it, which squeezed every inline-block on the site.

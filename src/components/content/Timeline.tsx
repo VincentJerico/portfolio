@@ -41,10 +41,7 @@ export function Timeline({
           </Inspectable>
           <p className="mt-1 text-ink">
             {event.href ? (
-              <Link
-                href={event.href}
-                className="text-ink underline decoration-line underline-offset-4 hover:decoration-accent"
-              >
+              <Link href={event.href} className="draw-link text-ink">
                 {event.title}
               </Link>
             ) : (

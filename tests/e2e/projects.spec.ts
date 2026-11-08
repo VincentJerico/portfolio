@@ -173,6 +173,8 @@ test.describe('report tools marquee', () => {
       project.stack.length,
     );
     await expect(marquee.locator('ul[aria-hidden="true"]')).toHaveCount(1);
+    await expect(marquee.locator('.marquee-track')).toHaveCSS('animation-name', 'marquee');
+    await expect(marquee.locator('ul[aria-hidden="true"]')).toBeVisible();
     await page.emulateMedia({ media: 'print' });
     await expect(marquee.locator('ul[aria-hidden="true"]')).toBeHidden();
   });

@@ -163,3 +163,19 @@ test.describe('suite doors', () => {
     expect(overflow).toBeLessThanOrEqual(0);
   });
 });
+
+test.describe('drawn underlines', () => {
+  test('timeline links keep a resting underline and draw an accent one on hover', async ({
+    page,
+  }) => {
+    // Reduced motion holds the scroll-linked entrances still, so the row stays under the pointer;
+    // the underline still ends drawn.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/about');
+    const link = page.locator('.timeline-track a.draw-link').first();
+    const sizes = () => link.evaluate((el) => getComputedStyle(el).backgroundSize);
+    expect(await sizes()).toMatch(/^0(px|%) 1px, 100% 1px$/);
+    await link.hover();
+    await expect.poll(sizes).toMatch(/^100% 1px, 100% 1px$/);
+  });
+});
