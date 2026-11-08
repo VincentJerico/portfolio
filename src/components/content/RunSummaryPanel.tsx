@@ -30,7 +30,11 @@ export function RunSummaryPanel({
     <div
       key="tools"
       data-marquee
-      className="marquee"
+      // Focusable so keyboard and touch users can pause it too (WCAG 2.2.2): focus pauses the scroll.
+      tabIndex={0}
+      role="group"
+      aria-label={`${project.name} tools`}
+      className="marquee rounded-chip"
       style={
         { '--marquee-dur': `${Math.max(12, project.stack.length * 2.5)}s` } as React.CSSProperties
       }

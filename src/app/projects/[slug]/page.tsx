@@ -105,7 +105,11 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
         </nav>
         <p className="label-mono text-ink-muted">Test report · {categoryLabel(project.category)}</p>
         <ViewTransition name={`project-title-${project.slug}`} share="morph" default="none">
-          <h1 className="break-words">{project.name}</h1>
+          {/* The morph target: it skips the entrance rises, so the view transition captures it in
+              place rather than clipped and offset. */}
+          <h1 data-morph-title className="break-words">
+            {project.name}
+          </h1>
         </ViewTransition>
         <p className="measure text-lg text-ink-muted">{project.summary}</p>
       </header>

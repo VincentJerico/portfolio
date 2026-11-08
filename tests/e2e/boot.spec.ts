@@ -26,3 +26,15 @@ test.describe('first-visit boot', () => {
     await expect(page.locator('[data-boot-overlay]')).toBeHidden({ timeout: 3000 });
   });
 });
+
+test.describe('first-visit boot cleanup', () => {
+  test.use({ skipBoot: false });
+
+  test('clears its flag when done, so printing or a motion change never replays it', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await expect(page.locator('html')).toHaveAttribute('data-boot', '');
+    await expect(page.locator('html')).not.toHaveAttribute('data-boot', /.*/, { timeout: 4000 });
+  });
+});

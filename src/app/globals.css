@@ -493,12 +493,16 @@
   /* Page headers rise in once, line by line, on load. Transform only: no opacity (the title paints at
      once, so LCP is unaffected and axe never scans faded text) and no filter, whose per-frame repaint
      during load pushed blocking time over budget. */
-  main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > * {
+  main
+    :is(header, section[aria-labelledby='hero-heading'] > div:first-child)
+    > :not([data-morph-title]) {
     animation: header-rise 720ms var(--ease-snap) both;
   }
   /* The page title rises out of its own line: it moves up while its clip opens from the top, so it
      looks masked by the line it sits on. Clip, not opacity, so the title still counts as painted. */
-  main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > h1 {
+  main
+    :is(header, section[aria-labelledby='hero-heading'] > div:first-child)
+    > h1:not([data-morph-title]) {
     animation: line-rise 720ms var(--ease-snap) both;
   }
   main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(2) {
@@ -826,6 +830,10 @@
     }
     .marquee:is(:hover, :focus-within) .marquee-track {
       animation-play-state: paused;
+    }
+    /* The edge fade would hide the focus ring. */
+    .marquee:focus-visible {
+      mask-image: none;
     }
   }
 

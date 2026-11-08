@@ -210,3 +210,19 @@ test.describe('CI badges', () => {
     }
   });
 });
+
+test.describe('report review fixes', () => {
+  test('the marquee can be paused from the keyboard or by touch (WCAG 2.2.2)', async ({ page }) => {
+    await page.goto(`/projects/${projectsInOrder()[0]!.slug}`);
+    const marquee = page.locator('[data-marquee]');
+    await expect(marquee).toHaveAttribute('tabindex', '0');
+    await expect(marquee).toHaveAttribute('aria-label', /tools/i);
+    await marquee.focus();
+    await expect(marquee.locator('.marquee-track')).toHaveCSS('animation-play-state', 'paused');
+  });
+
+  test('the report title, the morph target, does not run the line rise', async ({ page }) => {
+    await page.goto(`/projects/${projectsInOrder()[0]!.slug}`);
+    await expect(page.locator('h1')).toHaveCSS('animation-name', 'none');
+  });
+});

@@ -1,8 +1,9 @@
 /**
  * Runs before first paint: marks a first visit in this browser session, unless the visitor prefers
- * reduced motion. The boot overlay only shows while <html data-boot> is set (globals.css).
+ * reduced motion. The boot overlay only shows while <html data-boot> is set (globals.css); the flag is
+ * cleared once the boot ends, so printing or a motion-setting change can never replay it.
  */
-export const BOOT_SCRIPT = `try{if(!sessionStorage.getItem('vja-boot')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.setAttribute('data-boot','');sessionStorage.setItem('vja-boot','1')}}catch(e){}`;
+export const BOOT_SCRIPT = `try{if(!sessionStorage.getItem('vja-boot')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.setAttribute('data-boot','');sessionStorage.setItem('vja-boot','1');setTimeout(function(){document.documentElement.removeAttribute('data-boot')},1600)}}catch(e){}`;
 
 /**
  * The first-visit boot: corner counters run to 100% and a hairline splits the screen, then the
