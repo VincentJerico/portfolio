@@ -179,3 +179,30 @@ test.describe('report tools marquee', () => {
     await expect(marquee.locator('ul[aria-hidden="true"]')).toBeHidden();
   });
 });
+
+test.describe('CI badges', () => {
+  test('a badge is never clipped by its placeholder, down to 320 px', async ({ page }) => {
+    // Real badges run wider than the 90 px fixture ("CI | passing" is about 140 px).
+    await page.route('https://github.com/**/badge.svg*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'image/svg+xml',
+        body: '<svg xmlns="http://www.w3.org/2000/svg" width="140" height="20"><rect width="140" height="20" fill="#3fb950"/></svg>',
+      }),
+    );
+    for (const route of ['/projects', '/projects/accessibility-testing']) {
+      await page.goto(route);
+      for (const width of [320, 768, 1024]) {
+        await page.setViewportSize({ width, height: 900 });
+        const clipped = await page
+          .locator('.skeleton:has(img)')
+          .evaluateAll(
+            (els) =>
+              els.filter((el) => el.checkVisibility() && el.scrollWidth > el.clientWidth + 1)
+                .length,
+          );
+        expect(clipped, `${route} at ${width} px`).toBe(0);
+      }
+    }
+  });
+});

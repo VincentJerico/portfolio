@@ -179,3 +179,33 @@ test.describe('drawn underlines', () => {
     await expect.poll(sizes).toMatch(/^100% 1px, 100% 1px$/);
   });
 });
+
+test.describe('no colour flashes', () => {
+  test('cards carry no sweeping highlight and page changes paint no colour band', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const sweeps = await page.evaluate(
+      () =>
+        [...document.querySelectorAll('main *')].filter((el) => {
+          const after = getComputedStyle(el, '::after');
+          return after.content !== 'none' && after.backgroundImage.includes('gradient');
+        }).length,
+    );
+    expect(sweeps).toBe(0);
+    const rules = await page.evaluate(() =>
+      [...document.styleSheets]
+        .flatMap((sheet) => {
+          try {
+            return [...sheet.cssRules].map((rule) => rule.cssText);
+          } catch {
+            return [];
+          }
+        })
+        .join('\n'),
+    );
+    expect(rules).not.toMatch(
+      /view-transition-image-pair\([^)]*page-curtain[^)]*\)\s*\{[^}]*background/,
+    );
+  });
+});

@@ -366,29 +366,10 @@
   }
 }
 
-/* Content motion, linked to scroll and tied to the runner idea: cards are scanned as they come into
-   view, result rows stream in, the timeline draws down and severity bars fill. Only transforms move,
-   and the scan passes behind the text, so contrast and hit targets never change. Without scroll-driven
+/* Content motion, linked to scroll and tied to the runner idea: result rows stream in, the timeline
+   draws down and severity bars fill. Only transforms move, so contrast and hit targets never change.
+   (A tinted sweep across cards was removed: it read as a flash of blue.) Without scroll-driven
    animation support, or under reduced motion, everything shows in its final state. */
-.scan {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-}
-.scan::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: linear-gradient(
-    100deg,
-    transparent 30%,
-    color-mix(in srgb, var(--accent) 30%, transparent) 50%,
-    transparent 70%
-  );
-  translate: 110% 0;
-}
 .timeline-track {
   position: relative;
 }
@@ -404,11 +385,6 @@
 }
 @supports (animation-timeline: view()) {
   @media screen and (prefers-reduced-motion: no-preference) {
-    .scan::after {
-      animation: scan-sweep linear both;
-      animation-timeline: view();
-      animation-range: entry 25% cover 55%;
-    }
     .draw-x {
       transform-origin: left;
       animation: draw-x linear both;
@@ -420,14 +396,6 @@
       animation-timeline: view();
       animation-range: cover 10% cover 70%;
     }
-  }
-}
-@keyframes scan-sweep {
-  from {
-    translate: -110% 0;
-  }
-  to {
-    translate: 110% 0;
   }
 }
 @keyframes stream-in {
@@ -943,29 +911,20 @@
     var(--dur-base) ease-out var(--dur-fast) both vt-fade-in,
     var(--dur-slow) var(--ease-snap) both vt-rise;
 }
-/* The curtain: the old page lifts and clips away upward; an accent band sweeps up just ahead of the
-   new page, which is revealed from the bottom. */
+/* The curtain: the old page lifts and clips away upward while the new page is revealed from the
+   bottom. No colour fill: an accent band behind the reveal flashed blue across the page. */
 @media (prefers-reduced-motion: no-preference) {
   ::view-transition-old(.page-curtain-out) {
     animation: var(--dur-base) var(--ease-snap) both vt-curtain-out;
   }
-  ::view-transition-image-pair(.page-curtain-in) {
-    background: var(--accent);
-    animation: 520ms var(--ease-snap) both vt-curtain-band;
-  }
   ::view-transition-new(.page-curtain-in) {
-    animation: 520ms var(--ease-snap) 90ms both vt-curtain-in;
+    animation: 520ms var(--ease-snap) both vt-curtain-in;
   }
 }
 @keyframes vt-curtain-out {
   to {
     translate: 0 -2rem;
     clip-path: inset(0 0 100% 0);
-  }
-}
-@keyframes vt-curtain-band {
-  from {
-    clip-path: inset(100% 0 0 0);
   }
 }
 @keyframes vt-curtain-in {
