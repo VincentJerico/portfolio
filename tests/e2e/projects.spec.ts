@@ -172,11 +172,11 @@ test.describe('report tools marquee', () => {
     await expect(marquee.locator('ul:not([aria-hidden])').getByRole('listitem')).toHaveCount(
       project.stack.length,
     );
-    await expect(marquee.locator('ul[aria-hidden="true"]')).toHaveCount(1);
+    await expect(marquee.locator('ul[aria-hidden="true"]').first()).toBeAttached();
     await expect(marquee.locator('.marquee-track')).toHaveCSS('animation-name', 'marquee');
-    await expect(marquee.locator('ul[aria-hidden="true"]')).toBeVisible();
+    await expect(marquee.locator('ul[aria-hidden="true"]').first()).toBeVisible();
     await page.emulateMedia({ media: 'print' });
-    await expect(marquee.locator('ul[aria-hidden="true"]')).toBeHidden();
+    await expect(marquee.locator('ul[aria-hidden="true"]:visible')).toHaveCount(0);
   });
 });
 
@@ -225,4 +225,15 @@ test.describe('report review fixes', () => {
     await page.goto(`/projects/${projectsInOrder()[0]!.slug}`);
     await expect(page.locator('h1')).toHaveCSS('animation-name', 'none');
   });
+});
+
+test('a short tools list still fills the marquee, with no empty gap', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const shortest = [...projectsInOrder()].sort((a, b) => a.stack.length - b.stack.length)[0]!;
+  await page.goto(`/projects/${shortest.slug}`);
+  const gap = await page.locator('[data-marquee]').evaluate((el) => {
+    const half = el.querySelector('.marquee-half')!.getBoundingClientRect().width;
+    return el.getBoundingClientRect().width - half;
+  });
+  expect(gap).toBeLessThanOrEqual(0);
 });

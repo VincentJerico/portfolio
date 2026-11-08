@@ -257,7 +257,7 @@ test.describe('route curtain', () => {
   test('page changes use the curtain classes, and report links keep the morph', async ({
     page,
   }) => {
-    await page.goto('/');
+    await page.goto('/projects');
     const rules = await page.evaluate(() =>
       [...document.styleSheets]
         .flatMap((sheet) => {

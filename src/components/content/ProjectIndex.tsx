@@ -31,7 +31,6 @@ export function ProjectIndex({
                   transitionTypes={['morph']}
                   className="text-ink no-underline after:absolute after:inset-0 after:content-['']"
                 >
-                  <span className="sr-only">Read the report for </span>
                   <ViewTransition
                     name={`project-title-${project.slug}`}
                     share="morph"

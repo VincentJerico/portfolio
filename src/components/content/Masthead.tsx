@@ -9,8 +9,9 @@ interface MastheadProps {
 }
 
 /**
- * A spec-sheet strip above the hero. It carries only what the rest of the page does not: name, role
- * and the clock live in the sidebar, and the run totals in the Run summary section.
+ * A spec-sheet strip above the hero: an at-a-glance summary of where Vincent is, what his suites cover
+ * and their CI coverage. Each fact also appears in fuller form further down (the sidebar, the flip
+ * card, the Run summary); the strip is the summary, not new information.
  */
 export function Masthead({ location, testedAreas, ci }: MastheadProps) {
   const rows: [string, React.ReactNode][] = [

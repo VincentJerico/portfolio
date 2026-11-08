@@ -11,8 +11,8 @@ const WIDTHS = [320, 768, 1024, 1280];
  */
 function escapes() {
   const shown = (el: Element) => {
-    // The marquee clips its own track on purpose.
-    if (el.closest('.sr-only, [hidden], [inert], dialog:not([open]), [data-marquee]')) return false;
+    // The marquee clips its moving track on purpose; the marquee box itself must still fit.
+    if (el.closest('.sr-only, [hidden], [inert], dialog:not([open]), .marquee-track')) return false;
     const closed = el.closest('details:not([open])');
     if (closed && closed !== el && !el.closest('summary')) return false;
     const style = getComputedStyle(el);

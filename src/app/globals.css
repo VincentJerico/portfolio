@@ -542,11 +542,6 @@
 
 /* First-visit boot (Boot.tsx): counters run to 100%, a hairline splits the screen, the overlay lifts.
    It shows only while the head script has set <html data-boot>. */
-@property --boot-n {
-  syntax: '<integer>';
-  inherits: false;
-  initial-value: 0;
-}
 [data-boot-overlay] {
   display: none;
 }
@@ -567,11 +562,12 @@
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     color: var(--text-muted);
-    counter-reset: boot var(--boot-n);
-    animation: boot-count 800ms steps(100) both;
+    /* Eleven discrete content steps: animating a registered integer through counter() restyled
+       on every frame and showed up as long tasks on slow CI runners. */
   }
   .boot-count::after {
-    content: counter(boot) '%';
+    content: '000%';
+    animation: boot-count 800ms linear both;
   }
   .boot-line {
     position: absolute;
@@ -584,8 +580,38 @@
   }
 }
 @keyframes boot-count {
-  to {
-    --boot-n: 100;
+  0% {
+    content: '000%';
+  }
+  10% {
+    content: '010%';
+  }
+  20% {
+    content: '020%';
+  }
+  30% {
+    content: '030%';
+  }
+  40% {
+    content: '040%';
+  }
+  50% {
+    content: '050%';
+  }
+  60% {
+    content: '060%';
+  }
+  70% {
+    content: '070%';
+  }
+  80% {
+    content: '080%';
+  }
+  90% {
+    content: '090%';
+  }
+  100% {
+    content: '100%';
   }
 }
 @keyframes boot-split {
@@ -792,12 +818,16 @@
   .qa-check {
     stroke-dasharray: 1;
   }
+  .qa-grid {
+    view-timeline: --qa block;
+  }
 
   /* Report tools marquee (RunSummaryPanel). Static and wrapped by default; it scrolls only on
      screens that allow motion. */
-  .marquee-track {
-    display: flex;
-    gap: 0.375rem;
+  /* Static: plain blocks, so the real list wraps inside the cell. */
+  .marquee-track,
+  .marquee-half {
+    display: block;
   }
   .marquee-list {
     display: flex;
@@ -818,6 +848,11 @@
         transparent
       );
     }
+    .marquee-track,
+    .marquee-half {
+      display: flex;
+      gap: 0.375rem;
+    }
     .marquee-track {
       width: max-content;
       animation: marquee var(--marquee-dur, 16s) linear infinite;
@@ -827,6 +862,9 @@
     }
     .marquee-copy {
       display: flex;
+    }
+    .marquee-half {
+      flex-shrink: 0;
     }
     .marquee:is(:hover, :focus-within) .marquee-track {
       animation-play-state: paused;
@@ -855,7 +893,8 @@
     /* Checklist marks draw one after another as the grid scrolls in. */
     .qa-check {
       animation: qa-draw linear both;
-      animation-timeline: view();
+      /* One shared timeline (the grid) instead of one per mark. */
+      animation-timeline: --qa;
       animation-range: entry calc(30% + var(--i) * 3%) cover calc(42% + var(--i) * 3%);
     }
     .tm-year {

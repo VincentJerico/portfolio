@@ -37,4 +37,13 @@ test.describe('first-visit boot cleanup', () => {
     await expect(page.locator('html')).toHaveAttribute('data-boot', '');
     await expect(page.locator('html')).not.toHaveAttribute('data-boot', /.*/, { timeout: 4000 });
   });
+
+  test('ends at once on the first key press, so focus is never hidden behind it', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await expect(page.locator('html')).toHaveAttribute('data-boot', '');
+    await page.keyboard.press('Tab');
+    await expect(page.locator('html')).not.toHaveAttribute('data-boot', /.*/, { timeout: 300 });
+  });
 });

@@ -50,10 +50,15 @@ test.describe('overview', () => {
   test('featured projects appear in order and link to their reports', async ({ page }) => {
     const featured = projectsInOrder().filter((p) => p.featured);
     const section = page.getByRole('region', { name: 'Featured projects' });
-    const reports = section.getByRole('link', { name: /^Read the report/ });
-    await expect(reports).toHaveCount(featured.length);
+    const headings = section.getByRole('heading', { level: 3 });
+    await expect(headings).toHaveCount(featured.length);
     for (const [i, project] of featured.entries()) {
-      await expect(reports.nth(i)).toHaveAttribute('href', `/projects/${project.slug}`);
+      // The heading and its link read as just the project name.
+      await expect(headings.nth(i)).toHaveAccessibleName(project.name);
+      await expect(headings.nth(i).getByRole('link')).toHaveAttribute(
+        'href',
+        `/projects/${project.slug}`,
+      );
     }
   });
 
