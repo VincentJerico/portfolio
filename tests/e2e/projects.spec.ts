@@ -194,13 +194,17 @@ test.describe('CI badges', () => {
       await page.goto(route);
       for (const width of [320, 768, 1024]) {
         await page.setViewportSize({ width, height: 900 });
-        const clipped = await page
-          .locator('.skeleton:has(img)')
-          .evaluateAll(
-            (els) =>
-              els.filter((el) => el.checkVisibility() && el.scrollWidth > el.clientWidth + 1)
-                .length,
-          );
+        const clipped = await page.locator('.skeleton:has(img)').evaluateAll(
+          (els) =>
+            // Compare the image with its wrapper: the wrapper's shimmer pseudo-element inflates
+            // scrollWidth while it slides (WebKit counts it).
+            els.filter((el) => {
+              if (!el.checkVisibility()) return false;
+              const box = el.getBoundingClientRect();
+              const img = el.querySelector('img')!.getBoundingClientRect();
+              return img.right > box.right + 1 || img.left < box.left - 1;
+            }).length,
+        );
         expect(clipped, `${route} at ${width} px`).toBe(0);
       }
     }

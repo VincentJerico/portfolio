@@ -56,7 +56,8 @@ test.describe('layout', () => {
       await waitForHydration(page);
       for (const width of WIDTHS) {
         await page.setViewportSize({ width, height: 900 });
-        expect(await page.evaluate(escapes), `at ${width} px`).toEqual([]);
+        // Polled: the flip and any resize reflow must finish before the card is measured.
+        await expect.poll(() => page.evaluate(escapes), { message: `at ${width} px` }).toEqual([]);
       }
     });
   }
@@ -81,7 +82,8 @@ test.describe('layout', () => {
     await page.getByRole('button', { name: 'Flip card' }).click();
     for (const width of WIDTHS) {
       await page.setViewportSize({ width, height: 900 });
-      expect(await page.evaluate(escapes), `at ${width} px`).toEqual([]);
+      // Polled: the flip and any resize reflow must finish before the card is measured.
+      await expect.poll(() => page.evaluate(escapes), { message: `at ${width} px` }).toEqual([]);
     }
   });
 });
