@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/seo';
-import { ProjectCard } from '@/components/content/ProjectCard';
+import { SuiteDoor } from '@/components/content/SuiteDoor';
 import { ProjectFilter } from '@/components/content/ProjectFilter';
 import { profile } from '@/content';
 import { projectsInOrder } from '@/lib/content';
@@ -20,7 +20,7 @@ export default function ProjectsPage() {
   }));
 
   return (
-    <div className="flex flex-col gap-block">
+    <div className="flex flex-col gap-rhythm">
       <header className="measure">
         <p className="label-mono text-ink-muted">Test suites · public repos</p>
         <h1 className="mt-4">Projects</h1>
@@ -36,7 +36,7 @@ export default function ProjectsPage() {
             slug: project.slug,
             category: project.category,
             text: [project.name, project.hook, project.summary, ...project.stack].join(' '),
-            card: <ProjectCard project={project} huntPrefix="projects" />,
+            card: <SuiteDoor project={project} />,
           }))}
         />
       </section>

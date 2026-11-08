@@ -7,14 +7,17 @@ import { HuntBanner } from '@/components/bughunt/HuntBanner';
 import { NextSpec } from '@/components/content/NextSpec';
 import { SiteChecksChip } from '@/components/explorer/SiteChecksChip';
 import { TestExplorerNav } from '@/components/explorer/TestExplorerNav';
+import { Boot, BOOT_SCRIPT } from '@/components/layout/Boot';
 import { IdentityBlock } from '@/components/layout/IdentityBlock';
 import { MobileNav } from '@/components/layout/MobileNav';
+import { PullCord } from '@/components/layout/PullCord';
 import { RouteTransition } from '@/components/layout/RouteTransition';
 import { ShellLinks } from '@/components/layout/ShellLinks';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { SkipLink } from '@/components/layout/SkipLink';
 import { CommandPaletteRoot } from '@/components/palette/CommandPaletteRoot';
 import { SearchButton } from '@/components/palette/SearchButton';
+import { DecodeHost } from '@/components/ui/DecodeHost';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { RunnerHost } from '@/components/runner/RunnerHost';
 import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
@@ -41,7 +44,11 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   const { order, reportsWithNext } = siteReadingOrder();
   return (
     <html lang="en" className={fontVariables} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: BOOT_SCRIPT }} />
+      </head>
       <body>
+        <Boot />
         <ThemeProvider>
           <BugHuntProvider>
             <SkipLink />
@@ -69,6 +76,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
               }
             />
             <Sidebar />
+            <PullCord />
             <main id="main" tabIndex={-1} className="focus:outline-none lg:pl-[280px]">
               <div className="mx-auto w-full max-w-[1100px] px-4 py-10 sm:px-6 lg:px-12 lg:py-16">
                 <HuntBanner email={profile.email} />
@@ -78,6 +86,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             </main>
             <CommandPaletteRoot items={paletteItems()} />
             <RunnerHost />
+            <DecodeHost />
           </BugHuntProvider>
           {/* Cookieless analytics, only on Vercel builds: elsewhere their first-party scripts 404. */}
           {process.env.VERCEL === '1' && (

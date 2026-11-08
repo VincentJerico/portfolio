@@ -161,3 +161,79 @@ test.describe('GitHub data (test builds use the fixture)', () => {
     await expect(page.getByRole('list', { name: 'GitHub topics' })).toHaveCount(0);
   });
 });
+
+test.describe('report tools marquee', () => {
+  test('tools scroll in a marquee that screen readers and print read as one list', async ({
+    page,
+  }) => {
+    const project = projectsInOrder()[0]!;
+    await page.goto(`/projects/${project.slug}`);
+    const marquee = page.locator('[data-marquee]');
+    await expect(marquee.locator('ul:not([aria-hidden])').getByRole('listitem')).toHaveCount(
+      project.stack.length,
+    );
+    await expect(marquee.locator('ul[aria-hidden="true"]').first()).toBeAttached();
+    await expect(marquee.locator('.marquee-track')).toHaveCSS('animation-name', 'marquee');
+    await expect(marquee.locator('ul[aria-hidden="true"]').first()).toBeVisible();
+    await page.emulateMedia({ media: 'print' });
+    await expect(marquee.locator('ul[aria-hidden="true"]:visible')).toHaveCount(0);
+  });
+});
+
+test.describe('CI badges', () => {
+  test('a badge is never clipped by its placeholder, down to 320 px', async ({ page }) => {
+    // Real badges run wider than the 90 px fixture ("CI | passing" is about 140 px).
+    await page.route('https://github.com/**/badge.svg*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'image/svg+xml',
+        body: '<svg xmlns="http://www.w3.org/2000/svg" width="140" height="20"><rect width="140" height="20" fill="#3fb950"/></svg>',
+      }),
+    );
+    for (const route of ['/projects', '/projects/accessibility-testing']) {
+      await page.goto(route);
+      for (const width of [320, 768, 1024]) {
+        await page.setViewportSize({ width, height: 900 });
+        const clipped = await page.locator('.skeleton:has(img)').evaluateAll(
+          (els) =>
+            // Compare the image with its wrapper: the wrapper's shimmer pseudo-element inflates
+            // scrollWidth while it slides (WebKit counts it).
+            els.filter((el) => {
+              if (!el.checkVisibility()) return false;
+              const box = el.getBoundingClientRect();
+              const img = el.querySelector('img')!.getBoundingClientRect();
+              return img.right > box.right + 1 || img.left < box.left - 1;
+            }).length,
+        );
+        expect(clipped, `${route} at ${width} px`).toBe(0);
+      }
+    }
+  });
+});
+
+test.describe('report review fixes', () => {
+  test('the marquee can be paused from the keyboard or by touch (WCAG 2.2.2)', async ({ page }) => {
+    await page.goto(`/projects/${projectsInOrder()[0]!.slug}`);
+    const marquee = page.locator('[data-marquee]');
+    await expect(marquee).toHaveAttribute('tabindex', '0');
+    await expect(marquee).toHaveAttribute('aria-label', /tools/i);
+    await marquee.focus();
+    await expect(marquee.locator('.marquee-track')).toHaveCSS('animation-play-state', 'paused');
+  });
+
+  test('the report title, the morph target, does not run the line rise', async ({ page }) => {
+    await page.goto(`/projects/${projectsInOrder()[0]!.slug}`);
+    await expect(page.locator('h1')).toHaveCSS('animation-name', 'none');
+  });
+});
+
+test('a short tools list still fills the marquee, with no empty gap', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const shortest = [...projectsInOrder()].sort((a, b) => a.stack.length - b.stack.length)[0]!;
+  await page.goto(`/projects/${shortest.slug}`);
+  const gap = await page.locator('[data-marquee]').evaluate((el) => {
+    const half = el.querySelector('.marquee-half')!.getBoundingClientRect().width;
+    return el.getBoundingClientRect().width - half;
+  });
+  expect(gap).toBeLessThanOrEqual(0);
+});

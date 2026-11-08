@@ -1,6 +1,7 @@
 import { expect, test } from '../helpers/test';
 import { metrics, profile } from '../../src/content';
-import { projectsInOrder } from '../../src/lib/content';
+import { projectsInOrder, testedAreas } from '../../src/lib/content';
+import { categoryLabel } from '../../src/lib/labels';
 import { waitForHydration } from '../helpers/hydration';
 
 test.describe('overview', () => {
@@ -34,13 +35,41 @@ test.describe('overview', () => {
     }
   });
 
+  test('the masthead states location, tested areas and CI coverage from the data', async ({
+    page,
+  }) => {
+    const mast = page.getByRole('region', { name: 'At a glance' });
+    const ci = metrics.find((m) => m.id === 'ci-repos')!;
+    const values = mast.locator('dd');
+    await expect(values.nth(0)).toHaveText(profile.location);
+    await expect(values.nth(1)).toHaveText(testedAreas().join(' · '));
+    await expect(values.nth(2)).toContainText(ci.value);
+    await expect(values.nth(2)).toContainText(ci.label);
+  });
+
   test('featured projects appear in order and link to their reports', async ({ page }) => {
     const featured = projectsInOrder().filter((p) => p.featured);
     const section = page.getByRole('region', { name: 'Featured projects' });
-    const reports = section.getByRole('link', { name: /^Read the report/ });
-    await expect(reports).toHaveCount(featured.length);
+    const headings = section.getByRole('heading', { level: 3 });
+    await expect(headings).toHaveCount(featured.length);
     for (const [i, project] of featured.entries()) {
-      await expect(reports.nth(i)).toHaveAttribute('href', `/projects/${project.slug}`);
+      // The heading and its link read as just the project name.
+      await expect(headings.nth(i)).toHaveAccessibleName(project.name);
+      await expect(headings.nth(i).getByRole('link')).toHaveAttribute(
+        'href',
+        `/projects/${project.slug}`,
+      );
+    }
+  });
+
+  test('each index row shows its suite number, category and result', async ({ page }) => {
+    const featured = projectsInOrder().filter((p) => p.featured);
+    const rows = page.getByRole('region', { name: 'Featured projects' }).getByRole('listitem');
+    await expect(rows).toHaveCount(featured.length);
+    for (const [i, project] of featured.entries()) {
+      await expect(rows.nth(i)).toContainText(`suite ${String(project.order).padStart(2, '0')}`);
+      await expect(rows.nth(i)).toContainText(categoryLabel(project.category));
+      await expect(rows.nth(i)).toContainText(project.hook);
     }
   });
 
@@ -51,6 +80,19 @@ test.describe('overview', () => {
       'href',
       '/about#method',
     );
+  });
+
+  test('how I test is a checklist of the 12 areas, readable at every width', async ({ page }) => {
+    const section = page.getByRole('region', { name: 'How I test' });
+    const items = section.getByRole('listitem');
+    await expect(section.locator('svg.cov-map')).toHaveCount(0);
+    for (const width of [375, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect(items).toHaveCount(12);
+      await expect(items.first()).toBeVisible();
+      await expect(items.last()).toBeVisible();
+      await expect(section.locator('[data-qa-check]')).toHaveCount(12);
+    }
   });
 
   test('timeline shows the latest six events, newest first', async ({ page }) => {

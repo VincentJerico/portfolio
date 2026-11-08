@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '../helpers/test';
 import { navItems } from '../../src/lib/nav-items';
+import { waitForHydration } from '../helpers/hydration';
 import { tabKey } from '../helpers/keys';
 
 const MOBILE = { width: 375, height: 812 };
@@ -67,7 +68,7 @@ test.describe('desktop sidebar', () => {
     page,
     browserName,
   }) => {
-    // Skip link, nav links, Projects folder, theme toggle, GitHub, Email, run tests, site checks.
+    // Skip link, nav links, Projects folder, GitHub, Email, run tests, site checks, light switch.
     const shellTabStops = 1 + navItems().length + 1 + 1 + 2 + 1 + 1;
     await page.goto('/');
     for (let i = 0; i < shellTabStops; i++) {
@@ -87,6 +88,24 @@ test.describe('desktop sidebar', () => {
 
 test.describe('mobile drawer', () => {
   test.use({ viewport: MOBILE });
+
+  test('the drawer renders its contents on first open, and its theme toggle works', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.goto('/');
+    await waitForHydration(page);
+    const drawer = page.locator('#site-drawer');
+    // Closed, the drawer holds only a <noscript> copy, which costs nothing to hydrate.
+    await expect(
+      drawer.getByRole('button', { name: 'Dark theme', includeHidden: true }),
+    ).toHaveCount(0);
+    await page.getByRole('button', { name: 'Menu', exact: true }).click();
+    const toggle = drawer.getByRole('button', { name: 'Dark theme' });
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await toggle.click();
+    await expect(page.locator('html')).toHaveClass(/\blight\b/);
+  });
 
   test('menu button reflects state and Esc returns focus to it', async ({ page }) => {
     await page.goto('/');
@@ -231,5 +250,32 @@ test.describe('not found', () => {
   test('unknown project slug returns 404', async ({ page }) => {
     const response = await page.goto('/projects/anything');
     expect(response?.status()).toBe(404);
+  });
+});
+
+test.describe('route curtain', () => {
+  test('page changes use the curtain classes, and report links keep the morph', async ({
+    page,
+  }) => {
+    await page.goto('/projects');
+    const rules = await page.evaluate(() =>
+      [...document.styleSheets]
+        .flatMap((sheet) => {
+          try {
+            return [...sheet.cssRules].map((rule) => rule.cssText);
+          } catch {
+            return [];
+          }
+        })
+        .join('\n'),
+    );
+    // Chrome serializes the class selector as (*.page-curtain-in).
+    expect(rules).toMatch(/view-transition-new\(\*?\.page-curtain-in\)/);
+    await page
+      .getByRole('link', { name: /^Read the report for/ })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/projects\/[a-z0-9-]+$/);
+    await expect(page.locator('h1')).toHaveCount(1);
   });
 });

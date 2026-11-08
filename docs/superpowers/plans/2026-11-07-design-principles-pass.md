@@ -99,7 +99,7 @@ the PR including Lighthouse.
   text beside them carries the numbers.
 - **Hierarchy.** The hero intro's first sentence leads in body ink and the rest steps back. The split
   happens only at sentence ends, so the wording stays exactly as written in the data file.
-- **Dynamic system.** Fluid spacing tokens (`gap-block`, `gap-section`) set the vertical rhythm on
+- **Dynamic system.** Fluid spacing tokens (`gap-rhythm`, `gap-section`; first named `gap-block`) set the vertical rhythm on
   every page.
 - **Color split.** Kept at 70/20/10, Vincent's correction of the original 60/20/10.
 

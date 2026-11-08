@@ -15,14 +15,15 @@
   --color-fail: var(--fail);
   --color-focus: var(--focus-ring);
 
-  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-martian-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-display: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
 
   --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
 
-  /* Fluid rhythm, 375 to 1440 px: between page blocks, and between overview sections. */
-  --spacing-block: clamp(2.5rem, 2.148rem + 1.502vw, 3.5rem);
+  /* Fluid rhythm, 375 to 1440 px: between page blocks, and between overview sections. Not named
+     "block": Tailwind would turn that into an inline-block width utility. */
+  --spacing-rhythm: clamp(2.5rem, 2.148rem + 1.502vw, 3.5rem);
   --spacing-section: clamp(4rem, 3.296rem + 3.005vw, 6rem);
 
   --radius-card: 6px;
@@ -56,21 +57,20 @@
   h1 {
     font-family: var(--font-display);
     font-weight: 800;
-    font-stretch: 72%;
     font-size: clamp(2.5rem, 1.972rem + 2.254vw, 4rem);
     line-height: 0.98;
-    letter-spacing: -0.005em;
+    letter-spacing: -0.025em;
   }
 
   h2 {
     font-weight: 700;
-    font-stretch: 85%;
     font-size: clamp(1.5rem, 1.368rem + 0.563vw, 1.875rem);
     line-height: 1.25;
+    letter-spacing: -0.015em;
   }
 
   h3 {
-    font-weight: 650;
+    font-weight: 600;
     font-size: clamp(1.125rem, 1.081rem + 0.188vw, 1.25rem);
     line-height: 1.35;
   }
@@ -106,23 +106,14 @@
 /* Labels read like runner output, in sentence case: no tracked-out all-caps eyebrows. */
 @utility label-mono {
   font-family: var(--font-mono);
-  font-weight: 450;
-  font-stretch: 87.5%;
+  font-weight: 400;
   font-size: 0.75rem;
   letter-spacing: 0;
 }
 
 @layer base {
-  code,
-  kbd,
-  samp,
-  pre,
-  .font-mono {
-    font-stretch: 87.5%;
-  }
   .font-display {
     font-weight: 700;
-    font-stretch: 80%;
   }
 }
 
@@ -190,24 +181,13 @@
     display: none !important;
   }
 
-  /* Archivo and Martian Mono run wider than the original pairing; narrower widths and a slightly
-     tighter leading keep the CV within two A4 pages (resume.spec). */
+  /* A slightly tighter leading keeps the CV within two A4 pages (resume.spec). */
   html,
   body {
     font-size: 10pt;
     line-height: 1.4;
-    font-stretch: 88%;
     background: #ffffff !important;
     color: #000000 !important;
-  }
-
-  code,
-  kbd,
-  samp,
-  pre,
-  .font-mono,
-  .label-mono {
-    font-stretch: 75%;
   }
 
   main {
@@ -386,29 +366,10 @@
   }
 }
 
-/* Content motion, linked to scroll and tied to the runner idea: cards are scanned as they come into
-   view, result rows stream in, the timeline draws down and severity bars fill. Only transforms move,
-   and the scan passes behind the text, so contrast and hit targets never change. Without scroll-driven
+/* Content motion, linked to scroll and tied to the runner idea: result rows stream in, the timeline
+   draws down and severity bars fill. Only transforms move, so contrast and hit targets never change.
+   (A tinted sweep across cards was removed: it read as a flash of blue.) Without scroll-driven
    animation support, or under reduced motion, everything shows in its final state. */
-.scan {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-}
-.scan::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: linear-gradient(
-    100deg,
-    transparent 30%,
-    color-mix(in srgb, var(--accent) 30%, transparent) 50%,
-    transparent 70%
-  );
-  translate: 110% 0;
-}
 .timeline-track {
   position: relative;
 }
@@ -424,11 +385,6 @@
 }
 @supports (animation-timeline: view()) {
   @media screen and (prefers-reduced-motion: no-preference) {
-    .scan::after {
-      animation: scan-sweep linear both;
-      animation-timeline: view();
-      animation-range: entry 25% cover 55%;
-    }
     .draw-x {
       transform-origin: left;
       animation: draw-x linear both;
@@ -442,17 +398,9 @@
     }
   }
 }
-@keyframes scan-sweep {
-  from {
-    translate: -110% 0;
-  }
-  to {
-    translate: 110% 0;
-  }
-}
 @keyframes stream-in {
   from {
-    translate: -2.5rem 0;
+    translate: -3rem 0;
   }
 }
 @keyframes draw-x {
@@ -545,8 +493,17 @@
   /* Page headers rise in once, line by line, on load. Transform only: no opacity (the title paints at
      once, so LCP is unaffected and axe never scans faded text) and no filter, whose per-frame repaint
      during load pushed blocking time over budget. */
-  main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > * {
-    animation: header-rise var(--dur-slow) var(--ease-snap) both;
+  main
+    :is(header, section[aria-labelledby='hero-heading'] > div:first-child)
+    > :not([data-morph-title]) {
+    animation: header-rise 720ms var(--ease-snap) both;
+  }
+  /* The page title rises out of its own line: it moves up while its clip opens from the top, so it
+     looks masked by the line it sits on. Clip, not opacity, so the title still counts as painted. */
+  main
+    :is(header, section[aria-labelledby='hero-heading'] > div:first-child)
+    > h1:not([data-morph-title]) {
+    animation: line-rise 720ms var(--ease-snap) both;
   }
   main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(2) {
     animation-delay: 90ms;
@@ -568,15 +525,114 @@
     transition: scale var(--dur-base) var(--ease-snap);
   }
 }
+@keyframes line-rise {
+  from {
+    translate: 0 100%;
+    clip-path: inset(-0.25em -1em 100% -1em);
+  }
+  to {
+    clip-path: inset(-0.25em -1em -0.3em -1em);
+  }
+}
 @keyframes header-rise {
   from {
     translate: 0 3rem;
   }
 }
 
-/* On scroll: sections rise into place, timeline entries and table rows stream
-   in, sharpening from a blur. Transform and blur only, never opacity, so text contrast never drops;
-   final state without support or under reduced motion. */
+/* First-visit boot (Boot.tsx): counters run to 100%, a hairline splits the screen, the overlay lifts.
+   It shows only while the head script has set <html data-boot>. */
+[data-boot-overlay] {
+  display: none;
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  html[data-boot] [data-boot-overlay] {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    background: var(--bg);
+    animation:
+      boot-lift 500ms var(--ease-snap) 900ms both,
+      boot-gone 1ms linear 1400ms forwards;
+  }
+  .boot-count {
+    position: absolute;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    /* Eleven discrete content steps: animating a registered integer through counter() restyled
+       on every frame and showed up as long tasks on slow CI runners. */
+  }
+  .boot-count::after {
+    content: '000%';
+    animation: boot-count 800ms linear both;
+  }
+  .boot-line {
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    height: 1px;
+    background: var(--text);
+    scale: 0 1;
+    animation: boot-split 600ms var(--ease-snap) 250ms both;
+  }
+}
+@keyframes boot-count {
+  0% {
+    content: '000%';
+  }
+  10% {
+    content: '010%';
+  }
+  20% {
+    content: '020%';
+  }
+  30% {
+    content: '030%';
+  }
+  40% {
+    content: '040%';
+  }
+  50% {
+    content: '050%';
+  }
+  60% {
+    content: '060%';
+  }
+  70% {
+    content: '070%';
+  }
+  80% {
+    content: '080%';
+  }
+  90% {
+    content: '090%';
+  }
+  100% {
+    content: '100%';
+  }
+}
+@keyframes boot-split {
+  to {
+    scale: 1 1;
+  }
+}
+@keyframes boot-lift {
+  to {
+    translate: 0 -100%;
+  }
+}
+@keyframes boot-gone {
+  from,
+  to {
+    visibility: hidden;
+  }
+}
+
+/* On scroll: sections rise into place, timeline entries and table rows stream in. Transform only,
+   never opacity, so text contrast never drops; final state without support or under reduced motion. */
 @supports (animation-timeline: view()) {
   @media screen and (prefers-reduced-motion: no-preference) {
     main section:not([aria-labelledby='hero-heading']) {
@@ -594,7 +650,301 @@
 }
 @keyframes section-rise {
   from {
-    translate: 0 4rem;
+    translate: 0 5rem;
+  }
+}
+
+/* Time machine redesign (2026-11-08): physical objects that answer the visitor. */
+@layer components {
+  /* Flip card: spiral rings over a plate whose word turns like a calendar page. */
+  .flip-ring {
+    position: relative;
+    z-index: 1;
+    width: 0.375rem;
+    height: 0.875rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--text-muted);
+    background: var(--bg);
+  }
+  .flip-page {
+    transform-origin: top;
+    animation: flip-page var(--dur-slow) var(--ease-snap) both;
+    backface-visibility: hidden;
+  }
+
+  /* Pull cord: a tug stretches it down and lets it spring back. */
+  .pull-cord-tug {
+    animation: cord-tug 700ms var(--ease-snap);
+  }
+
+  /* Time machine: a huge extruded year that rolls up into its window as its group arrives. */
+  .tm-year-window {
+    overflow: hidden;
+    padding: 0.25rem 1rem 0.75rem 0;
+    container-type: inline-size;
+  }
+  .tm-year {
+    font-family: var(--font-display);
+    font-weight: 800;
+    /* Sized to its column, not the viewport, so all four digits (and the extrusion) always fit:
+       Geist's four digits plus the shadow run about 2.7em wide. */
+    font-size: min(8.5rem, 36cqi);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    color: var(--text);
+    /* Three hard layers read as an extrusion at this size; a blurred layer cost paint time on every
+       frame of the roll. */
+    text-shadow:
+      2px 2px 0 var(--border),
+      4px 4px 0 var(--border),
+      6px 6px 0 var(--border);
+  }
+  .time-machine {
+    isolation: isolate;
+    overflow: clip;
+    overflow-clip-margin: 2rem;
+  }
+  /* The dust drifts by transform, so scrolling never repaints the grid. It is 120px taller than the
+     section so the drift never shows an edge. */
+  .time-machine::before {
+    content: '';
+    position: absolute;
+    inset: calc(-2rem - 60px) 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: radial-gradient(
+      color-mix(in srgb, var(--text-muted) 35%, transparent) 1px,
+      transparent 1.5px
+    );
+    background-size: 46px 46px;
+    mask-image: linear-gradient(transparent, black 15%, black 85%, transparent);
+  }
+
+  /* Suite doors: the panel swings open on its left hinge on hover or focus. */
+  .door-panel {
+    transform-origin: left center;
+    transition:
+      rotate var(--dur-slow) var(--ease-snap),
+      box-shadow var(--dur-slow) var(--ease-snap);
+    backface-visibility: hidden;
+  }
+  .suite-door:is(:hover, :focus-within) .door-panel {
+    rotate: y -80deg;
+    box-shadow: 18px 0 30px -18px rgb(0 0 0 / 0.6);
+  }
+  .door-handle {
+    position: absolute;
+    right: 0.875rem;
+    top: 50%;
+    width: 0.5rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    background: linear-gradient(var(--text-muted), var(--border));
+    translate: 0 -50%;
+  }
+  .door-extra {
+    pointer-events: none;
+  }
+  .suite-door:is(:hover, :focus-within) .door-extra {
+    pointer-events: auto;
+  }
+  /* Project index: a panel sweeps up behind the row, the name slides over and the result opens. */
+  .index-row::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--secondary);
+    transform-origin: bottom;
+    scale: 1 0;
+    transition: scale var(--dur-base) var(--ease-snap);
+  }
+  .index-name {
+    transition: translate var(--dur-base) var(--ease-snap);
+  }
+  .index-hook {
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--dur-base) var(--ease-snap);
+  }
+  .index-row:is(:hover, :focus-within)::before {
+    scale: 1 1;
+  }
+  .index-row:is(:hover, :focus-within) .index-name {
+    translate: 0.75rem 0;
+  }
+  .index-row:is(:hover, :focus-within) .index-hook {
+    grid-template-rows: 1fr;
+  }
+  .index-row:is(:hover, :focus-within) [data-index-hook] {
+    padding-top: 0.375rem;
+  }
+  @media (hover: none) {
+    .index-hook {
+      grid-template-rows: 1fr;
+    }
+    [data-index-hook] {
+      padding-top: 0.375rem;
+    }
+  }
+  @media print {
+    .index-hook {
+      grid-template-rows: 1fr;
+    }
+  }
+
+  /* Drawn underline: a faint line at rest keeps the link recognisable; on hover or focus an accent
+     line draws over it from the left. */
+  .draw-link {
+    text-decoration: none;
+    background-image:
+      linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--border), var(--border));
+    background-position:
+      0 100%,
+      0 100%;
+    background-repeat: no-repeat;
+    background-size:
+      0 1px,
+      100% 1px;
+    padding-bottom: 2px;
+    transition: background-size var(--dur-base) var(--ease-snap);
+  }
+  .draw-link:is(:hover, :focus-visible) {
+    background-size:
+      100% 1px,
+      100% 1px;
+  }
+
+  /* QA checklist: each check mark draws in as the section arrives (see the scroll rules below). */
+  .qa-check {
+    stroke-dasharray: 1;
+  }
+  .qa-grid {
+    view-timeline: --qa block;
+  }
+
+  /* Report tools marquee (RunSummaryPanel). Static and wrapped by default; it scrolls only on
+     screens that allow motion. */
+  /* Static: plain blocks, so the real list wraps inside the cell. */
+  .marquee-track,
+  .marquee-half {
+    display: block;
+  }
+  .marquee-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+  .marquee-copy {
+    display: none;
+  }
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .marquee {
+      overflow: hidden;
+      mask-image: linear-gradient(
+        90deg,
+        transparent,
+        black 1.5rem,
+        black calc(100% - 1.5rem),
+        transparent
+      );
+    }
+    .marquee-track,
+    .marquee-half {
+      display: flex;
+      gap: 0.375rem;
+    }
+    .marquee-track {
+      width: max-content;
+      animation: marquee var(--marquee-dur, 16s) linear infinite;
+    }
+    .marquee-list {
+      flex-wrap: nowrap;
+    }
+    .marquee-copy {
+      display: flex;
+    }
+    .marquee-half {
+      flex-shrink: 0;
+    }
+    .marquee:is(:hover, :focus-within) .marquee-track {
+      animation-play-state: paused;
+    }
+    /* The edge fade would hide the focus ring. */
+    .marquee:focus-visible {
+      mask-image: none;
+    }
+  }
+
+  /* Touch screens have no hover: the result shows on the closed door. */
+  .door-hook-touch {
+    display: none;
+  }
+  @media (hover: none) {
+    .door-hook-touch {
+      display: block;
+    }
+    .door-summary {
+      display: none;
+    }
+  }
+}
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    /* Checklist marks draw one after another as the grid scrolls in. */
+    .qa-check {
+      animation: qa-draw linear both;
+      /* One shared timeline (the grid) instead of one per mark. */
+      animation-timeline: --qa;
+      animation-range: entry calc(30% + var(--i) * 3%) cover calc(42% + var(--i) * 3%);
+    }
+    .tm-year {
+      animation: year-roll linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 90%;
+    }
+    .time-machine::before {
+      animation: dust-drift linear both;
+      animation-timeline: view();
+    }
+  }
+}
+@keyframes qa-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+@keyframes marquee {
+  to {
+    translate: calc(-50% - 0.1875rem) 0;
+  }
+}
+@keyframes flip-page {
+  from {
+    rotate: x -95deg;
+  }
+}
+@keyframes cord-tug {
+  30% {
+    translate: 0 1.75rem;
+  }
+  55% {
+    translate: 0 -0.35rem;
+  }
+  75% {
+    translate: 0 0.2rem;
+  }
+}
+@keyframes year-roll {
+  from {
+    translate: 0 85%;
+  }
+}
+@keyframes dust-drift {
+  from {
+    translate: 0 60px;
+  }
+  to {
+    translate: 0 -60px;
   }
 }
 
@@ -607,6 +957,27 @@
   animation:
     var(--dur-base) ease-out var(--dur-fast) both vt-fade-in,
     var(--dur-slow) var(--ease-snap) both vt-rise;
+}
+/* The curtain: the old page lifts and clips away upward while the new page is revealed from the
+   bottom. No colour fill: an accent band behind the reveal flashed blue across the page. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(.page-curtain-out) {
+    animation: var(--dur-base) var(--ease-snap) both vt-curtain-out;
+  }
+  ::view-transition-new(.page-curtain-in) {
+    animation: 520ms var(--ease-snap) both vt-curtain-in;
+  }
+}
+@keyframes vt-curtain-out {
+  to {
+    translate: 0 -2rem;
+    clip-path: inset(0 0 100% 0);
+  }
+}
+@keyframes vt-curtain-in {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
 }
 ::view-transition-group(.morph) {
   animation-duration: var(--dur-slow);
@@ -627,8 +998,8 @@
 }
 @keyframes vt-rise {
   from {
-    translate: 0 28px;
-    filter: blur(4px);
+    translate: 0 48px;
+    filter: blur(8px);
   }
 }
 @keyframes vt-via-blur {

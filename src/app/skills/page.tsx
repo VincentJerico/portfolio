@@ -66,7 +66,7 @@ export default function SkillsPage() {
   const learning = skills.filter((group) => group.learning);
 
   return (
-    <div className="flex flex-col gap-block">
+    <div className="flex flex-col gap-rhythm">
       <header className="measure">
         <p className="label-mono text-ink-muted">Skills matrix</p>
         <h1 className="mt-4">Skills</h1>

@@ -3,11 +3,12 @@ import { TestExplorerNav } from '@/components/explorer/TestExplorerNav';
 import { BugHuntToggle } from '@/components/bughunt/BugHuntToggle';
 import { SearchButton } from '@/components/palette/SearchButton';
 import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
-import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { explorerData } from '@/lib/explorer-rows';
 import { IdentityBlock } from './IdentityBlock';
 import { ShellLinks } from './ShellLinks';
 
+// The pull cord at the top right is the desktop theme switch; the drawer keeps a toggle for
+// smaller screens, where the cord is hidden.
 export function Sidebar() {
   const { rows, projects, summary, site } = explorerData();
   return (
@@ -23,7 +24,6 @@ export function Sidebar() {
       </div>
       <TestExplorerNav idPrefix="sidebar" rows={rows} projects={projects} summary={summary} />
       <div className="mt-auto flex flex-col gap-2 border-t border-line px-2 pt-4">
-        <ThemeToggle className="w-full" />
         <ShellLinks />
         <RunSuiteButton />
         <BugHuntToggle />

@@ -51,13 +51,14 @@ export function RunnerHeroBlock({ metrics }: { metrics: readonly Metric[] }) {
           <p
             key={line.suite}
             data-line
-            className="runner-line flex gap-3 whitespace-nowrap text-ink-muted"
+            className="runner-line grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 text-ink-muted"
             style={{ animationDelay: `${0.9 + i * 0.45}s` }}
           >
             <span className="text-pass">PASS</span>
-            <span className="text-ink">{line.suite}</span>
+            {/* A long result wraps under the suite name instead of running past the window. */}
             <span>
-              <span data-metric-value className="text-ink">
+              <span className="mr-3 text-ink">{line.suite}</span>
+              <span data-metric-value className="whitespace-nowrap text-ink">
                 {line.value}
               </span>{' '}
               {line.after}

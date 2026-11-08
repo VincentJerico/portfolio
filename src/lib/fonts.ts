@@ -1,20 +1,18 @@
-import { Archivo, Martian_Mono } from 'next/font/google';
+import { Geist, Geist_Mono } from 'next/font/google';
 
-// One variable file each. Archivo's width axis does the display work: headings are set condensed and
-// heavy like a spec-sheet label, body text at normal width. Martian Mono, set slightly condensed,
-// carries the test-runner data.
-export const archivo = Archivo({
+// Decision C39: Geist for everything people read and Geist Mono for everything the test runner says.
+// Both are variable (weight 100 to 900) and built for legibility at small sizes, which the dense
+// runner labels need (Vincent picked them over a pixel mono that read poorly at 11 px).
+export const geist = Geist({
   subsets: ['latin'],
-  axes: ['wdth'],
   display: 'swap',
-  variable: '--font-archivo',
+  variable: '--font-geist',
 });
 
-export const martianMono = Martian_Mono({
+export const geistMono = Geist_Mono({
   subsets: ['latin'],
-  axes: ['wdth'],
   display: 'swap',
-  variable: '--font-martian-mono',
+  variable: '--font-geist-mono',
 });
 
-export const fontVariables = [archivo.variable, martianMono.variable].join(' ');
+export const fontVariables = [geist.variable, geistMono.variable].join(' ');

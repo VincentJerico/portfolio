@@ -9,10 +9,10 @@ const font = (pkg: string, file: string) =>
   readFile(join(process.cwd(), 'node_modules/@fontsource', pkg, 'files', file));
 
 const fonts = Promise.all([
-  font('archivo', 'archivo-latin-400-normal.woff'),
-  font('archivo', 'archivo-latin-700-normal.woff'),
-  font('martian-mono', 'martian-mono-latin-400-normal.woff'),
-  font('archivo', 'archivo-latin-800-normal.woff'),
+  font('geist', 'geist-latin-400-normal.woff'),
+  font('geist', 'geist-latin-700-normal.woff'),
+  font('geist-mono', 'geist-mono-latin-400-normal.woff'),
+  font('geist', 'geist-latin-800-normal.woff'),
 ]);
 
 // Dark theme tokens (src/styles/tokens.css).
@@ -45,7 +45,7 @@ export async function renderOgImage({
         justifyContent: 'space-between',
         background: C.bg,
         padding: 56,
-        fontFamily: 'Archivo',
+        fontFamily: 'Geist',
         color: C.text,
       }}
     >
@@ -54,7 +54,7 @@ export async function renderOgImage({
           display: 'flex',
           alignItems: 'center',
           gap: 16,
-          fontFamily: 'Martian Mono',
+          fontFamily: 'Geist Mono',
           fontSize: 22,
           color: C.muted,
         }}
@@ -66,7 +66,7 @@ export async function renderOgImage({
         <div
           style={{
             display: 'flex',
-            fontFamily: 'Archivo',
+            fontFamily: 'Geist',
             fontWeight: 800,
             fontSize: 80,
             lineHeight: 1,
@@ -95,12 +95,12 @@ export async function renderOgImage({
           alignItems: 'center',
           borderTop: `1px solid ${C.border}`,
           paddingTop: 24,
-          fontFamily: 'Martian Mono',
+          fontFamily: 'Geist Mono',
           fontSize: 22,
           color: C.muted,
         }}
       >
-        <div style={{ display: 'flex', color: C.text, fontFamily: 'Archivo', fontWeight: 700 }}>
+        <div style={{ display: 'flex', color: C.text, fontFamily: 'Geist', fontWeight: 700 }}>
           Vincent Jerico Alcuran
         </div>
         <div style={{ display: 'flex' }}>Software QA/QC Engineer · path to SDET</div>
@@ -109,10 +109,10 @@ export async function renderOgImage({
     {
       ...OG_SIZE,
       fonts: [
-        { name: 'Archivo', data: sans, weight: 400, style: 'normal' },
-        { name: 'Archivo', data: sansBold, weight: 700, style: 'normal' },
-        { name: 'Archivo', data: display, weight: 800, style: 'normal' },
-        { name: 'Martian Mono', data: mono, weight: 400, style: 'normal' },
+        { name: 'Geist', data: sans, weight: 400, style: 'normal' },
+        { name: 'Geist', data: sansBold, weight: 700, style: 'normal' },
+        { name: 'Geist', data: display, weight: 800, style: 'normal' },
+        { name: 'Geist Mono', data: mono, weight: 400, style: 'normal' },
       ],
     },
   );
