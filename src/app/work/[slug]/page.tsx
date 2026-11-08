@@ -44,7 +44,7 @@ export default async function CaseStudyPage({ params }: PageProps<'/work/[slug]'
   if (study.period) facts.push(['Period', study.period]);
 
   return (
-    <article className="flex flex-col gap-12">
+    <article className="flex flex-col gap-block">
       <header className="flex flex-col gap-5">
         <nav aria-label="Breadcrumb">
           <ol className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">

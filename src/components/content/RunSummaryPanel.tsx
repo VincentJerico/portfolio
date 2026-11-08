@@ -1,5 +1,6 @@
 import type { Project } from '@/content/schema';
 import { CiBadge } from '@/components/ui/CiBadge';
+import { SeverityBar } from '@/components/ui/SeverityBar';
 import { SeverityChip } from '@/components/ui/SeverityChip';
 import { StatusChip } from '@/components/ui/StatusChip';
 import { formatDay, formatProjectPeriod } from '@/lib/format';
@@ -57,19 +58,22 @@ export function RunSummaryPanel({
   if (counts.length > 0) {
     rows.push([
       'Findings',
-      <ul key="f" className="flex flex-wrap gap-1.5">
-        {counts.map(({ severity, count }) => (
-          <li key={severity}>
-            <a
-              href={`#ticket-${project.findings.find((f) => f.severity === severity)!.id}`}
-              data-open-severity={severity}
-              className="inline-flex items-center no-underline pointer-coarse:min-h-11"
-            >
-              <SeverityChip severity={severity} count={count} />
-            </a>
-          </li>
-        ))}
-      </ul>,
+      <div key="f" className="flex flex-col gap-2.5">
+        <SeverityBar counts={counts} />
+        <ul className="flex flex-wrap gap-1.5">
+          {counts.map(({ severity, count }) => (
+            <li key={severity}>
+              <a
+                href={`#ticket-${project.findings.find((f) => f.severity === severity)!.id}`}
+                data-open-severity={severity}
+                className="inline-flex items-center no-underline pointer-coarse:min-h-11"
+              >
+                <SeverityChip severity={severity} count={count} />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>,
     ]);
   }
 

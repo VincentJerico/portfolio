@@ -17,7 +17,7 @@ export default function NotesPage() {
   if (notes.length === 0) notFound();
 
   return (
-    <div className="flex flex-col gap-14">
+    <div className="flex flex-col gap-block">
       <header className="measure">
         <p className="label-mono text-ink-muted">Notes</p>
         <h1 className="mt-4">Notes</h1>

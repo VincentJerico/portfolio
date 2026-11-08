@@ -17,7 +17,7 @@ export function Timeline({
   huntPrefix: string;
 }) {
   return (
-    <ol className="relative border-l border-line">
+    <ol className="timeline-track border-l border-line">
       {events.map((event) => (
         <li key={`${event.date}-${event.title}`} className="relative pb-6 pl-6 last:pb-0">
           <span

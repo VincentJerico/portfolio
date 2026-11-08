@@ -33,7 +33,29 @@ export function RunnerHost() {
     target?.focus();
   }, []);
 
-  return runner.open && Panel ? (
+  if (!runner.open) return null;
+  return Panel ? (
     <Panel key={runner.run} path={runner.path} onClose={close} />
-  ) : null;
+  ) : (
+    <PanelPlaceholder />
+  );
+}
+
+/** Holds the sheet's place while the runner's code downloads on first use. */
+function PanelPlaceholder() {
+  return (
+    <div
+      role="status"
+      data-runner-loading
+      className="fixed inset-x-0 bottom-0 z-40 mx-auto flex w-[min(100vw,44rem)] flex-col gap-3 rounded-t-card border border-b-0 border-line bg-surface px-4 pt-14 pb-6"
+    >
+      <span className="sr-only">Loading the test runner</span>
+      {[60, 45, 70, 50].map((width) => (
+        <span key={width} aria-hidden="true" className="flex items-center gap-3">
+          <span className="skeleton h-6 w-[4.5rem]" />
+          <span className="skeleton h-4" style={{ width: `${width}%` }} />
+        </span>
+      ))}
+    </div>
+  );
 }

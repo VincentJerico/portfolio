@@ -14,6 +14,13 @@ describe('tokens.css', () => {
   it('uses the spec dark values for the page background (no-JS default)', () => {
     expect(themes.dark.bg?.toLowerCase()).toBe('#0b0f14');
   });
+
+  it.each(['dark', 'light'] as const)('%s theme uses no pure black or pure white', (theme) => {
+    const pure = Object.entries(themes[theme]).filter(([, value]) =>
+      ['#000', '#000000', '#fff', '#ffffff'].includes(value.toLowerCase()),
+    );
+    expect(pure).toEqual([]);
+  });
 });
 
 describe.each(['dark', 'light'] as const)('%s theme contrast', (theme) => {

@@ -1,10 +1,13 @@
 'use client';
 
-import { useSyncExternalStore, type ReactNode } from 'react';
+import { Search } from 'lucide-react';
+import { useState, useSyncExternalStore, type ReactNode } from 'react';
 
 interface FilterCard {
   slug: string;
   category: string;
+  /** Everything a visitor might type to find this project: name, hook, summary, stack. */
+  text: string;
   card: ReactNode;
 }
 
@@ -27,7 +30,8 @@ function subscribe(onChange: () => void) {
 }
 
 /**
- * Category filter synced to `?category=`. The server renders every card (so visitors without
+ * Type-to-search plus a category filter synced to `?category=`; the two combine, and the result list
+ * scrolls with the page. The server renders every card (so visitors without
  * JavaScript see them all); the filter bar appears only once hydrated.
  */
 export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
@@ -41,8 +45,14 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
     () => new URLSearchParams(window.location.search).get('category') ?? ALL,
     () => ALL,
   );
+  const [query, setQuery] = useState('');
   const active = categories.some((c) => c.value === requested) ? requested : ALL;
-  const shown = active === ALL ? cards : cards.filter((c) => c.category === active);
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const shown = cards.filter(
+    (c) =>
+      (active === ALL || c.category === active) &&
+      terms.every((term) => c.text.toLowerCase().includes(term)),
+  );
 
   function choose(value: string) {
     const url = new URL(window.location.href);
@@ -59,7 +69,32 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
       {/* Rendered on the server too, but invisible (and so unfocusable and unannounced) until
           hydrated: it reserves its space, so the grid never jumps (spec 12.5 CLS). */}
       <div className={hydrated ? '' : 'invisible'}>
-        <div className="mb-6 flex flex-col gap-3">
+        <div className="mb-6 flex flex-col gap-4">
+          <div className="flex max-w-md flex-col gap-1.5">
+            <label htmlFor="project-search" className="label-mono text-ink">
+              Search projects
+            </label>
+            <div className="relative">
+              <Search
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-muted"
+              />
+              <input
+                id="project-search"
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                aria-describedby="project-search-hint"
+                autoComplete="off"
+                spellCheck={false}
+                enterKeyHint="search"
+                className="block min-h-11 w-full rounded-chip border border-line bg-surface py-2 pr-3 pl-9 text-ink transition-[border-color] duration-150 hover:border-ink-muted focus-visible:border-accent"
+              />
+            </div>
+            <p id="project-search-hint" className="text-sm text-ink-muted">
+              By name, tool or result, like Playwright or OWASP.
+            </p>
+          </div>
           <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-2">
             {options.map(({ value, label }) => (
               <button
@@ -67,7 +102,7 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
                 type="button"
                 aria-pressed={active === value}
                 onClick={() => choose(value)}
-                className="min-h-11 rounded-chip border border-line bg-surface px-3 font-mono text-xs font-medium tracking-[0.04em] text-ink-muted uppercase hover:text-ink aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-bg"
+                className="min-h-11 rounded-chip border border-line bg-surface px-3 font-mono text-xs font-medium text-ink-muted hover:text-ink aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-bg"
               >
                 {label}
               </button>
@@ -86,10 +121,17 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
         </ul>
       ) : (
         <div className="rounded-card border border-line bg-surface p-6">
-          <p className="text-ink">No projects in this category.</p>
+          <p className="text-ink">
+            {terms.length > 0
+              ? `No projects match "${query.trim()}"${active === ALL ? '' : ' in this category'}.`
+              : 'No projects in this category.'}
+          </p>
           <button
             type="button"
-            onClick={() => choose(ALL)}
+            onClick={() => {
+              setQuery('');
+              choose(ALL);
+            }}
             className="mt-3 inline-flex min-h-11 items-center font-semibold text-accent"
           >
             Show all projects

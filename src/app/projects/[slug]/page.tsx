@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { ViewTransition } from 'react';
 import { notFound } from 'next/navigation';
 import { DataTable } from '@/components/content/DataTable';
 import { DecisionList } from '@/components/content/DecisionList';
@@ -72,7 +73,7 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
   const next = ordered[index + 1];
 
   return (
-    <article className="flex flex-col gap-14">
+    <article className="flex flex-col gap-block">
       <JsonLd
         data={{
           '@context': 'https://schema.org',
@@ -103,7 +104,9 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
           </ol>
         </nav>
         <p className="label-mono text-ink-muted">Test report · {categoryLabel(project.category)}</p>
-        <h1 className="break-words">{project.name}</h1>
+        <ViewTransition name={`project-title-${project.slug}`} share="morph" default="none">
+          <h1 className="break-words">{project.name}</h1>
+        </ViewTransition>
         <p className="measure text-lg text-ink-muted">{project.summary}</p>
       </header>
 

@@ -9,17 +9,17 @@ const font = (pkg: string, file: string) =>
   readFile(join(process.cwd(), 'node_modules/@fontsource', pkg, 'files', file));
 
 const fonts = Promise.all([
-  font('ibm-plex-sans', 'ibm-plex-sans-latin-400-normal.woff'),
-  font('ibm-plex-sans', 'ibm-plex-sans-latin-600-normal.woff'),
-  font('ibm-plex-mono', 'ibm-plex-mono-latin-500-normal.woff'),
-  font('instrument-serif', 'instrument-serif-latin-400-normal.woff'),
+  font('archivo', 'archivo-latin-400-normal.woff'),
+  font('archivo', 'archivo-latin-700-normal.woff'),
+  font('martian-mono', 'martian-mono-latin-400-normal.woff'),
+  font('archivo', 'archivo-latin-800-normal.woff'),
 ]);
 
 // Dark theme tokens (src/styles/tokens.css).
 const C = {
   bg: '#0B0F14',
-  surface: '#11161D',
-  border: '#232B36',
+  surface: '#10161F',
+  border: '#243246',
   text: '#E6EDF3',
   muted: '#9AA4AF',
   accent: '#58A6FF',
@@ -34,7 +34,7 @@ export async function renderOgImage({
   title: string;
   line: string;
 }) {
-  const [sans, sansBold, mono, serif] = await fonts;
+  const [sans, sansBold, mono, display] = await fonts;
   return new ImageResponse(
     <div
       style={{
@@ -45,7 +45,7 @@ export async function renderOgImage({
         justifyContent: 'space-between',
         background: C.bg,
         padding: 56,
-        fontFamily: 'Plex Sans',
+        fontFamily: 'Archivo',
         color: C.text,
       }}
     >
@@ -54,23 +54,23 @@ export async function renderOgImage({
           display: 'flex',
           alignItems: 'center',
           gap: 16,
-          fontFamily: 'Plex Mono',
+          fontFamily: 'Martian Mono',
           fontSize: 22,
           color: C.muted,
         }}
       >
         <div style={{ width: 12, height: 12, borderRadius: 999, background: C.accent }} />
-        <div style={{ display: 'flex', textTransform: 'uppercase', letterSpacing: 1 }}>
-          {kicker}
-        </div>
+        <div style={{ display: 'flex' }}>{kicker}</div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         <div
           style={{
             display: 'flex',
-            fontFamily: 'Instrument Serif',
-            fontSize: 84,
-            lineHeight: 1.05,
+            fontFamily: 'Archivo',
+            fontWeight: 800,
+            fontSize: 80,
+            lineHeight: 1,
+            letterSpacing: -1,
             wordBreak: 'break-word',
           }}
         >
@@ -95,12 +95,12 @@ export async function renderOgImage({
           alignItems: 'center',
           borderTop: `1px solid ${C.border}`,
           paddingTop: 24,
-          fontFamily: 'Plex Mono',
+          fontFamily: 'Martian Mono',
           fontSize: 22,
           color: C.muted,
         }}
       >
-        <div style={{ display: 'flex', color: C.text, fontFamily: 'Plex Sans', fontWeight: 600 }}>
+        <div style={{ display: 'flex', color: C.text, fontFamily: 'Archivo', fontWeight: 700 }}>
           Vincent Jerico Alcuran
         </div>
         <div style={{ display: 'flex' }}>Software QA/QC Engineer · path to SDET</div>
@@ -109,10 +109,10 @@ export async function renderOgImage({
     {
       ...OG_SIZE,
       fonts: [
-        { name: 'Plex Sans', data: sans, weight: 400, style: 'normal' },
-        { name: 'Plex Sans', data: sansBold, weight: 600, style: 'normal' },
-        { name: 'Plex Mono', data: mono, weight: 500, style: 'normal' },
-        { name: 'Instrument Serif', data: serif, weight: 400, style: 'normal' },
+        { name: 'Archivo', data: sans, weight: 400, style: 'normal' },
+        { name: 'Archivo', data: sansBold, weight: 700, style: 'normal' },
+        { name: 'Archivo', data: display, weight: 800, style: 'normal' },
+        { name: 'Martian Mono', data: mono, weight: 400, style: 'normal' },
       ],
     },
   );

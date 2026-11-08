@@ -1,19 +1,13 @@
 import { z } from 'zod';
-import type { ContactField } from './types';
+import { FIELD_ERROR_COPY as COPY, FIELD_LIMITS, type ContactField } from './types';
 
 export { HONEYPOT_FIELD, type ContactField, type ContactState, type ContactValues } from './types';
 
 export const ContactInput = z.object({
-  name: z.string().trim().min(1).max(100),
-  email: z.email().max(254),
-  message: z.string().trim().min(10).max(5000),
+  name: z.string().trim().min(FIELD_LIMITS.name.min).max(FIELD_LIMITS.name.max),
+  email: z.email().max(FIELD_LIMITS.email.max),
+  message: z.string().trim().min(FIELD_LIMITS.message.min).max(FIELD_LIMITS.message.max),
 });
-
-const COPY: Record<ContactField, { missing: string; tooLong: string }> = {
-  name: { missing: 'Enter your name.', tooLong: 'Keep it under 100 characters.' },
-  email: { missing: 'Enter a valid email address.', tooLong: 'Enter a valid email address.' },
-  message: { missing: 'Write at least 10 characters.', tooLong: 'Keep it under 5,000 characters.' },
-};
 
 export function fieldErrorsFrom(error: z.ZodError): Partial<Record<ContactField, string>> {
   const errors: Partial<Record<ContactField, string>> = {};

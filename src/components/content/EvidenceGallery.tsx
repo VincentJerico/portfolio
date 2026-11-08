@@ -14,6 +14,8 @@ function focusables(root: HTMLElement): HTMLElement[] {
 /** Evidence thumbnails; each opens full size in a native modal dialog (spec 7.3.10). */
 export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  // Thumbnails load lazily; each shows a pending placeholder until it has painted.
+  const [loaded, setLoaded] = useState<ReadonlySet<string>>(new Set());
   const dialogRef = useRef<HTMLDialogElement>(null);
   const openerRef = useRef<HTMLButtonElement | null>(null);
 
@@ -66,7 +68,9 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
                   openerRef.current = event.currentTarget;
                   setOpenIndex(i);
                 }}
-                className="group relative flex min-h-24 items-center justify-center overflow-hidden rounded-[4px] bg-surface-2"
+                className={`group relative flex min-h-24 items-center justify-center overflow-hidden rounded-[4px] bg-surface-2 ${
+                  loaded.has(image.src) ? '' : 'skeleton'
+                }`}
               >
                 <span className="sr-only">Enlarge image: {image.caption ?? image.alt}</span>
                 <Image
@@ -75,6 +79,7 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
                   width={image.width}
                   height={image.height}
                   sizes="(min-width: 768px) 45vw, 100vw"
+                  onLoad={() => setLoaded((previous) => new Set(previous).add(image.src))}
                   className="h-auto max-h-80 w-auto max-w-full object-contain"
                 />
                 <Maximize2

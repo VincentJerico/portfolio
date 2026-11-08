@@ -20,7 +20,7 @@ export function MetricTile({ metric }: { metric: Metric }) {
 
 function TileBody({ metric }: { metric: Metric }) {
   return (
-    <div className="flex h-full flex-col gap-2 bg-surface p-4">
+    <div className="scan flex h-full flex-col gap-2 bg-secondary p-4">
       <p className="font-mono text-2xl font-medium tracking-tight text-ink">{metric.value}</p>
       <p className="text-sm leading-snug text-ink">{metric.label}</p>
       {metric.context && <p className="text-xs leading-snug text-ink-muted">{metric.context}</p>}

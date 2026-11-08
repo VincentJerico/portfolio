@@ -5,6 +5,7 @@
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-secondary: var(--secondary);
   --color-line: var(--border);
   --color-ink: var(--text);
   --color-ink-muted: var(--text-muted);
@@ -14,9 +15,15 @@
   --color-fail: var(--fail);
   --color-focus: var(--focus-ring);
 
-  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  --font-display: var(--font-instrument-serif), Georgia, 'Times New Roman', serif;
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-martian-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+
+  --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Fluid rhythm, 375 to 1440 px: between page blocks, and between overview sections. */
+  --spacing-block: clamp(2.5rem, 2.148rem + 1.502vw, 3.5rem);
+  --spacing-section: clamp(4rem, 3.296rem + 3.005vw, 6rem);
 
   --radius-card: 6px;
   --radius-chip: 4px;
@@ -39,38 +46,38 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  :root {
+    --dur-fast: 180ms;
+    --dur-base: 320ms;
+    --dur-slow: 560ms;
+  }
+
+  /* Fluid between the spec's mobile and desktop sizes (4.1): 40/64, 24/30, 18/20 px from 375 to 1440 px. */
   h1 {
     font-family: var(--font-display);
-    font-weight: 400;
-    font-size: 2.5rem;
-    line-height: 1.05;
-    letter-spacing: -0.01em;
+    font-weight: 800;
+    font-stretch: 72%;
+    font-size: clamp(2.5rem, 1.972rem + 2.254vw, 4rem);
+    line-height: 0.98;
+    letter-spacing: -0.005em;
   }
 
   h2 {
-    font-weight: 600;
-    font-size: 1.5rem;
+    font-weight: 700;
+    font-stretch: 85%;
+    font-size: clamp(1.5rem, 1.368rem + 0.563vw, 1.875rem);
     line-height: 1.25;
   }
 
   h3 {
-    font-weight: 600;
-    font-size: 1.125rem;
+    font-weight: 650;
+    font-size: clamp(1.125rem, 1.081rem + 0.188vw, 1.25rem);
     line-height: 1.35;
   }
 
   @media (min-width: 1024px) {
     body {
       font-size: 1.0625rem;
-    }
-    h1 {
-      font-size: 4rem;
-    }
-    h2 {
-      font-size: 1.875rem;
-    }
-    h3 {
-      font-size: 1.25rem;
     }
   }
 
@@ -96,12 +103,27 @@
   }
 }
 
+/* Labels read like runner output, in sentence case: no tracked-out all-caps eyebrows. */
 @utility label-mono {
   font-family: var(--font-mono);
-  font-weight: 500;
+  font-weight: 450;
+  font-stretch: 87.5%;
   font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+@layer base {
+  code,
+  kbd,
+  samp,
+  pre,
+  .font-mono {
+    font-stretch: 87.5%;
+  }
+  .font-display {
+    font-weight: 700;
+    font-stretch: 80%;
+  }
 }
 
 @utility measure {
@@ -148,6 +170,7 @@
     --bg: #ffffff;
     --surface: #ffffff;
     --surface-2: #ffffff;
+    --secondary: #ffffff;
     --border: #bbbbbb;
     --text: #000000;
     --text-muted: #333333;
@@ -167,11 +190,24 @@
     display: none !important;
   }
 
+  /* Archivo and Martian Mono run wider than the original pairing; narrower widths and a slightly
+     tighter leading keep the CV within two A4 pages (resume.spec). */
   html,
   body {
-    font-size: 10.5pt;
+    font-size: 10pt;
+    line-height: 1.4;
+    font-stretch: 88%;
     background: #ffffff !important;
     color: #000000 !important;
+  }
+
+  code,
+  kbd,
+  samp,
+  pre,
+  .font-mono,
+  .label-mono {
+    font-stretch: 75%;
   }
 
   main {
@@ -247,5 +283,356 @@
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none !important;
+  }
+}
+
+/* Motion (2026-11-07 design pass). Only transform-like properties, shadows and colours animate. */
+@layer components {
+  /* Cards: lift and pick up the accent on hover, keep the accent border while a child has focus. */
+  .lift {
+    transition:
+      translate var(--dur-base) var(--ease-snap),
+      box-shadow var(--dur-base) var(--ease-snap),
+      border-color var(--dur-base) var(--ease-snap);
+  }
+  .lift:focus-within {
+    border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+  }
+  @media (hover: hover) {
+    .lift:hover {
+      translate: 0 -5px;
+      box-shadow: 0 14px 30px -16px color-mix(in srgb, var(--accent) 55%, transparent);
+      border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+    }
+  }
+
+  .press {
+    transition:
+      scale var(--dur-fast) var(--ease-snap),
+      translate var(--dur-fast) var(--ease-snap),
+      filter var(--dur-fast),
+      background-color var(--dur-fast);
+  }
+  @media (hover: hover) {
+    .press:hover:not([aria-disabled='true']) {
+      translate: 0 -2px;
+    }
+  }
+  .press:active:not([aria-disabled='true']) {
+    translate: 0 0;
+    scale: 0.94;
+  }
+
+  /* Pending placeholder for the moments a visitor actually waits (an external badge, queued checks).
+     The sweep is a transformed pseudo-element so it stays on the compositor. Children paint above it. */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-chip);
+    background-color: var(--surface-2);
+  }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--text) 9%, transparent),
+      transparent
+    );
+    translate: -100% 0;
+    animation: skeleton-sweep 1.4s var(--ease-snap) 4;
+  }
+  .skeleton > * {
+    position: relative;
+    z-index: 1;
+  }
+  @keyframes skeleton-sweep {
+    to {
+      translate: 100% 0;
+    }
+  }
+}
+
+/* On scroll: each section's status dot turns from pending to pass as it comes into view, the one
+   scroll-linked moment on the page. Without scroll-driven animation support, or under reduced motion,
+   the dot shows as passed. */
+.reveal-dot {
+  background-color: var(--pass);
+}
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .reveal-dot {
+      animation: dot-pass linear both;
+      animation-timeline: view();
+      animation-range: cover 140px cover 320px;
+    }
+  }
+}
+@keyframes dot-pass {
+  from {
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1.5px var(--text-muted);
+  }
+  60% {
+    box-shadow:
+      inset 0 0 0 1.5px var(--pass),
+      0 0 0 7px color-mix(in srgb, var(--pass) 30%, transparent);
+  }
+  to {
+    background-color: var(--pass);
+    box-shadow: inset 0 0 0 1.5px var(--pass);
+  }
+}
+
+/* Content motion, linked to scroll and tied to the runner idea: cards are scanned as they come into
+   view, result rows stream in, the timeline draws down and severity bars fill. Only transforms move,
+   and the scan passes behind the text, so contrast and hit targets never change. Without scroll-driven
+   animation support, or under reduced motion, everything shows in its final state. */
+.scan {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.scan::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    color-mix(in srgb, var(--accent) 30%, transparent) 50%,
+    transparent 70%
+  );
+  translate: 110% 0;
+}
+.timeline-track {
+  position: relative;
+}
+.timeline-track::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -1px;
+  width: 1px;
+  background-color: color-mix(in srgb, var(--accent) 70%, transparent);
+  transform-origin: top;
+}
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .scan::after {
+      animation: scan-sweep linear both;
+      animation-timeline: view();
+      animation-range: entry 25% cover 55%;
+    }
+    .draw-x {
+      transform-origin: left;
+      animation: draw-x linear both;
+      animation-timeline: view();
+      animation-range: entry 40% cover 45%;
+    }
+    .timeline-track::before {
+      animation: draw-y linear both;
+      animation-timeline: view();
+      animation-range: cover 10% cover 70%;
+    }
+  }
+}
+@keyframes scan-sweep {
+  from {
+    translate: -110% 0;
+  }
+  to {
+    translate: 110% 0;
+  }
+}
+@keyframes stream-in {
+  from {
+    translate: -2.5rem 0;
+  }
+}
+@keyframes draw-x {
+  from {
+    scale: 0 1;
+  }
+}
+@keyframes draw-y {
+  from {
+    scale: 1 0;
+  }
+}
+
+/* Transitions on every interactive part: colour, border, underline, shadow and transform changes
+   ease instead of snapping. Reduced motion collapses them through the global rule above. */
+@layer base {
+  a,
+  button,
+  summary,
+  input,
+  textarea,
+  select,
+  label,
+  [role='option'] {
+    transition-property:
+      color, background-color, border-color, text-decoration-color, outline-color, box-shadow,
+      translate, scale, rotate, filter;
+    transition-duration: var(--dur-fast);
+    transition-timing-function: var(--ease-snap);
+  }
+  a {
+    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  }
+  a:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+/* Dialogs (palette, ticket, evidence) scale in and out; the backdrop fades. The drawer has its own
+   slide. Only the backdrop changes opacity, so dialog text is never scanned half-faded. Screen only:
+   print and the generated CV must render every element in its final state. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  dialog:not(.drawer) {
+    transition:
+      scale var(--dur-base) var(--ease-snap),
+      translate var(--dur-base) var(--ease-snap),
+      overlay var(--dur-base) allow-discrete,
+      display var(--dur-base) allow-discrete;
+  }
+  dialog:not(.drawer):not([open]) {
+    scale: 0.9;
+    translate: 0 1.5rem;
+  }
+  @starting-style {
+    dialog[open]:not(.drawer) {
+      scale: 0.9;
+      translate: 0 1.5rem;
+    }
+  }
+  dialog::backdrop {
+    transition:
+      opacity var(--dur-base) ease-out,
+      overlay var(--dur-base) allow-discrete,
+      display var(--dur-base) allow-discrete;
+  }
+  dialog:not([open])::backdrop {
+    opacity: 0;
+  }
+  @starting-style {
+    dialog[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  /* Defect tickets and other disclosures open and close smoothly where details content can animate. */
+  :root {
+    interpolate-size: allow-keywords;
+  }
+  details::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition:
+      block-size var(--dur-base) var(--ease-snap),
+      content-visibility var(--dur-base) allow-discrete;
+  }
+  details[open]::details-content {
+    block-size: auto;
+  }
+
+  /* Page headers rise in once, line by line, on load. Transform only: no opacity (the title paints at
+     once, so LCP is unaffected and axe never scans faded text) and no filter, whose per-frame repaint
+     during load pushed blocking time over budget. */
+  main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > * {
+    animation: header-rise var(--dur-slow) var(--ease-snap) both;
+  }
+  main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(2) {
+    animation-delay: 90ms;
+  }
+  main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(3) {
+    animation-delay: 180ms;
+  }
+  main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(n + 4) {
+    animation-delay: 270ms;
+  }
+
+  /* Thumbnails lean in on hover. */
+  main button:hover > img,
+  main a:hover > img {
+    scale: 1.05;
+  }
+  main button > img,
+  main a > img {
+    transition: scale var(--dur-base) var(--ease-snap);
+  }
+}
+@keyframes header-rise {
+  from {
+    translate: 0 3rem;
+  }
+}
+
+/* On scroll: sections rise into place, timeline entries and table rows stream
+   in, sharpening from a blur. Transform and blur only, never opacity, so text contrast never drops;
+   final state without support or under reduced motion. */
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    main section:not([aria-labelledby='hero-heading']) {
+      animation: section-rise linear both;
+      animation-timeline: view();
+      animation-range: cover 0px cover 380px;
+    }
+    /* Scoped, not every li: one scroll timeline per list item cost measurable blocking time. */
+    main :is(.timeline-track > li, tbody > tr) {
+      animation: stream-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+  }
+}
+@keyframes section-rise {
+  from {
+    translate: 0 4rem;
+  }
+}
+
+/* Route change: the old page leaves quickly, the new one rises in once it has gone. A project's name
+   morphs from its card into the report title (.morph). */
+::view-transition-old(.page-exit) {
+  animation: var(--dur-fast) ease-out both vt-fade-out;
+}
+::view-transition-new(.page-enter) {
+  animation:
+    var(--dur-base) ease-out var(--dur-fast) both vt-fade-in,
+    var(--dur-slow) var(--ease-snap) both vt-rise;
+}
+::view-transition-group(.morph) {
+  animation-duration: var(--dur-slow);
+  animation-timing-function: var(--ease-snap);
+}
+::view-transition-image-pair(.morph) {
+  animation-name: vt-via-blur;
+}
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes vt-rise {
+  from {
+    translate: 0 28px;
+    filter: blur(4px);
+  }
+}
+@keyframes vt-via-blur {
+  30% {
+    filter: blur(3px);
   }
 }
