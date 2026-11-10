@@ -412,15 +412,23 @@
       animation-timeline: --reel;
       animation-range: contain 0% contain 100%;
     }
+    /* Every card is the same size: the track stretches its items to the tallest card, and each card
+       fills its item. Content is top-aligned, with two lines kept for the name, so the suite number,
+       name, category and result start at the same height in every card. */
     .reel-track > li {
+      display: flex;
       width: 22rem;
       flex-shrink: 0;
     }
+    .reel-track > li > * {
+      display: flex;
+      flex: 1;
+    }
     .reel-track .index-row {
       display: flex;
+      flex: 1;
       flex-direction: column;
       gap: 0.75rem;
-      height: 100%;
       min-height: 17rem;
       padding: 1.5rem;
       border: 1px solid var(--border);
@@ -430,8 +438,10 @@
     .reel-track .index-row::before {
       border-radius: inherit;
     }
+    .reel-track .index-name {
+      min-height: 2lh;
+    }
     .reel-track .index-hook {
-      margin-top: auto;
       grid-template-rows: 1fr;
     }
     .reel-track .index-row:is(:hover, :focus-within) .index-name {

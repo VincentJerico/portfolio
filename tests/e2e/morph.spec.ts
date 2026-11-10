@@ -369,3 +369,29 @@ test.describe('load sequence', () => {
     await expect(page.locator('[data-load-bar]')).toBeHidden();
   });
 });
+
+test.describe('reel card sizes', () => {
+  test.use({ viewport: { width: 1440, height: 900 }, isMobile: false, hasTouch: false });
+
+  test('every reel card is the same size, with its content starting at the same height', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const cards = page.locator('.reel-track .index-row');
+    const boxes = await cards.evaluateAll((els) =>
+      els.map((el) => {
+        const box = el.getBoundingClientRect();
+        const hook = el.querySelector('[data-index-hook]')!.getBoundingClientRect();
+        return { width: box.width, height: box.height, hookOffset: hook.top - box.top };
+      }),
+    );
+    expect(boxes.length).toBeGreaterThan(1);
+    for (const box of boxes) {
+      expect(Math.abs(box.height - boxes[0]!.height)).toBeLessThan(1);
+      expect(Math.abs(box.width - boxes[0]!.width)).toBeLessThan(1);
+    }
+    // Top-aligned: hooks start at the same height in every card, under the category.
+    const offsets = boxes.map((box) => Math.round(box.hookOffset));
+    expect(Math.max(...offsets) - Math.min(...offsets)).toBeLessThanOrEqual(1);
+  });
+});
