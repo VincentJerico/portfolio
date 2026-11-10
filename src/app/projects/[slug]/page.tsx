@@ -103,7 +103,17 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
             </li>
           </ol>
         </nav>
-        <p className="label-mono text-ink-muted">Test report · {categoryLabel(project.category)}</p>
+        {/* Suite number, category and name morph in from the row or door the visitor came from. */}
+        <p className="label-mono text-ink-muted">
+          Test report ·{' '}
+          <ViewTransition name={`project-suite-${project.slug}`} share="morph" default="none">
+            <span className="inline-block">suite {String(project.order).padStart(2, '0')}</span>
+          </ViewTransition>
+          {' · '}
+          <ViewTransition name={`project-cat-${project.slug}`} share="morph" default="none">
+            <span className="inline-block">{categoryLabel(project.category)}</span>
+          </ViewTransition>
+        </p>
         <ViewTransition name={`project-title-${project.slug}`} share="morph" default="none">
           {/* The morph target: it skips the entrance rises, so the view transition captures it in
               place rather than clipped and offset. */}

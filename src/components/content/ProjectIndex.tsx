@@ -7,7 +7,8 @@ import { Inspectable } from '@/components/bughunt/Inspectable';
 /**
  * Projects as an index, one row per suite. The whole row is the report link. On hover or focus a
  * panel sweeps up behind it, the name slides over and the result opens underneath; screens without
- * hover always show the result. The row's name morphs into the report title on navigation.
+ * hover always show the result. On navigation the suite number, category and name each morph into
+ * their places in the report header.
  */
 export function ProjectIndex({
   projects,
@@ -22,9 +23,11 @@ export function ProjectIndex({
         <li key={project.slug}>
           <Inspectable id={`${huntPrefix}-card-${project.slug}`} label={`${project.name} row`}>
             <div className="index-row relative isolate grid grid-cols-[4.5rem_minmax(0,1fr)] gap-x-4 border-b border-line px-2 py-4 sm:grid-cols-[5rem_minmax(0,1fr)_auto]">
-              <span className="pt-1.5 font-mono text-[0.6875rem] text-ink-muted">
-                suite {String(project.order).padStart(2, '0')}
-              </span>
+              <ViewTransition name={`project-suite-${project.slug}`} share="morph" default="none">
+                <span className="self-start pt-1.5 font-mono text-[0.6875rem] text-ink-muted">
+                  suite {String(project.order).padStart(2, '0')}
+                </span>
+              </ViewTransition>
               <h3 className="index-name min-w-0 text-xl font-semibold break-words sm:text-2xl">
                 <Link
                   href={`/projects/${project.slug}`}
@@ -40,9 +43,11 @@ export function ProjectIndex({
                   </ViewTransition>
                 </Link>
               </h3>
-              <span className="col-start-2 pt-1 font-mono text-[0.6875rem] text-ink-muted sm:col-start-3 sm:row-start-1 sm:pt-2.5">
-                {categoryLabel(project.category)}
-              </span>
+              <ViewTransition name={`project-cat-${project.slug}`} share="morph" default="none">
+                <span className="col-start-2 self-start pt-1 font-mono text-[0.6875rem] text-ink-muted sm:col-start-3 sm:row-start-1 sm:pt-2.5">
+                  {categoryLabel(project.category)}
+                </span>
+              </ViewTransition>
               <div className="index-hook col-start-2 grid sm:col-[2/4]">
                 <p
                   data-index-hook

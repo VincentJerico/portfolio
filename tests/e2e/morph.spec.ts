@@ -67,3 +67,60 @@ test.describe('sidebar marker', () => {
     ).toHaveCount(1);
   });
 });
+
+/** Records the pseudo-elements each view transition animates, once it is ready. */
+async function recordMorphs(page: Page) {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __morphs: string[] };
+    w.__morphs = [];
+    const start = document.startViewTransition?.bind(document);
+    if (!start) return;
+    document.startViewTransition = ((arg: never) => {
+      const transition = start(arg);
+      transition.ready
+        .then(() => {
+          for (const animation of document.getAnimations()) {
+            const pseudo = (animation.effect as KeyframeEffect | null)?.pseudoElement;
+            if (pseudo) w.__morphs.push(pseudo);
+          }
+        })
+        .catch(() => {});
+      return transition;
+    }) as typeof document.startViewTransition;
+  });
+}
+
+test.describe('project to report', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  test('a home index row morphs its number, category and name into the report header', async ({
+    page,
+  }) => {
+    await recordMorphs(page);
+    await page.goto('/');
+    await waitForHydration(page);
+    const row = page
+      .getByRole('region', { name: 'Featured projects' })
+      .getByRole('heading', { level: 3 })
+      .first()
+      .getByRole('link');
+    const href = (await row.getAttribute('href'))!;
+    const slug = href.split('/').pop()!;
+    await row.click();
+    await expect(page).toHaveURL(new RegExp(`${href}$`));
+    await expect
+      .poll(() =>
+        page.evaluate(() => (window as unknown as { __morphs: string[] }).__morphs.join('|')),
+      )
+      .toMatch(new RegExp(`project-suite-${slug}.*|project-cat-${slug}`));
+    const morphs = await page.evaluate(
+      () => (window as unknown as { __morphs: string[] }).__morphs,
+    );
+    for (const part of ['suite', 'cat', 'title']) {
+      expect(
+        morphs.some((m) => m.includes(`project-${part}-${slug}`)),
+        part,
+      ).toBe(true);
+    }
+  });
+});

@@ -50,7 +50,13 @@ export function SuiteDoor({ project }: { project: Project }) {
         </div>
         <div className="door-panel pointer-events-none relative z-10 col-start-1 row-start-1 flex min-w-0 flex-col rounded-card border border-line bg-surface py-5 pr-10 pl-5 shadow-card">
           <p className="door-plate self-start rounded-chip border border-line bg-surface-2 px-2 py-1 font-mono text-[0.6875rem] text-ink-muted">
-            suite {suite} · {categoryLabel(project.category)}
+            <ViewTransition name={`project-suite-${project.slug}`} share="morph" default="none">
+              <span className="inline-block">suite {suite}</span>
+            </ViewTransition>
+            {' · '}
+            <ViewTransition name={`project-cat-${project.slug}`} share="morph" default="none">
+              <span className="inline-block">{categoryLabel(project.category)}</span>
+            </ViewTransition>
           </p>
           <ViewTransition name={`project-title-${project.slug}`} share="morph" default="none">
             <h3 className="mt-5 font-mono text-lg font-medium break-words text-ink">
