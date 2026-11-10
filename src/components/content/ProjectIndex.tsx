@@ -18,48 +18,62 @@ export function ProjectIndex({
   huntPrefix: string;
 }) {
   return (
-    <ol className="border-t border-line">
-      {projects.map((project) => (
-        <li key={project.slug}>
-          <Inspectable id={`${huntPrefix}-card-${project.slug}`} label={`${project.name} row`}>
-            <div className="index-row relative isolate grid grid-cols-[4.5rem_minmax(0,1fr)] gap-x-4 border-b border-line px-2 py-4 sm:grid-cols-[5rem_minmax(0,1fr)_auto]">
-              <ViewTransition name={`project-suite-${project.slug}`} share="morph" default="none">
-                <span className="self-start pt-1.5 font-mono text-[0.6875rem] text-ink-muted">
-                  suite {String(project.order).padStart(2, '0')}
-                </span>
-              </ViewTransition>
-              <h3 className="index-name min-w-0 text-xl font-semibold break-words sm:text-2xl">
-                <Link
-                  href={`/projects/${project.slug}`}
-                  transitionTypes={['morph']}
-                  className="text-ink no-underline after:absolute after:inset-0 after:content-['']"
-                >
+    // On wide screens with motion, CSS turns this same list into a pinned horizontal reel: the section
+    // holds still while scrolling moves the suites sideways (globals.css, .reel). One list, so the
+    // morph names are never duplicated.
+    <div className="reel">
+      <div className="reel-sticky">
+        <ol className="reel-track border-t border-line">
+          {projects.map((project) => (
+            <li key={project.slug}>
+              <Inspectable id={`${huntPrefix}-card-${project.slug}`} label={`${project.name} row`}>
+                <div className="index-row relative isolate grid grid-cols-[4.5rem_minmax(0,1fr)] gap-x-4 border-b border-line px-2 py-4 sm:grid-cols-[5rem_minmax(0,1fr)_auto]">
                   <ViewTransition
-                    name={`project-title-${project.slug}`}
+                    name={`project-suite-${project.slug}`}
                     share="morph"
                     default="none"
                   >
-                    <span>{project.name}</span>
+                    <span className="self-start pt-1.5 font-mono text-[0.6875rem] text-ink-muted">
+                      suite {String(project.order).padStart(2, '0')}
+                    </span>
                   </ViewTransition>
-                </Link>
-              </h3>
-              <ViewTransition name={`project-cat-${project.slug}`} share="morph" default="none">
-                <span className="col-start-2 self-start pt-1 font-mono text-[0.6875rem] text-ink-muted sm:col-start-3 sm:row-start-1 sm:pt-2.5">
-                  {categoryLabel(project.category)}
-                </span>
-              </ViewTransition>
-              <div className="index-hook col-start-2 grid sm:col-[2/4]">
-                <p
-                  data-index-hook
-                  className="min-h-0 overflow-hidden text-[0.9375rem] text-ink-muted"
-                >
-                  {project.hook}
-                </p>
-              </div>
-            </div>
-          </Inspectable>
-        </li>
-      ))}
-    </ol>
+                  <h3 className="index-name min-w-0 text-xl font-semibold break-words sm:text-2xl">
+                    <Link
+                      href={`/projects/${project.slug}`}
+                      transitionTypes={['morph']}
+                      className="text-ink no-underline after:absolute after:inset-0 after:content-['']"
+                    >
+                      <ViewTransition
+                        name={`project-title-${project.slug}`}
+                        share="morph"
+                        default="none"
+                      >
+                        <span>{project.name}</span>
+                      </ViewTransition>
+                    </Link>
+                  </h3>
+                  <ViewTransition name={`project-cat-${project.slug}`} share="morph" default="none">
+                    <span className="col-start-2 self-start pt-1 font-mono text-[0.6875rem] text-ink-muted sm:col-start-3 sm:row-start-1 sm:pt-2.5">
+                      {categoryLabel(project.category)}
+                    </span>
+                  </ViewTransition>
+                  <div className="index-hook col-start-2 grid sm:col-[2/4]">
+                    <p
+                      data-index-hook
+                      className="min-h-0 overflow-hidden text-[0.9375rem] text-ink-muted"
+                    >
+                      {project.hook}
+                    </p>
+                  </div>
+                </div>
+              </Inspectable>
+            </li>
+          ))}
+        </ol>
+        <div aria-hidden="true" className="reel-progress">
+          <i />
+        </div>
+      </div>
+    </div>
   );
 }

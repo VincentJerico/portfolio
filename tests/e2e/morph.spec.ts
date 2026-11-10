@@ -268,3 +268,33 @@ test.describe('spotlight and tilt cards', () => {
     await expect.poll(() => card.evaluate((el) => el.style.transform)).toBe('');
   });
 });
+
+test.describe('pinned horizontal reel', () => {
+  test.use({ viewport: { width: 1440, height: 900 }, isMobile: false, hasTouch: false });
+
+  test('featured projects pin and scroll sideways as the page scrolls', async ({ page }) => {
+    await page.goto('/');
+    const section = page.getByRole('region', { name: 'Featured projects' });
+    const rows = section.getByRole('listitem');
+    const first = (await rows.nth(0).boundingBox())!;
+    const second = (await rows.nth(1).boundingBox())!;
+    expect(Math.abs(first.y - second.y)).toBeLessThan(2); // side by side, a horizontal track
+    const track = section.locator('.reel-track');
+    const before = await track.evaluate((el) => el.getBoundingClientRect().left);
+    await section.scrollIntoViewIfNeeded();
+    await page.mouse.move(900, 450);
+    await page.mouse.wheel(0, 900);
+    await expect
+      .poll(() => track.evaluate((el) => el.getBoundingClientRect().left))
+      .toBeLessThan(before - 100);
+  });
+
+  test('phones keep the vertical list', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    const rows = page.getByRole('region', { name: 'Featured projects' }).getByRole('listitem');
+    const first = (await rows.nth(0).boundingBox())!;
+    const second = (await rows.nth(1).boundingBox())!;
+    expect(second.y).toBeGreaterThan(first.y + first.height - 2);
+  });
+});

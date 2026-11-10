@@ -384,6 +384,91 @@
   }
 }
 
+/* Pinned horizontal reel (content/ProjectIndex.tsx). Default: the vertical index. With scroll
+   timelines, room and motion, the section pins and scrolling drives the suites sideways as cards,
+   with a pass bar filling below. */
+.reel-progress {
+  display: none;
+}
+@supports (animation-timeline: view()) {
+  @media screen and (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+    .reel {
+      height: 240vh;
+      view-timeline: --reel block;
+    }
+    .reel-sticky {
+      position: sticky;
+      top: 12vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1.5rem;
+      height: 70vh;
+      overflow: clip;
+      container-type: inline-size;
+    }
+    .reel-track {
+      display: flex;
+      gap: 1.25rem;
+      width: max-content;
+      border-top: 0;
+      animation: reel-x linear both;
+      animation-timeline: --reel;
+      animation-range: contain 0% contain 100%;
+    }
+    .reel-track > li {
+      width: 22rem;
+      flex-shrink: 0;
+    }
+    .reel-track .index-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      height: 100%;
+      min-height: 17rem;
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      background: var(--surface);
+    }
+    .reel-track .index-row::before {
+      border-radius: inherit;
+    }
+    .reel-track .index-hook {
+      margin-top: auto;
+      grid-template-rows: 1fr;
+    }
+    .reel-track .index-row:is(:hover, :focus-within) .index-name {
+      translate: 0 0;
+    }
+    .reel-progress {
+      display: block;
+      position: relative;
+      height: 2px;
+      background: var(--border);
+    }
+    .reel-progress i {
+      position: absolute;
+      inset: 0;
+      background: var(--pass);
+      transform-origin: left;
+      animation: reel-progress linear both;
+      animation-timeline: --reel;
+      animation-range: contain 0% contain 100%;
+    }
+  }
+}
+@keyframes reel-x {
+  to {
+    translate: calc(-100% + 100cqw) 0;
+  }
+}
+@keyframes reel-progress {
+  from {
+    scale: 0 1;
+  }
+}
+
 /* Spotlight and tilt cards (ui/TiltHost.tsx): the card tilts toward the cursor and a soft light
    follows the pointer; it eases back when the pointer leaves. */
 .tilt {
