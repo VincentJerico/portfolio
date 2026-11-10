@@ -958,6 +958,13 @@
     var(--dur-base) ease-out var(--dur-fast) both vt-fade-in,
     var(--dur-slow) var(--ease-snap) both vt-rise;
 }
+/* The sidebar's active marker glides from row to row on navigation. */
+::view-transition-group(nav-active-sidebar),
+::view-transition-group(nav-active-drawer) {
+  animation-duration: var(--dur-slow);
+  animation-timing-function: var(--ease-snap);
+}
+
 /* Theme flood (lib/theme-switch.ts): the new theme is revealed by a growing circle animated from
    script, so the default cross-fade is switched off for that transition. */
 :active-view-transition-type(theme)::view-transition-old(root),

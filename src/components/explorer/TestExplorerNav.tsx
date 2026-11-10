@@ -46,11 +46,17 @@ function Row({
   visited,
   child = false,
   showSpec = !child,
+  marker,
 }: {
   row: ExplorerRow;
   active: boolean;
   visited: boolean;
   child?: boolean;
+  /**
+   * The view-transition name of the active-row marker, on the one row that holds it. The marker keeps
+   * the same name on every page, so on navigation it glides from the old row to the new one.
+   */
+  marker?: string;
   /** The spec file name; dropped where the row also carries a folder toggle and room runs out. */
   showSpec?: boolean;
 }) {
@@ -63,10 +69,18 @@ function Row({
       <Link
         href={row.href}
         aria-current={active ? 'page' : undefined}
-        className={`group relative flex min-h-11 min-w-0 flex-1 items-center gap-2.5 rounded-chip px-2.5 no-underline transition-colors hover:bg-surface-2 aria-[current=page]:bg-surface-2 aria-[current=page]:before:absolute aria-[current=page]:before:inset-y-2 aria-[current=page]:before:left-0 aria-[current=page]:before:w-0.5 aria-[current=page]:before:rounded-full aria-[current=page]:before:bg-accent ${
+        className={`group relative isolate flex min-h-11 min-w-0 flex-1 items-center gap-2.5 rounded-chip px-2.5 no-underline transition-colors hover:bg-surface-2 ${
           child ? 'text-sm' : 'text-[0.9375rem]'
         }`}
       >
+        {marker && (
+          <span
+            aria-hidden="true"
+            data-nav-marker
+            className="absolute inset-0 -z-10 rounded-chip bg-surface-2 before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-accent"
+            style={{ viewTransitionName: marker }}
+          />
+        )}
         <StatusDot status={row.status} />
         <span className="min-w-0 truncate text-ink-muted group-hover:text-ink group-aria-[current=page]:font-semibold group-aria-[current=page]:text-ink">
           {row.label}
@@ -116,6 +130,12 @@ export function TestExplorerNav({ rows, projects, summary, idPrefix }: TestExplo
                     active={isActive(pathname, row.href)}
                     visited={isVisited(row.href)}
                     showSpec={!isFolder}
+                    marker={
+                      isActive(pathname, row.href) &&
+                      !(isFolder && projects.some((project) => project.href === pathname))
+                        ? `nav-active-${idPrefix}`
+                        : undefined
+                    }
                   />
                   {isFolder && (
                     <button
@@ -146,6 +166,7 @@ export function TestExplorerNav({ rows, projects, summary, idPrefix }: TestExplo
                           active={pathname === project.href}
                           visited={visited.includes(project.href)}
                           child
+                          marker={pathname === project.href ? `nav-active-${idPrefix}` : undefined}
                         />
                       </li>
                     ))}
