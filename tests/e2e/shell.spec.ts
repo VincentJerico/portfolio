@@ -182,6 +182,9 @@ test.describe('mobile drawer', () => {
 
   test('drawer closes when the viewport grows to desktop', async ({ page }) => {
     await page.goto('/');
+    // The resize handler that closes the drawer attaches on hydration; opening it earlier (through
+    // the native invoker) left the test racing that and flaking under load.
+    await waitForHydration(page);
     await page.getByRole('button', { name: 'Menu', exact: true }).click();
     await expect(page.locator('#site-drawer')).toBeVisible();
     await page.setViewportSize(DESKTOP);
