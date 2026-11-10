@@ -18,6 +18,7 @@ import { SkipLink } from '@/components/layout/SkipLink';
 import { CommandPaletteRoot } from '@/components/palette/CommandPaletteRoot';
 import { SearchButton } from '@/components/palette/SearchButton';
 import { DecodeHost } from '@/components/ui/DecodeHost';
+import { TiltHost } from '@/components/ui/TiltHost';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { RunnerHost } from '@/components/runner/RunnerHost';
 import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
@@ -87,6 +88,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             <CommandPaletteRoot items={paletteItems()} />
             <RunnerHost />
             <DecodeHost />
+            <TiltHost />
           </BugHuntProvider>
           {/* Cookieless analytics, only on Vercel builds: elsewhere their first-party scripts 404. */}
           {process.env.VERCEL === '1' && (

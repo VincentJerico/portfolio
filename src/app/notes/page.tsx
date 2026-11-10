@@ -26,7 +26,8 @@ export default function NotesPage() {
         {notes.map((note) => (
           <li
             key={note.slug}
-            className="measure flex flex-col gap-1 rounded-card border border-line bg-surface p-5"
+            data-tilt
+            className="tilt measure flex flex-col gap-1 rounded-card border border-line bg-surface p-5"
           >
             <p className="label-mono text-ink-muted">
               <time dateTime={note.date}>{formatDay(note.date)}</time>

@@ -384,6 +384,40 @@
   }
 }
 
+/* Spotlight and tilt cards (ui/TiltHost.tsx): the card tilts toward the cursor and a soft light
+   follows the pointer; it eases back when the pointer leaves. */
+.tilt {
+  position: relative;
+  isolation: isolate;
+  transition:
+    transform var(--dur-base) var(--ease-snap),
+    translate var(--dur-base) var(--ease-snap),
+    box-shadow var(--dur-base) var(--ease-snap),
+    border-color var(--dur-base) var(--ease-snap);
+  will-change: transform;
+}
+.tilt[data-tilting] {
+  transition-duration: 90ms, var(--dur-base), var(--dur-base), var(--dur-base);
+}
+.tilt::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    420px circle at var(--tx, 50%) var(--ty, 50%),
+    color-mix(in srgb, var(--accent) 14%, transparent),
+    transparent 45%
+  );
+  opacity: 0;
+  transition: opacity var(--dur-base);
+}
+.tilt[data-tilting]::before {
+  opacity: 1;
+}
+
 /* Hero spotlight (content/HeroSpotlight.tsx): a quiet dot field; around the cursor the dots turn
    pass-green and a scan ring pulses. The lit layer is the same dots, masked to a circle. */
 .spotlight {

@@ -249,3 +249,22 @@ test.describe('coverage grid spotlight', () => {
       .not.toBe('');
   });
 });
+
+test.describe('spotlight and tilt cards', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  test('a card tilts toward the cursor with a light that follows, and settles on leave', async ({
+    page,
+  }) => {
+    await page.goto('/work');
+    await waitForHydration(page);
+    const card = page.locator('[data-tilt]').first();
+    await card.scrollIntoViewIfNeeded();
+    const box = (await card.boundingBox())!;
+    await page.mouse.move(box.x + box.width * 0.85, box.y + box.height * 0.2);
+    await expect.poll(() => card.evaluate((el) => getComputedStyle(el).transform)).not.toBe('none');
+    await expect.poll(() => card.evaluate((el) => el.style.getPropertyValue('--tx'))).toMatch(/%$/);
+    await page.mouse.move(5, 5);
+    await expect.poll(() => card.evaluate((el) => el.style.transform)).toBe('');
+  });
+});
