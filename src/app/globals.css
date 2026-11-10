@@ -958,6 +958,14 @@
     var(--dur-base) ease-out var(--dur-fast) both vt-fade-in,
     var(--dur-slow) var(--ease-snap) both vt-rise;
 }
+/* Theme flood (lib/theme-switch.ts): the new theme is revealed by a growing circle animated from
+   script, so the default cross-fade is switched off for that transition. */
+:active-view-transition-type(theme)::view-transition-old(root),
+:active-view-transition-type(theme)::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
 /* The curtain: the old page lifts and clips away upward while the new page is revealed from the
    bottom. No colour fill: an accent band behind the reveal flashed blue across the page. */
 @media (prefers-reduced-motion: no-preference) {
