@@ -11,6 +11,7 @@ import { Boot, BOOT_SCRIPT } from '@/components/layout/Boot';
 import { IdentityBlock } from '@/components/layout/IdentityBlock';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { PullCord } from '@/components/layout/PullCord';
+import { RouteRunner } from '@/components/layout/RouteRunner';
 import { RouteTransition } from '@/components/layout/RouteTransition';
 import { ShellLinks } from '@/components/layout/ShellLinks';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -87,6 +88,13 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             </main>
             <CommandPaletteRoot items={paletteItems()} />
             <RunnerHost />
+            <RouteRunner
+              specs={[...rows, ...projects].map(({ href, spec, status }) => ({
+                href,
+                spec,
+                status,
+              }))}
+            />
             <DecodeHost />
             <TiltHost />
           </BugHuntProvider>

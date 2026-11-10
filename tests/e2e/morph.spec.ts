@@ -298,3 +298,40 @@ test.describe('pinned horizontal reel', () => {
     expect(second.y).toBeGreaterThan(first.y + first.height - 2);
   });
 });
+
+test.describe('test-runner page change', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  test('changing page runs the next page as a spec, then clears', async ({ page }) => {
+    await page.goto('/');
+    await waitForHydration(page);
+    await page.locator('aside a[href="/skills"]').click();
+    await expect(page).toHaveURL(/\/skills$/);
+    const runner = page.locator('[data-route-runner]');
+    await expect(runner).toContainText('skills.spec');
+    await expect(runner).toContainText(/PASS|FAIL|NOT RUN/);
+    await expect(runner).toHaveAttribute('aria-hidden', 'true');
+    await expect(runner).toHaveCSS('pointer-events', 'none');
+    await expect(runner).toHaveCount(0, { timeout: 2500 });
+  });
+
+  test('a project morph navigation keeps the morph and shows no runner', async ({ page }) => {
+    await page.goto('/projects');
+    await waitForHydration(page);
+    await page
+      .getByRole('link', { name: /^Read the report for/ })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/projects\/[a-z0-9-]+$/);
+    await expect(page.locator('[data-route-runner]')).toHaveCount(0);
+  });
+
+  test('under reduced motion there is no runner', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    await waitForHydration(page);
+    await page.locator('aside a[href="/skills"]').click();
+    await expect(page).toHaveURL(/\/skills$/);
+    await expect(page.locator('[data-route-runner]')).toHaveCount(0);
+  });
+});

@@ -41,6 +41,7 @@ export function ProjectIndex({
                     <Link
                       href={`/projects/${project.slug}`}
                       transitionTypes={['morph']}
+                      data-morph
                       className="text-ink no-underline after:absolute after:inset-0 after:content-['']"
                     >
                       <ViewTransition

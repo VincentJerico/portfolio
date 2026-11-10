@@ -32,6 +32,7 @@ export function SuiteDoor({ project }: { project: Project }) {
             <Link
               href={`/projects/${project.slug}`}
               transitionTypes={['morph']}
+              data-morph
               className="inline-flex min-h-11 items-center font-semibold after:absolute after:inset-0 after:content-['']"
             >
               Read the report<span className="sr-only"> for {project.name}</span>

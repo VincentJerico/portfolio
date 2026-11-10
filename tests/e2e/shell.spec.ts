@@ -253,24 +253,9 @@ test.describe('not found', () => {
   });
 });
 
-test.describe('route curtain', () => {
-  test('page changes use the curtain classes, and report links keep the morph', async ({
-    page,
-  }) => {
+test.describe('project morph navigation', () => {
+  test('report links still navigate with the morph', async ({ page }) => {
     await page.goto('/projects');
-    const rules = await page.evaluate(() =>
-      [...document.styleSheets]
-        .flatMap((sheet) => {
-          try {
-            return [...sheet.cssRules].map((rule) => rule.cssText);
-          } catch {
-            return [];
-          }
-        })
-        .join('\n'),
-    );
-    // Chrome serializes the class selector as (*.page-curtain-in).
-    expect(rules).toMatch(/view-transition-new\(\*?\.page-curtain-in\)/);
     await page
       .getByRole('link', { name: /^Read the report for/ })
       .first()

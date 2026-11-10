@@ -1309,27 +1309,68 @@
   mix-blend-mode: normal;
 }
 
-/* The curtain: the old page lifts and clips away upward while the new page is revealed from the
-   bottom. No colour fill: an accent band behind the reveal flashed blue across the page. */
-@media (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(.page-curtain-out) {
-    animation: var(--dur-base) var(--ease-snap) both vt-curtain-out;
-  }
-  ::view-transition-new(.page-curtain-in) {
-    animation: 520ms var(--ease-snap) both vt-curtain-in;
-  }
+/* Test-runner page change (layout/RouteRunner.tsx): the panel joins the navigation's view transition
+   and slides up over the old page; once the new page is in, its line fills, the route's CI result
+   stamps, and it lifts away. */
+.route-runner {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.875rem;
+  padding: 0 clamp(1.5rem, 8vw, 6rem);
+  background: var(--surface-2);
+  pointer-events: none;
+  view-transition-name: route-runner;
+  animation: runner-lift 420ms var(--ease-snap) 760ms both;
 }
-@keyframes vt-curtain-out {
-  to {
-    translate: 0 -2rem;
-    clip-path: inset(0 0 100% 0);
-  }
+.route-runner-bar {
+  position: relative;
+  height: 2px;
+  max-width: 34rem;
+  background: var(--border);
+  overflow: hidden;
 }
-@keyframes vt-curtain-in {
+.route-runner-bar i {
+  position: absolute;
+  inset: 0;
+  background: var(--pass);
+  transform-origin: left;
+  animation: runner-bar 480ms var(--ease-snap) 120ms both;
+}
+.route-runner-stamp {
+  width: fit-content;
+  transform-origin: left center;
+  animation: runner-stamp 220ms ease 560ms both;
+}
+::view-transition-new(route-runner) {
+  animation: runner-in 320ms var(--ease-snap) both;
+}
+@keyframes runner-in {
   from {
-    clip-path: inset(100% 0 0 0);
+    translate: 0 100%;
   }
 }
+@keyframes runner-bar {
+  from {
+    scale: 0 1;
+  }
+}
+@keyframes runner-stamp {
+  from {
+    opacity: 0;
+    scale: 1.4;
+  }
+}
+@keyframes runner-lift {
+  to {
+    translate: 0 -100%;
+    visibility: hidden;
+  }
+}
+
 ::view-transition-group(.morph) {
   animation-duration: var(--dur-slow);
   animation-timing-function: var(--ease-snap);
