@@ -10,7 +10,7 @@ test.describe('overview', () => {
   });
 
   test('hero names Vincent and offers the three actions', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText(profile.fullName);
+    await expect(page.locator('h1')).toHaveAccessibleName(profile.fullName);
     const main = page.locator('main');
     await expect(main.getByRole('link', { name: 'View projects' })).toHaveAttribute(
       'href',

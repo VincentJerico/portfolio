@@ -9,6 +9,7 @@ import { PortraitCard } from '@/components/content/PortraitCard';
 import { ProjectIndex } from '@/components/content/ProjectIndex';
 import { QaAreaGrid } from '@/components/content/QaAreaGrid';
 import { RunnerHeroBlock } from '@/components/content/RunnerHeroBlock';
+import { SplitTitle } from '@/components/content/SplitTitle';
 import { Section } from '@/components/content/Section';
 import { SkillChips } from '@/components/content/SkillChips';
 import { Timeline } from '@/components/content/Timeline';
@@ -69,7 +70,7 @@ export default function OverviewPage() {
         className="grid items-start gap-10 md:grid-cols-[1fr_auto]"
       >
         <div className="measure min-w-0">
-          <h1 id="hero-heading">{profile.fullName}</h1>
+          <SplitTitle id="hero-heading" text={profile.fullName} />
           <p className="mt-5 text-xl font-semibold text-ink lg:text-2xl">{profile.headline}</p>
           <FlipCard lead="My suites cover" words={areas} />
           <p className="mt-4 text-lg text-ink">{introLead}</p>

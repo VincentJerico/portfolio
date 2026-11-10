@@ -218,3 +218,15 @@ test.describe('odometer metrics', () => {
     expect(ok).toBe(true);
   });
 });
+
+test.describe('split-letter title', () => {
+  test('the hero name assembles letter by letter but is announced whole', async ({ page }) => {
+    const { profile } = await import('../../src/content');
+    await page.goto('/');
+    const h1 = page.getByRole('heading', { level: 1 });
+    await expect(h1).toHaveAccessibleName(profile.fullName);
+    const letters = h1.locator('[data-split] .split-ch');
+    await expect(letters).toHaveCount(profile.fullName.replace(/\s/g, '').length);
+    await expect(h1.locator('[data-split]')).toHaveAttribute('aria-hidden', 'true');
+  });
+});

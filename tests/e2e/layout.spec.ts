@@ -12,7 +12,8 @@ const WIDTHS = [320, 768, 1024, 1280];
 function escapes() {
   const shown = (el: Element) => {
     // The marquee track and odometer columns clip their content on purpose; their boxes must still fit.
-    if (el.closest('.sr-only, [hidden], [inert], dialog:not([open]), .marquee-track, .odo-col')) return false;
+    if (el.closest('.sr-only, [hidden], [inert], dialog:not([open]), .marquee-track, .odo-col'))
+      return false;
     const closed = el.closest('details:not([open])');
     if (closed && closed !== el && !el.closest('summary')) return false;
     const style = getComputedStyle(el);

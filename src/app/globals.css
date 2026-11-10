@@ -384,6 +384,39 @@
   }
 }
 
+/* Split-letter hero title (content/SplitTitle.tsx): letters rise out of their line in turn; each
+   jumps and tints as the cursor passes. The rise uses translate and the jump uses transform, so the
+   two never fight. */
+.split-w {
+  display: inline-block;
+  overflow: clip;
+  overflow-clip-margin: 0.2em;
+  vertical-align: top;
+  padding-bottom: 0.06em;
+}
+.split-ch {
+  display: inline-block;
+  transition:
+    transform var(--dur-fast) var(--ease-snap),
+    color var(--dur-fast);
+}
+.split-ch:hover {
+  transform: translateY(-12%);
+  color: var(--accent);
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  .split-ch {
+    animation: split-rise 760ms var(--ease-snap) both;
+    animation-delay: calc(var(--i) * 28ms);
+  }
+}
+@keyframes split-rise {
+  from {
+    translate: 0 110%;
+    rotate: 8deg;
+  }
+}
+
 /* Odometer (ui/Odometer.tsx): each digit column rests on its digit; on scroll-in it rolls up from 0. */
 .odo {
   display: inline-flex;
@@ -604,14 +637,14 @@
      during load pushed blocking time over budget. */
   main
     :is(header, section[aria-labelledby='hero-heading'] > div:first-child)
-    > :not([data-morph-title]) {
+    > :not([data-morph-title], .split-title) {
     animation: header-rise 720ms var(--ease-snap) both;
   }
   /* The page title rises out of its own line: it moves up while its clip opens from the top, so it
      looks masked by the line it sits on. Clip, not opacity, so the title still counts as painted. */
   main
     :is(header, section[aria-labelledby='hero-heading'] > div:first-child)
-    > h1:not([data-morph-title]) {
+    > h1:not([data-morph-title], .split-title) {
     animation: line-rise 720ms var(--ease-snap) both;
   }
   main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(2) {
