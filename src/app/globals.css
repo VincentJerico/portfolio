@@ -965,6 +965,16 @@
   animation-timing-function: var(--ease-snap);
 }
 
+/* A control growing into its dialog (lib/morph.ts): a slower, springier move than the default. */
+::view-transition-group(dialog-morph) {
+  animation-duration: 420ms;
+  animation-timing-function: var(--ease-snap);
+}
+:active-view-transition-type(dialog-morph)::view-transition-old(root),
+:active-view-transition-type(dialog-morph)::view-transition-new(root) {
+  animation-duration: 420ms;
+}
+
 /* Theme flood (lib/theme-switch.ts): the new theme is revealed by a growing circle animated from
    script, so the default cross-fade is switched off for that transition. */
 :active-view-transition-type(theme)::view-transition-old(root),

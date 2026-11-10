@@ -3,6 +3,8 @@
 import { Maximize2, X } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
+import { morph } from '@/lib/morph';
 import type { Image as EvidenceImage } from '@/content/schema';
 
 function focusables(root: HTMLElement): HTMLElement[] {
@@ -28,6 +30,11 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
       setOpenIndex(null);
       openerRef.current?.focus();
     };
+    // Closing shrinks the full view back into its thumbnail. Esc is caught so it can do the same.
+    const onCancel = (event: Event) => {
+      event.preventDefault();
+      shrink();
+    };
     // A click on the dialog element itself (not its content) is a click on the backdrop.
     const onClick = (event: MouseEvent) => event.target === dialog && dialog.close();
     const onKeyDown = (event: KeyboardEvent) => {
@@ -45,16 +52,37 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
       }
     };
     dialog.addEventListener('close', onClose);
+    dialog.addEventListener('cancel', onCancel);
     dialog.addEventListener('click', onClick);
     dialog.addEventListener('keydown', onKeyDown);
     return () => {
       dialog.removeEventListener('close', onClose);
+      dialog.removeEventListener('cancel', onCancel);
       dialog.removeEventListener('click', onClick);
       dialog.removeEventListener('keydown', onKeyDown);
     };
   }, [openIndex]);
 
   const current = openIndex === null ? undefined : images[openIndex];
+
+  // The thumbnail grows into the full view, and the full view shrinks back into it.
+  function grow(opener: HTMLButtonElement, index: number) {
+    openerRef.current = opener;
+    morph(opener, () => {
+      flushSync(() => setOpenIndex(index));
+      const dialog = dialogRef.current;
+      if (dialog && !dialog.open) dialog.showModal();
+      return dialog;
+    });
+  }
+  function shrink() {
+    const dialog = dialogRef.current;
+    if (!dialog?.open) return;
+    morph(dialog, () => {
+      flushSync(() => dialog.close());
+      return openerRef.current;
+    });
+  }
 
   return (
     <>
@@ -64,10 +92,7 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
             <figure className="flex h-full flex-col rounded-card border border-line bg-surface p-2">
               <button
                 type="button"
-                onClick={(event) => {
-                  openerRef.current = event.currentTarget;
-                  setOpenIndex(i);
-                }}
+                onClick={(event) => grow(event.currentTarget, i)}
                 className={`group relative flex min-h-24 items-center justify-center overflow-hidden rounded-[4px] bg-surface-2 ${
                   loaded.has(image.src) ? '' : 'skeleton'
                 }`}
@@ -108,7 +133,7 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
               </figcaption>
               <button
                 type="button"
-                onClick={() => dialogRef.current?.close()}
+                onClick={shrink}
                 aria-label="Close image"
                 className="inline-flex size-11 shrink-0 items-center justify-center rounded-chip hover:bg-surface-2"
               >

@@ -124,3 +124,40 @@ test.describe('project to report', () => {
     }
   });
 });
+
+test.describe('controls grow into their dialogs', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  test('the Search button grows into the command palette', async ({ page }) => {
+    await recordTransitions(page);
+    await page.goto('/');
+    await waitForHydration(page);
+    await page.locator('aside').getByRole('button', { name: 'Search' }).click();
+    await expect(page.getByRole('dialog', { name: 'Search' })).toBeVisible();
+    await expect(page.getByLabel('Search the site')).toBeFocused();
+    expect((await transitions(page)).some((types) => types.includes('dialog-morph'))).toBe(true);
+  });
+
+  test('an evidence thumbnail grows into its full view and shrinks back', async ({ page }) => {
+    await recordTransitions(page);
+    await page.goto('/projects/accessibility-testing');
+    await waitForHydration(page);
+    const thumb = page.getByRole('button', { name: /^Enlarge image/ }).first();
+    await thumb.click();
+    await expect(page.getByRole('dialog', { name: /^Evidence/ })).toBeVisible();
+    // The page takes no clicks while a view transition runs; wait for the grow to finish.
+    await page.waitForFunction(
+      () =>
+        !document
+          .getAnimations()
+          .some((a) =>
+            (a.effect as KeyframeEffect | null)?.pseudoElement?.includes('view-transition'),
+          ),
+    );
+    await page.getByRole('button', { name: 'Close image' }).click();
+    await expect(page.getByRole('dialog', { name: /^Evidence/ })).toBeHidden();
+    await expect(thumb).toBeFocused();
+    const morphs = (await transitions(page)).filter((types) => types.includes('dialog-morph'));
+    expect(morphs).toHaveLength(2);
+  });
+});
