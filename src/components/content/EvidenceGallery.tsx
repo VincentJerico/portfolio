@@ -36,7 +36,9 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
       shrink();
     };
     // A click on the dialog element itself (not its content) is a click on the backdrop.
-    const onClick = (event: MouseEvent) => event.target === dialog && dialog.close();
+    const onClick = (event: MouseEvent) => {
+      if (event.target === dialog) shrink();
+    };
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Tab') return;
       const items = focusables(dialog);

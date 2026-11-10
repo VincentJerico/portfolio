@@ -384,6 +384,63 @@
   }
 }
 
+/* Docked report title: hidden at rest; as the report header scrolls out of view, a compact bar slides
+   down and pins to the top. Only where scroll timelines exist and motion is welcome. */
+.report {
+  timeline-scope: --report-head;
+}
+.report-head {
+  view-timeline: --report-head block;
+}
+.report-dock {
+  position: sticky;
+  top: 3.5rem;
+  z-index: 20;
+  height: 0;
+  margin-block: calc(var(--spacing-rhythm) * -0.5);
+  pointer-events: none;
+}
+@media (min-width: 1024px) {
+  .report-dock {
+    top: 0;
+  }
+}
+.report-dock-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-inline: -0.5rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border);
+  border-top: 0;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  box-shadow: 0 12px 24px -16px rgb(0 0 0 / 0.5);
+  visibility: hidden;
+}
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .report-dock-bar {
+      animation: dock-in linear both;
+      animation-timeline: --report-head;
+      animation-range: exit 55% exit 100%;
+    }
+  }
+}
+@keyframes dock-in {
+  from {
+    visibility: hidden;
+    translate: 0 -110%;
+  }
+  1% {
+    visibility: visible;
+  }
+  to {
+    visibility: visible;
+    translate: 0 0;
+  }
+}
+
 /* Content motion, linked to scroll and tied to the runner idea: result rows stream in, the timeline
    draws down and severity bars fill. Only transforms move, so contrast and hit targets never change.
    (A tinted sweep across cards was removed: it read as a flash of blue.) Without scroll-driven

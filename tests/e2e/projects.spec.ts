@@ -1,6 +1,7 @@
 import { expect, test } from '../helpers/test';
 import { projectBySlug, projectsInOrder } from '../../src/lib/content';
 import { severityCounts } from '../../src/lib/labels';
+import { settleTransitions } from '../helpers/transitions';
 
 const all = projectsInOrder();
 
@@ -115,6 +116,7 @@ test.describe('test report pages', () => {
     const thumb = page.getByRole('button', { name: /^Enlarge image/ }).first();
     await thumb.click();
     await expect(page.getByRole('dialog')).toBeVisible();
+    await settleTransitions(page); // the thumbnail is still growing into the dialog
     await page.mouse.click(5, 5);
     await expect(page.getByRole('dialog')).toBeHidden();
     await expect(thumb).toBeFocused();

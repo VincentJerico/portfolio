@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '../helpers/test';
 import { waitForHydration } from '../helpers/hydration';
+import { settleTransitions } from '../helpers/transitions';
 
 /** Records the types of every view transition the page starts. */
 async function recordTransitions(page: Page) {
@@ -145,15 +146,7 @@ test.describe('controls grow into their dialogs', () => {
     const thumb = page.getByRole('button', { name: /^Enlarge image/ }).first();
     await thumb.click();
     await expect(page.getByRole('dialog', { name: /^Evidence/ })).toBeVisible();
-    // The page takes no clicks while a view transition runs; wait for the grow to finish.
-    await page.waitForFunction(
-      () =>
-        !document
-          .getAnimations()
-          .some((a) =>
-            (a.effect as KeyframeEffect | null)?.pseudoElement?.includes('view-transition'),
-          ),
-    );
+    await settleTransitions(page); // the page takes no clicks while the grow runs
     await page.getByRole('button', { name: 'Close image' }).click();
     await expect(page.getByRole('dialog', { name: /^Evidence/ })).toBeHidden();
     await expect(thumb).toBeFocused();
@@ -169,5 +162,32 @@ test.describe('section status dots', () => {
     const count = await dots.count();
     expect(count).toBeGreaterThan(3);
     await expect(page.locator('main h2 .reveal-dot [data-dot-check]')).toHaveCount(count);
+  });
+});
+
+test.describe('docked report title', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  test('the report title docks into a compact bar once the header scrolls away', async ({
+    page,
+  }) => {
+    await page.goto('/projects/accessibility-testing');
+    await expect(page.locator('[data-report-dock]')).toHaveAttribute('aria-hidden', 'true');
+    const dock = page.locator('[data-report-dock] .report-dock-bar');
+    await expect(dock).toContainText('accessibility-testing');
+    await expect(dock).toBeHidden();
+    await page.mouse.move(800, 400); // over the content, not the sidebar
+    await page.mouse.wheel(0, 1600);
+    await expect(dock).toBeVisible();
+    await page.mouse.wheel(0, -3200);
+    await expect(dock).toBeHidden();
+  });
+
+  test('under reduced motion the dock never appears', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/projects/accessibility-testing');
+    await page.mouse.move(800, 400);
+    await page.mouse.wheel(0, 1600);
+    await expect(page.locator('[data-report-dock] .report-dock-bar')).toBeHidden();
   });
 });

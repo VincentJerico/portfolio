@@ -73,7 +73,7 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
   const next = ordered[index + 1];
 
   return (
-    <article className="flex flex-col gap-rhythm">
+    <article className="report flex flex-col gap-rhythm">
       <JsonLd
         data={{
           '@context': 'https://schema.org',
@@ -87,7 +87,20 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
           ...(project.liveUrl ? { url: project.liveUrl } : {}),
         }}
       />
-      <header className="flex flex-col gap-5">
+      {/* Once the header scrolls away, the title docks here as a compact bar (CSS scroll timeline).
+          It repeats the title, so it is hidden from assistive tech; it takes no layout space. */}
+      <div data-report-dock aria-hidden="true" className="report-dock" data-print-hide>
+        <div className="report-dock-bar">
+          <span className="font-mono text-xs text-ink-muted">
+            suite {String(project.order).padStart(2, '0')}
+          </span>
+          <span className="min-w-0 truncate font-semibold text-ink">{project.name}</span>
+          <span className="ml-auto hidden font-mono text-xs text-ink-muted sm:inline">
+            {categoryLabel(project.category)}
+          </span>
+        </div>
+      </div>
+      <header className="report-head flex flex-col gap-5">
         <nav aria-label="Breadcrumb">
           <ol className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
             <li>
