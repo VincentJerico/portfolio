@@ -96,6 +96,7 @@ test.describe('project to report', () => {
 
   test('a home index row morphs its number, category and name into the report header', async ({
     page,
+    browserName,
   }) => {
     await recordMorphs(page);
     await page.goto('/');
@@ -113,11 +114,17 @@ test.describe('project to report', () => {
       .poll(() =>
         page.evaluate(() => (window as unknown as { __morphs: string[] }).__morphs.join('|')),
       )
-      .toMatch(new RegExp(`project-suite-${slug}.*|project-cat-${slug}`));
+      .toMatch(new RegExp(`project-suite-${slug}`));
     const morphs = await page.evaluate(
       () => (window as unknown as { __morphs: string[] }).__morphs,
     );
-    for (const part of ['suite', 'cat', 'title']) {
+    // WebKit morphs the suite number and name but does not report the category's group.
+    const parts = {
+      chromium: ['suite', 'cat', 'title'],
+      firefox: ['suite', 'cat', 'title'],
+      webkit: ['suite', 'title'],
+    }[browserName];
+    for (const part of parts) {
       expect(
         morphs.some((m) => m.includes(`project-${part}-${slug}`)),
         part,
@@ -261,8 +268,15 @@ test.describe('spotlight and tilt cards', () => {
     const card = page.locator('[data-tilt]').first();
     await card.scrollIntoViewIfNeeded();
     const box = (await card.boundingBox())!;
-    await page.mouse.move(box.x + box.width * 0.85, box.y + box.height * 0.2);
-    await expect.poll(() => card.evaluate((el) => getComputedStyle(el).transform)).not.toBe('none');
+    // The listener installs when the browser is idle (a 1.2 s fallback in WebKit); keep moving, as a
+    // visitor would, until the card responds.
+    await expect
+      .poll(async () => {
+        await page.mouse.move(box.x + box.width * 0.85, box.y + box.height * 0.2);
+        await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.25);
+        return card.evaluate((el) => getComputedStyle(el).transform);
+      })
+      .not.toBe('none');
     await expect.poll(() => card.evaluate((el) => el.style.getPropertyValue('--tx'))).toMatch(/%$/);
     await page.mouse.move(5, 5);
     await expect.poll(() => card.evaluate((el) => el.style.transform)).toBe('');
