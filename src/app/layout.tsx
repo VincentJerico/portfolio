@@ -51,6 +51,8 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       </head>
       <body>
         <Boot />
+        {/* A pass-green run bar sweeps across the top on every full page load (globals.css). */}
+        <div data-load-bar aria-hidden="true" className="load-bar" data-print-hide />
         <ThemeProvider>
           <BugHuntProvider>
             <SkipLink />

@@ -349,3 +349,23 @@ test.describe('test-runner page change', () => {
     await expect(page.locator('[data-route-runner]')).toHaveCount(0);
   });
 });
+
+test.describe('load sequence', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  test('sidebar rows cascade in and a run bar sweeps across the top on load', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('aside nav li').first()).toHaveCSS('animation-name', 'nav-in');
+    const bar = page.locator('[data-load-bar]');
+    await expect(bar).toHaveAttribute('aria-hidden', 'true');
+    await expect(bar).toHaveCSS('pointer-events', 'none');
+    await expect(bar).toBeHidden({ timeout: 3000 });
+  });
+
+  test('under reduced motion nothing cascades and no bar runs', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    await expect(page.locator('aside nav li').first()).toHaveCSS('animation-name', 'none');
+    await expect(page.locator('[data-load-bar]')).toBeHidden();
+  });
+});

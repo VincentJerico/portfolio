@@ -47,3 +47,14 @@ test.describe('first-visit boot cleanup', () => {
     await expect(page.locator('html')).not.toHaveAttribute('data-boot', /.*/, { timeout: 300 });
   });
 });
+
+test.describe('first-visit boot shutter', () => {
+  test.use({ skipBoot: false });
+
+  test('opens like a shutter: two halves part along the hairline', async ({ page }) => {
+    await page.goto('/');
+    const overlay = page.locator('[data-boot-overlay]');
+    await expect(overlay.locator('.boot-half')).toHaveCount(2);
+    await expect(overlay).toBeHidden({ timeout: 3000 });
+  });
+});
