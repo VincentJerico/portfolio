@@ -136,7 +136,7 @@ export default function OverviewPage() {
         title="Run summary"
         kicker={`${metrics.length} checks${asOf ? ` · as of ${formatDay(asOf)}` : ''}`}
       >
-        <ul className="grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
+        <ul className="odo-scope grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
           {metrics.map((metric) => (
             <li key={metric.id}>
               <MetricTile metric={metric} />
