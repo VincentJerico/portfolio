@@ -16,6 +16,18 @@ describe('securityHeaders', () => {
     );
   });
 
+  it("allows eval in development only, for React's dev tools, and never in production", () => {
+    const dev = securityHeaders('http://localhost:3000', { development: true })[
+      'Content-Security-Policy'
+    ];
+    expect(dev).toContain(
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
+    );
+    expect(securityHeaders('https://vincentjerico.dev')['Content-Security-Policy']).not.toContain(
+      'unsafe-eval',
+    );
+  });
+
   it('sends the other spec headers verbatim', () => {
     expect(securityHeaders('https://vincentjerico.dev')).toMatchObject({
       'Referrer-Policy': 'strict-origin-when-cross-origin',

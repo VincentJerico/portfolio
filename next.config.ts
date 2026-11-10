@@ -16,9 +16,12 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/:path*',
-        headers: Object.entries(securityHeaders(getEnv().NEXT_PUBLIC_SITE_URL)).map(
-          ([key, value]) => ({ key, value }),
-        ),
+        // Development only: React's dev tools need eval(); production keeps the spec policy.
+        headers: Object.entries(
+          securityHeaders(getEnv().NEXT_PUBLIC_SITE_URL, {
+            development: process.env.NODE_ENV === 'development',
+          }),
+        ).map(([key, value]) => ({ key, value })),
       },
     ];
   },
