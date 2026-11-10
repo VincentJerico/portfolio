@@ -73,7 +73,7 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
   const next = ordered[index + 1];
 
   return (
-    <article className="report flex flex-col gap-rhythm">
+    <article className="flex flex-col gap-rhythm">
       <JsonLd
         data={{
           '@context': 'https://schema.org',
@@ -100,7 +100,7 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
           </span>
         </div>
       </div>
-      <header className="report-head flex flex-col gap-5">
+      <header className="flex flex-col gap-5">
         <nav aria-label="Breadcrumb">
           <ol className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
             <li>

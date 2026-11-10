@@ -21,10 +21,7 @@ export function SuiteDoor({ project }: { project: Project }) {
       className="h-full"
       plantedClassName="translate-x-[3px] print:translate-x-0"
     >
-      <article
-        data-tilt="soft"
-        className="tilt suite-door group relative grid h-full min-h-[16rem] [perspective:1400px]"
-      >
+      <article className="suite-door group relative grid h-full min-h-[16rem] [perspective:1400px]">
         <div className="door-back col-start-1 row-start-1 flex min-w-0 flex-col rounded-card border border-line bg-secondary py-5 pr-5 pl-[24%]">
           <p className="label-mono text-ink-muted">Result</p>
           <p className="mt-3 text-[0.9375rem] font-semibold text-ink">{project.hook}</p>

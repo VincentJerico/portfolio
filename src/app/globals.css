@@ -722,14 +722,8 @@
   }
 }
 
-/* Docked report title: hidden at rest; as the report header scrolls out of view, a compact bar slides
-   down and pins to the top. Only where scroll timelines exist and motion is welcome. */
-.report {
-  timeline-scope: --report-head;
-}
-.report-head {
-  view-timeline: --report-head block;
-}
+/* Docked report title: hidden at rest; once the visitor has scrolled past the report header, a
+   compact bar slides down and pins to the top. Only where scroll timelines exist and motion is welcome. */
 .report-dock {
   position: sticky;
   top: 3.5rem;
@@ -760,8 +754,10 @@
   @media screen and (prefers-reduced-motion: no-preference) {
     .report-dock-bar {
       animation: dock-in linear both;
-      animation-timeline: --report-head;
-      animation-range: exit 55% exit 100%;
+      /* The page's own scroll position: cheaper than a named timeline scoped over the whole report.
+         Report headers end around 300 to 420 px down, so the bar docks across that stretch. */
+      animation-timeline: scroll(root);
+      animation-range: 300px 420px;
     }
   }
 }

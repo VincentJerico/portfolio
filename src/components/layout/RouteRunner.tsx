@@ -59,6 +59,14 @@ export function RouteRunner({ specs }: { specs: RunnerSpec[] }) {
     }
   }
 
+  // Removes the panel once its lift has finished. animationend is the usual signal; the timer covers
+  // browsers that skip it (WebKit did in CI).
+  useEffect(() => {
+    if (!run) return;
+    const id = window.setTimeout(() => setRun(null), 1500);
+    return () => window.clearTimeout(id);
+  }, [run]);
+
   if (!run) return null;
   return (
     <div
