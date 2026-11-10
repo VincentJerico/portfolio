@@ -25,9 +25,9 @@ export default function AboutPage() {
       <header className="measure flex flex-col gap-4">
         <p className="label-mono text-ink-muted">About</p>
         <h1>About</h1>
-        <p className="text-lg text-ink">{profile.intro}</p>
-        {profile.background && <p className="text-ink-muted">{profile.background}</p>}
-        <p className="text-ink-muted">{profile.tagline}</p>
+        {/* The homepage carries the intro and /projects the tagline; /about leads with the background,
+            which neither repeats. */}
+        {profile.background && <p className="text-lg text-ink">{profile.background}</p>}
       </header>
 
       <Section id="career-path" title="Career path">

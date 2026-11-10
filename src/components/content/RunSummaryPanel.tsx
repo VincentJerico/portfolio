@@ -22,51 +22,15 @@ export function RunSummaryPanel({
   if (project.target) rows.push(['Target', <InlineCode key="t" text={project.target} />]);
   if (period) rows.push(['Period', period]);
   if (project.commits !== undefined) rows.push(['Commits', String(project.commits)]);
-  // The tools scroll slowly in a marquee. The track holds two identical halves, so moving it by half
-  // loops seamlessly; each half repeats the list until it is at least ten chips long, so a short list
-  // never leaves an empty gap. Only the first list is real; the repeats are aria-hidden and, under
-  // reduced motion or in print, removed so the real list wraps.
-  const chip = 'shrink-0 rounded-chip bg-surface-2 px-2 py-0.5 font-mono text-xs text-ink';
-  const repeats = Math.max(1, Math.ceil(10 / Math.max(1, project.stack.length)));
-  const list = (copy: boolean, key: string) => (
-    <ul
-      key={key}
-      aria-hidden={copy || undefined}
-      className={`marquee-list ${copy ? 'marquee-copy' : ''}`}
-    >
+  rows.push([
+    'Tools',
+    <ul key="tools" aria-label={`${project.name} tools`} className="flex flex-wrap gap-1.5">
       {project.stack.map((tool) => (
-        <li key={tool} className={chip}>
+        <li key={tool} className="rounded-chip bg-surface-2 px-2 py-0.5 font-mono text-xs text-ink">
           {tool}
         </li>
       ))}
-    </ul>
-  );
-  rows.push([
-    'Tools',
-    <div
-      key="tools"
-      data-marquee
-      // Focusable so keyboard and touch users can pause it too (WCAG 2.2.2): focus pauses the scroll.
-      tabIndex={0}
-      role="group"
-      aria-label={`${project.name} tools`}
-      className="marquee rounded-chip"
-      style={
-        {
-          '--marquee-dur': `${Math.max(12, project.stack.length * repeats * 2.5)}s`,
-        } as React.CSSProperties
-      }
-    >
-      <div className="marquee-track">
-        <div className="marquee-half">
-          {list(false, 'real')}
-          {Array.from({ length: repeats - 1 }, (_, i) => list(true, `a${i}`))}
-        </div>
-        <div className="marquee-half marquee-copy">
-          {Array.from({ length: repeats }, (_, i) => list(true, `b${i}`))}
-        </div>
-      </div>
-    </div>,
+    </ul>,
   ]);
   if (github) {
     rows.push([

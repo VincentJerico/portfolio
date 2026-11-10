@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Inspectable } from '@/components/bughunt/Inspectable';
 import { CaseStudyCard } from '@/components/content/CaseStudyCard';
-import { FlipCard } from '@/components/content/FlipCard';
 import { HeroSpotlight } from '@/components/content/HeroSpotlight';
 import { Masthead } from '@/components/content/Masthead';
 import { PortraitCard } from '@/components/content/PortraitCard';
@@ -74,7 +73,6 @@ export default function OverviewPage() {
         <div className="measure min-w-0">
           <SplitTitle id="hero-heading" text={profile.fullName} />
           <p className="mt-5 text-xl font-semibold text-ink lg:text-2xl">{profile.headline}</p>
-          <FlipCard lead="My suites cover" words={areas} />
           <p className="mt-4 text-lg text-ink">{introLead}</p>
           {introRest && <p className="mt-2 text-ink-muted">{introRest}</p>}
           <div className="mt-8 flex flex-wrap gap-3">

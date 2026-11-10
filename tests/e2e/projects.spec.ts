@@ -164,24 +164,6 @@ test.describe('GitHub data (test builds use the fixture)', () => {
   });
 });
 
-test.describe('report tools marquee', () => {
-  test('tools scroll in a marquee that screen readers and print read as one list', async ({
-    page,
-  }) => {
-    const project = projectsInOrder()[0]!;
-    await page.goto(`/projects/${project.slug}`);
-    const marquee = page.locator('[data-marquee]');
-    await expect(marquee.locator('ul:not([aria-hidden])').getByRole('listitem')).toHaveCount(
-      project.stack.length,
-    );
-    await expect(marquee.locator('ul[aria-hidden="true"]').first()).toBeAttached();
-    await expect(marquee.locator('.marquee-track')).toHaveCSS('animation-name', 'marquee');
-    await expect(marquee.locator('ul[aria-hidden="true"]').first()).toBeVisible();
-    await page.emulateMedia({ media: 'print' });
-    await expect(marquee.locator('ul[aria-hidden="true"]:visible')).toHaveCount(0);
-  });
-});
-
 test.describe('CI badges', () => {
   test('a badge is never clipped by its placeholder, down to 320 px', async ({ page }) => {
     // Real badges run wider than the 90 px fixture ("CI | passing" is about 140 px).
@@ -213,29 +195,7 @@ test.describe('CI badges', () => {
   });
 });
 
-test.describe('report review fixes', () => {
-  test('the marquee can be paused from the keyboard or by touch (WCAG 2.2.2)', async ({ page }) => {
-    await page.goto(`/projects/${projectsInOrder()[0]!.slug}`);
-    const marquee = page.locator('[data-marquee]');
-    await expect(marquee).toHaveAttribute('tabindex', '0');
-    await expect(marquee).toHaveAttribute('aria-label', /tools/i);
-    await marquee.focus();
-    await expect(marquee.locator('.marquee-track')).toHaveCSS('animation-play-state', 'paused');
-  });
-
-  test('the report title, the morph target, does not run the line rise', async ({ page }) => {
-    await page.goto(`/projects/${projectsInOrder()[0]!.slug}`);
-    await expect(page.locator('h1')).toHaveCSS('animation-name', 'none');
-  });
-});
-
-test('a short tools list still fills the marquee, with no empty gap', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  const shortest = [...projectsInOrder()].sort((a, b) => a.stack.length - b.stack.length)[0]!;
-  await page.goto(`/projects/${shortest.slug}`);
-  const gap = await page.locator('[data-marquee]').evaluate((el) => {
-    const half = el.querySelector('.marquee-half')!.getBoundingClientRect().width;
-    return el.getBoundingClientRect().width - half;
-  });
-  expect(gap).toBeLessThanOrEqual(0);
+test('the report title, the morph target, does not run the line rise', async ({ page }) => {
+  await page.goto(`/projects/${projectsInOrder()[0]!.slug}`);
+  await expect(page.locator('h1')).toHaveCSS('animation-name', 'none');
 });

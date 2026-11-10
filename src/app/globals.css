@@ -475,6 +475,18 @@
   }
 }
 
+/* Career path: the current step's marker pulses softly (transform only). */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .career-current {
+    animation: career-pulse 2.4s var(--ease-snap) infinite;
+  }
+}
+@keyframes career-pulse {
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+}
+
 /* Spotlight and tilt cards (ui/TiltHost.tsx): the card tilts toward the cursor and a soft light
    follows the pointer; it eases back when the pointer leaves. */
 .tilt {
@@ -1109,16 +1121,6 @@
 /* Time machine redesign (2026-11-08): physical objects that answer the visitor. */
 @layer components {
   /* Flip card: spiral rings over a plate whose word turns like a calendar page. */
-  .flip-ring {
-    position: relative;
-    z-index: 1;
-    width: 0.375rem;
-    height: 0.875rem;
-    border-radius: 999px;
-    border: 1.5px solid var(--text-muted);
-    background: var(--bg);
-  }
-
   /* Pull cord: a tug stretches it down and lets it spring back. */
   .pull-cord-tug {
     animation: cord-tug 700ms var(--ease-snap);
@@ -1178,16 +1180,6 @@
   .suite-door:is(:hover, :focus-within) .door-panel {
     rotate: y -80deg;
     box-shadow: 18px 0 30px -18px rgb(0 0 0 / 0.6);
-  }
-  .door-handle {
-    position: absolute;
-    right: 0.875rem;
-    top: 50%;
-    width: 0.5rem;
-    height: 2.75rem;
-    border-radius: 999px;
-    background: linear-gradient(var(--text-muted), var(--border));
-    translate: 0 -50%;
   }
   .door-extra {
     pointer-events: none;
@@ -1269,59 +1261,6 @@
     view-timeline: --qa block;
   }
 
-  /* Report tools marquee (RunSummaryPanel). Static and wrapped by default; it scrolls only on
-     screens that allow motion. */
-  /* Static: plain blocks, so the real list wraps inside the cell. */
-  .marquee-track,
-  .marquee-half {
-    display: block;
-  }
-  .marquee-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.375rem;
-  }
-  .marquee-copy {
-    display: none;
-  }
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .marquee {
-      overflow: hidden;
-      mask-image: linear-gradient(
-        90deg,
-        transparent,
-        black 1.5rem,
-        black calc(100% - 1.5rem),
-        transparent
-      );
-    }
-    .marquee-track,
-    .marquee-half {
-      display: flex;
-      gap: 0.375rem;
-    }
-    .marquee-track {
-      width: max-content;
-      animation: marquee var(--marquee-dur, 16s) linear infinite;
-    }
-    .marquee-list {
-      flex-wrap: nowrap;
-    }
-    .marquee-copy {
-      display: flex;
-    }
-    .marquee-half {
-      flex-shrink: 0;
-    }
-    .marquee:is(:hover, :focus-within) .marquee-track {
-      animation-play-state: paused;
-    }
-    /* The edge fade would hide the focus ring. */
-    .marquee:focus-visible {
-      mask-image: none;
-    }
-  }
-
   /* Touch screens have no hover: the result shows on the closed door. */
   .door-hook-touch {
     display: none;
@@ -1358,11 +1297,6 @@
 @keyframes qa-draw {
   from {
     stroke-dashoffset: 1;
-  }
-}
-@keyframes marquee {
-  to {
-    translate: calc(-50% - 0.1875rem) 0;
   }
 }
 @keyframes cord-tug {

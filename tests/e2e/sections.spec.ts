@@ -46,12 +46,16 @@ test.describe('about', () => {
     }
   });
 
-  test('career path marks the first two steps done', async ({ page }) => {
+  test('career path marks the internship done, the present role current, the rest next', async ({
+    page,
+  }) => {
+    // docs/01-PORTFOLIO-DATA.md: "Current role | Software QA/QC Engineer at BossLabs.AI".
     const steps = page.getByRole('list', { name: 'Career path' }).getByRole('listitem');
     await expect(steps).toHaveCount(4);
     await expect(steps.nth(0)).toContainText('done');
-    await expect(steps.nth(1)).toContainText('done');
+    await expect(steps.nth(1)).toContainText('current');
     await expect(steps.nth(2)).toContainText('next');
+    await expect(steps.nth(3)).toContainText('next');
   });
 
   test('never shows the GPA', async ({ page }) => {
