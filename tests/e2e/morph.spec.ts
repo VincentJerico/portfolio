@@ -230,3 +230,22 @@ test.describe('split-letter title', () => {
     await expect(h1.locator('[data-split]')).toHaveAttribute('aria-hidden', 'true');
   });
 });
+
+test.describe('coverage grid spotlight', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  test('dots near the cursor light up behind the hero and follow it', async ({ page }) => {
+    await page.goto('/');
+    await waitForHydration(page);
+    const grid = page.locator('[data-spotlight]');
+    await expect(grid).toHaveAttribute('aria-hidden', 'true');
+    await expect(grid).toHaveCSS('pointer-events', 'none');
+    const hero = page.locator('section[aria-labelledby="hero-heading"]');
+    const box = (await hero.boundingBox())!;
+    await page.mouse.move(box.x + 200, box.y + 150);
+    await expect(grid).toHaveAttribute('data-active', '');
+    await expect
+      .poll(() => grid.evaluate((el) => getComputedStyle(el).getPropertyValue('--mx').trim()))
+      .not.toBe('');
+  });
+});

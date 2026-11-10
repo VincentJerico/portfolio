@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Inspectable } from '@/components/bughunt/Inspectable';
 import { CaseStudyCard } from '@/components/content/CaseStudyCard';
 import { FlipCard } from '@/components/content/FlipCard';
+import { HeroSpotlight } from '@/components/content/HeroSpotlight';
 import { Masthead } from '@/components/content/Masthead';
 import { PortraitCard } from '@/components/content/PortraitCard';
 import { ProjectIndex } from '@/components/content/ProjectIndex';
@@ -67,8 +68,9 @@ export default function OverviewPage() {
       {/* 1. Hero */}
       <section
         aria-labelledby="hero-heading"
-        className="grid items-start gap-10 md:grid-cols-[1fr_auto]"
+        className="relative isolate grid items-start gap-10 md:grid-cols-[1fr_auto]"
       >
+        <HeroSpotlight />
         <div className="measure min-w-0">
           <SplitTitle id="hero-heading" text={profile.fullName} />
           <p className="mt-5 text-xl font-semibold text-ink lg:text-2xl">{profile.headline}</p>

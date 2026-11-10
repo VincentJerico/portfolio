@@ -384,6 +384,81 @@
   }
 }
 
+/* Hero spotlight (content/HeroSpotlight.tsx): a quiet dot field; around the cursor the dots turn
+   pass-green and a scan ring pulses. The lit layer is the same dots, masked to a circle. */
+.spotlight {
+  position: absolute;
+  inset: -2rem 0;
+  z-index: -1;
+  overflow: clip;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(transparent, black 12%, black 85%, transparent);
+  mask-image: linear-gradient(transparent, black 12%, black 85%, transparent);
+}
+.spotlight-dots,
+.spotlight-lit {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, currentColor 1.4px, transparent 1.8px);
+  background-size: 24px 24px;
+  background-position: 12px 12px;
+}
+.spotlight-dots {
+  color: color-mix(in srgb, var(--text-muted) 22%, transparent);
+}
+.spotlight-lit,
+.spotlight-ring {
+  display: none;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .spotlight-lit {
+    display: block;
+    color: var(--pass);
+    opacity: 0;
+    -webkit-mask-image: radial-gradient(
+      circle 170px at var(--mx, 50%) var(--my, 50%),
+      #000,
+      rgb(0 0 0 / 0.5) 45%,
+      transparent 72%
+    );
+    mask-image: radial-gradient(
+      circle 170px at var(--mx, 50%) var(--my, 50%),
+      #000,
+      rgb(0 0 0 / 0.5) 45%,
+      transparent 72%
+    );
+    transition: opacity var(--dur-base);
+  }
+  .spotlight-ring {
+    display: block;
+    position: absolute;
+    left: var(--mx, 50%);
+    top: var(--my, 50%);
+    width: 320px;
+    height: 320px;
+    translate: -50% -50%;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--pass) 40%, transparent);
+    opacity: 0;
+  }
+  .spotlight[data-active] .spotlight-lit {
+    opacity: 1;
+  }
+  .spotlight[data-active] .spotlight-ring {
+    animation: spotlight-pulse 2.4s var(--ease-snap) infinite;
+  }
+}
+@keyframes spotlight-pulse {
+  from {
+    scale: 0.35;
+    opacity: 1;
+  }
+  to {
+    scale: 1.1;
+    opacity: 0;
+  }
+}
+
 /* Split-letter hero title (content/SplitTitle.tsx): letters rise out of their line in turn; each
    jumps and tints as the cursor passes. The rise uses translate and the jump uses transform, so the
    two never fight. */
