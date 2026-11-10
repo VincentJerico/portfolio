@@ -191,3 +191,30 @@ test.describe('docked report title', () => {
     await expect(page.locator('[data-report-dock] .report-dock-bar')).toBeHidden();
   });
 });
+
+test.describe('odometer metrics', () => {
+  test('each metric value rolls on a digit odometer but reads as plain text', async ({ page }) => {
+    await page.goto('/');
+    const summary = page.getByRole('region', { name: 'Run summary' });
+    const tree = await summary.ariaSnapshot();
+    const { metrics } = await import('../../src/content');
+    for (const metric of metrics) {
+      expect(tree, metric.id).toContain(metric.value);
+    }
+    const first = summary.locator('[data-odometer]').first();
+    await expect(first).toHaveAttribute('aria-hidden', 'true');
+    // Every digit column rests on its real digit.
+    const ok = await summary.locator('[data-odometer]').evaluateAll((els) =>
+      els.every((el) => {
+        const value = el.getAttribute('data-value')!;
+        const digits = [...value].filter((c) => /\d/.test(c));
+        const cols = [...el.querySelectorAll<HTMLElement>('.odo-col')];
+        return (
+          cols.length === digits.length &&
+          cols.every((col, i) => col.style.getPropertyValue('--d') === digits[i])
+        );
+      }),
+    );
+    expect(ok).toBe(true);
+  });
+});

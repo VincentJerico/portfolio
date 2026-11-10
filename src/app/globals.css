@@ -384,6 +384,40 @@
   }
 }
 
+/* Odometer (ui/Odometer.tsx): each digit column rests on its digit; on scroll-in it rolls up from 0. */
+.odo {
+  display: inline-flex;
+  flex-wrap: wrap;
+  line-height: 1.2;
+}
+.odo-char {
+  white-space: pre;
+}
+.odo-col {
+  display: inline-flex;
+  flex-direction: column;
+  height: 1.2em;
+  overflow: hidden;
+}
+.odo-col > span {
+  height: 1.2em;
+  translate: 0 calc(var(--d) * -1.2em);
+}
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .odo-col > span {
+      animation: odo-roll linear both;
+      animation-timeline: view();
+      animation-range: entry calc(20% + var(--i) * 4%) cover calc(40% + var(--i) * 4%);
+    }
+  }
+}
+@keyframes odo-roll {
+  from {
+    translate: 0 0;
+  }
+}
+
 /* Docked report title: hidden at rest; as the report header scrolls out of view, a compact bar slides
    down and pins to the top. Only where scroll timelines exist and motion is welcome. */
 .report {
