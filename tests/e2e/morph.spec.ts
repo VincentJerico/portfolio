@@ -161,3 +161,13 @@ test.describe('controls grow into their dialogs', () => {
     expect(morphs).toHaveLength(2);
   });
 });
+
+test.describe('section status dots', () => {
+  test('each section dot holds a check that draws in as the section passes', async ({ page }) => {
+    await page.goto('/');
+    const dots = page.locator('main h2 .reveal-dot');
+    const count = await dots.count();
+    expect(count).toBeGreaterThan(3);
+    await expect(page.locator('main h2 .reveal-dot [data-dot-check]')).toHaveCount(count);
+  });
+});

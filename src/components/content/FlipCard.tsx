@@ -1,10 +1,13 @@
 'use client';
 
 import { ChevronRight, Pause, Play } from 'lucide-react';
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { morphText } from '@/lib/decode';
 
 const REDUCED = '(prefers-reduced-motion: reduce)';
 const INTERVAL_MS = 2600;
+const MORPH_MS = 600;
+const FRAME_MS = 28;
 const RINGS = 9;
 
 function subscribeReduced(onChange: () => void) {
@@ -16,9 +19,10 @@ function subscribeReduced(onChange: () => void) {
 const pad = (n: number) => String(n).padStart(2, '0');
 
 /**
- * A spiral-bound desk calendar that flips through the areas Vincent tests. Screen readers get the
- * whole list once as static text; the card itself is decorative. It turns a page every few seconds
- * until paused (WCAG 2.2.2), never on its own under reduced motion, and Next always works.
+ * A spiral-bound desk calendar cycling through the areas Vincent tests; each word morphs letter by
+ * letter into the next. Screen readers get the whole list once as static text; the card itself is
+ * decorative. It changes every few seconds until paused (WCAG 2.2.2), never on its own under reduced
+ * motion (where the word swaps without the morph), and Next always works.
  */
 export function FlipCard({ lead, words }: { lead: string; words: string[] }) {
   const reduced = useSyncExternalStore(
@@ -29,6 +33,27 @@ export function FlipCard({ lead, words }: { lead: string; words: string[] }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const rotating = !reduced && !paused && words.length > 1;
+  const wordRef = useRef<HTMLSpanElement>(null);
+  const shown = useRef(words[0] ?? '');
+
+  // React renders the new word; this animates that same text node from the old word to it.
+  useEffect(() => {
+    const node = wordRef.current?.firstChild;
+    const from = shown.current;
+    const to = words[index] ?? '';
+    shown.current = to;
+    if (!(node instanceof Text) || reduced || from === to) return;
+    const start = performance.now();
+    const id = window.setInterval(() => {
+      const progress = (performance.now() - start) / MORPH_MS;
+      node.nodeValue = morphText(from, to, progress, Math.random);
+      if (progress >= 1) window.clearInterval(id);
+    }, FRAME_MS);
+    return () => {
+      window.clearInterval(id);
+      node.nodeValue = to;
+    };
+  }, [index, reduced, words]);
 
   useEffect(() => {
     if (!rotating) return;
@@ -61,7 +86,7 @@ export function FlipCard({ lead, words }: { lead: string; words: string[] }) {
                 {word}
               </span>
             ))}
-            <span key={index} data-flip-word className="flip-page col-start-1 row-start-1">
+            <span ref={wordRef} data-flip-word className="col-start-1 row-start-1">
               {words[index]}
             </span>
           </span>

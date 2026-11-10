@@ -32,6 +32,7 @@ test.describe('flip card', () => {
     await expect(pause).toHaveAttribute('aria-pressed', 'true');
     const before = await word.textContent();
     await page.getByRole('button', { name: 'Next area' }).click();
+    await page.clock.runFor(1000); // let the word finish morphing
     await expect(word).not.toHaveText(before!);
     await expect(page.locator('[data-flip-card]')).toContainText(`/ ${total}`);
     const paused = await word.textContent();
@@ -45,7 +46,22 @@ test.describe('flip card', () => {
     await waitForHydration(page);
     const word = page.locator('[data-flip-word]');
     await expect(word).toHaveText(areas[0]!);
-    await page.clock.runFor(2700);
+    await page.clock.runFor(3400); // the change at 2.6 s plus the 0.6 s morph
+    await expect(word).toHaveText(areas[1]!);
+  });
+
+  test('each word morphs letter by letter into the next, then lands exactly', async ({ page }) => {
+    await page.clock.install();
+    await page.goto('/');
+    await waitForHydration(page);
+    const word = page.locator('[data-flip-word]');
+    await page.getByRole('button', { name: 'Pause' }).click();
+    await page.getByRole('button', { name: 'Next area' }).click();
+    await page.clock.runFor(250);
+    // Mid-morph: neither the old word nor the new one yet.
+    await expect(word).not.toHaveText(areas[0]!);
+    await expect(word).not.toHaveText(areas[1]!);
+    await page.clock.runFor(800);
     await expect(word).toHaveText(areas[1]!);
   });
 
