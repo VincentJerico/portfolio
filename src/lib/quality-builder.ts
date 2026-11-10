@@ -93,6 +93,8 @@ export function buildQualityReport(inputs: BuildInputs): QualityReport {
     : undefined;
   // Per-score medians across each route's runs: what lighthouserc.json asserts (C27).
   const runsByUrl = Map.groupBy(inputs.lighthouse ?? [], (run) => run.url);
+  // How many runs each median came from (the fewest any route had), so the wording follows the config.
+  const runsPerRoute = Math.min(...[...runsByUrl.values()].map((runs) => runs.length));
   const lighthouse = [...runsByUrl].map(([url, runs]) => {
     const score = (key: keyof LighthouseRun['summary']) =>
       Math.round(median(runs.map((run) => run.summary[key])) * 100);
@@ -143,7 +145,7 @@ export function buildQualityReport(inputs: BuildInputs): QualityReport {
       tool: 'Lighthouse CI',
       result: pass(jobs.lighthouse),
       details: lighthouse.length
-        ? `${lighthouse.length} routes, mobile, median of 3 runs`
+        ? `${lighthouse.length} routes, mobile, median of ${runsPerRoute} runs`
         : 'Five routes, mobile',
     },
     {

@@ -102,6 +102,23 @@ describe('buildQualityReport', () => {
     ]);
   });
 
+  it('states how many runs each median came from, counted from the runs it received', () => {
+    const run = (url: string) => ({
+      url,
+      summary: { performance: 1, accessibility: 1, 'best-practices': 1, seo: 1 },
+    });
+    const five = buildQualityReport({
+      ...inputs,
+      lighthouse: [1, 2, 3, 4, 5].flatMap(() => [
+        run('http://localhost:3300/'),
+        run('http://localhost:3300/about'),
+      ]),
+    });
+    expect(five.gates.find((g) => g.gate === 'Lighthouse')?.details).toBe(
+      '2 routes, mobile, median of 5 runs',
+    );
+  });
+
   it('sums E2E counts across every browser run, and says so', () => {
     expect(report.e2e).toEqual({ passed: 13, failed: 1, flaky: 1, skipped: 2 });
     expect(report.gates.find((g) => g.gate.startsWith('End-to-end'))?.details).toBe(

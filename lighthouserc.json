@@ -10,7 +10,7 @@
         "http://localhost:3300/about",
         "http://localhost:3300/resume"
       ],
-      "numberOfRuns": 3
+      "numberOfRuns": 5
     },
     "assert": {
       "assertMatrix": [
