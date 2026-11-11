@@ -35,6 +35,31 @@ test.describe('theme flood', () => {
     expect((await transitions(page)).some((types) => types.includes('theme'))).toBe(true);
   });
 
+  test('the active nav marker stays in the page during the flood, so its label never hides', async ({
+    page,
+  }) => {
+    await page.goto('/about');
+    await waitForHydration(page);
+    // Read the marker's name from inside a theme transition, while it is active.
+    const name = await page.evaluate(async () => {
+      const marker = document.querySelector<HTMLElement>('aside [data-nav-marker]')!;
+      let during = '';
+      const transition = document.startViewTransition({
+        update: () => {
+          during = getComputedStyle(marker).viewTransitionName;
+        },
+        types: ['theme'],
+      });
+      await transition.finished.catch(() => {});
+      return during;
+    });
+    expect(name).toBe('none');
+    await expect(page.locator('aside [data-nav-marker]')).toHaveCSS(
+      'view-transition-name',
+      'nav-active-sidebar',
+    );
+  });
+
   test('under reduced motion the theme switches with no transition', async ({ page }) => {
     await recordTransitions(page);
     await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
