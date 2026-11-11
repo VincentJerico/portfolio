@@ -6,12 +6,13 @@ import { CiBadge } from '@/components/ui/CiBadge';
 import { Inspectable } from '@/components/bughunt/Inspectable';
 
 /**
- * A test suite as a door. The front panel carries the label plate, name, what the suite is and its
- * stack; on hover or focus it swings open on its left hinge to show the result behind it. One stretched link covers the whole
- * door, so it opens wherever it is clicked; the panel itself ignores the pointer. On touch screens,
- * which have no hover, the front shows the result in place of the summary. Content sits at the top
- * of the panel, so the tool tags follow the summary directly. Back and front share one grid cell, so the
- * door is as tall as whichever side holds more and nothing behind it can spill out below.
+ * A test suite as a card with a result underneath. The front carries the label plate, name, what the
+ * suite is and its stack; on hover or focus a scan line runs down it and the front clears behind the
+ * line, showing the result (globals.css). One stretched link covers the whole card, so it opens
+ * wherever it is clicked; the front itself ignores the pointer. On touch screens, which have no hover,
+ * the front shows the result in place of the summary. Content sits at the top of the front, so the
+ * tool tags follow the summary directly. Back and front share one grid cell, so the card is as tall as
+ * whichever side holds more and nothing behind it can spill out below.
  */
 export function SuiteDoor({ project }: { project: Project }) {
   const suite = String(project.order).padStart(2, '0');
@@ -22,8 +23,8 @@ export function SuiteDoor({ project }: { project: Project }) {
       className="h-full"
       plantedClassName="translate-x-[3px] print:translate-x-0"
     >
-      <article className="suite-door group relative grid h-full [perspective:1400px]">
-        <div className="door-back col-start-1 row-start-1 flex min-w-0 flex-col rounded-card border border-line bg-secondary py-5 pr-5 pl-[20%]">
+      <article className="suite-door group relative grid h-full">
+        <div className="door-back col-start-1 row-start-1 flex min-w-0 flex-col rounded-card border border-line bg-secondary p-5">
           <p className="label-mono text-ink-muted">Result</p>
           <p className="mt-2 text-sm font-semibold text-ink">{project.hook}</p>
           <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 pt-4">
