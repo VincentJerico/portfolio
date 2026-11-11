@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react';
+import { flushSync } from 'react-dom';
+import { morph } from '@/lib/morph';
 import type { PaletteItem } from './CommandPalette';
 
 export const OPEN_PALETTE = 'vj:open-palette';
@@ -18,11 +20,20 @@ export function CommandPaletteRoot({ items }: { items: PaletteItem[] }) {
   const show = useCallback(
     async (opener?: HTMLElement) => {
       openerRef.current = opener ?? (document.activeElement as HTMLElement | null);
-      if (!Palette) {
+      let Loaded = Palette;
+      if (!Loaded) {
         const palette = await import('./CommandPalette');
-        setPalette(() => palette.CommandPalette);
+        Loaded = palette.CommandPalette;
       }
-      setOpen(true);
+      const Component = Loaded;
+      // The Search button grows into the palette (a keyboard shortcut has no button to grow from).
+      morph(opener, () => {
+        flushSync(() => {
+          setPalette(() => Component);
+          setOpen(true);
+        });
+        return document.querySelector<HTMLElement>('dialog[open][aria-label="Search"]');
+      });
     },
     [Palette],
   );

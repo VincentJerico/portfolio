@@ -7,13 +7,15 @@
 export const BOOT_SCRIPT = `try{if(!sessionStorage.getItem('vja-boot')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.setAttribute('data-boot','');sessionStorage.setItem('vja-boot','1');var end=function(){document.documentElement.removeAttribute('data-boot')};setTimeout(end,1600);addEventListener('keydown',end,{once:true});addEventListener('pointerdown',end,{once:true})}}catch(e){}`;
 
 /**
- * The first-visit boot: corner counters run to 100% and a hairline splits the screen, then the
- * overlay lifts away. CSS only, about 1.4 s, never takes pointer events, hidden from assistive tech
+ * The first-visit boot: corner counters run to 100% and a hairline draws across the middle, then
+ * the screen opens like a shutter, its two halves parting along the line. CSS only, about 1.4 s, never takes pointer events, hidden from assistive tech
  * and print. It holds only small text, so it can never be the page's largest paint.
  */
 export function Boot() {
   return (
     <div data-boot-overlay aria-hidden="true" data-print-hide>
+      <span className="boot-half boot-half-top" />
+      <span className="boot-half boot-half-bottom" />
       <span className="boot-count top-4 left-4" />
       <span className="boot-count top-4 right-4" />
       <span className="boot-count bottom-4 left-4" />

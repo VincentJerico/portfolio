@@ -1,10 +1,17 @@
 // Spec Section 10. One builder for next.config headers(); tests pin the literal spec values.
 
-function csp(siteUrl: string): string {
+interface Options {
+  /** `next dev`: React needs eval() there for its debugging tools. Never set for a build. */
+  development?: boolean;
+}
+
+function csp(siteUrl: string, { development = false }: Options = {}): string {
   const directives = [
     "default-src 'self'",
     "img-src 'self' data: https://github.com https://img.shields.io https://avatars.githubusercontent.com",
-    "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
+    development
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com"
+      : "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self'",
     "connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com",
@@ -19,9 +26,9 @@ function csp(siteUrl: string): string {
   return directives.join('; ');
 }
 
-export function securityHeaders(siteUrl: string): Record<string, string> {
+export function securityHeaders(siteUrl: string, options: Options = {}): Record<string, string> {
   return {
-    'Content-Security-Policy': csp(siteUrl),
+    'Content-Security-Policy': csp(siteUrl, options),
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
     'X-Content-Type-Options': 'nosniff',

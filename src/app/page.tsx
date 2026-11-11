@@ -3,12 +3,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Inspectable } from '@/components/bughunt/Inspectable';
 import { CaseStudyCard } from '@/components/content/CaseStudyCard';
-import { FlipCard } from '@/components/content/FlipCard';
+import { HeroSpotlight } from '@/components/content/HeroSpotlight';
 import { Masthead } from '@/components/content/Masthead';
 import { PortraitCard } from '@/components/content/PortraitCard';
 import { ProjectIndex } from '@/components/content/ProjectIndex';
 import { QaAreaGrid } from '@/components/content/QaAreaGrid';
 import { RunnerHeroBlock } from '@/components/content/RunnerHeroBlock';
+import { SplitTitle } from '@/components/content/SplitTitle';
 import { Section } from '@/components/content/Section';
 import { SkillChips } from '@/components/content/SkillChips';
 import { Timeline } from '@/components/content/Timeline';
@@ -66,12 +67,12 @@ export default function OverviewPage() {
       {/* 1. Hero */}
       <section
         aria-labelledby="hero-heading"
-        className="grid items-start gap-10 md:grid-cols-[1fr_auto]"
+        className="relative isolate grid items-start gap-10 md:grid-cols-[1fr_auto]"
       >
+        <HeroSpotlight />
         <div className="measure min-w-0">
-          <h1 id="hero-heading">{profile.fullName}</h1>
+          <SplitTitle id="hero-heading" text={profile.fullName} />
           <p className="mt-5 text-xl font-semibold text-ink lg:text-2xl">{profile.headline}</p>
-          <FlipCard lead="My suites cover" words={areas} />
           <p className="mt-4 text-lg text-ink">{introLead}</p>
           {introRest && <p className="mt-2 text-ink-muted">{introRest}</p>}
           <div className="mt-8 flex flex-wrap gap-3">
@@ -133,7 +134,7 @@ export default function OverviewPage() {
         title="Run summary"
         kicker={`${metrics.length} checks${asOf ? ` · as of ${formatDay(asOf)}` : ''}`}
       >
-        <ul className="grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
+        <ul className="odo-scope grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
           {metrics.map((metric) => (
             <li key={metric.id}>
               <MetricTile metric={metric} />

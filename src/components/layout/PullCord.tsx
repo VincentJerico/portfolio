@@ -1,6 +1,7 @@
 'use client';
 
 import { useTheme } from 'next-themes';
+import { switchTheme } from '@/lib/theme-switch';
 import { useState, useSyncExternalStore } from 'react';
 
 const subscribe = () => () => {};
@@ -29,9 +30,9 @@ export function PullCord() {
       <button
         type="button"
         aria-pressed={hydrated ? lightOn : undefined}
-        onClick={() => {
+        onClick={(event) => {
           setTug((n) => n + 1);
-          setTheme(lightOn ? 'dark' : 'light');
+          switchTheme(lightOn ? 'dark' : 'light', setTheme, event.currentTarget);
         }}
         className="group pointer-events-auto flex w-8 flex-col items-center rounded-b-chip"
       >

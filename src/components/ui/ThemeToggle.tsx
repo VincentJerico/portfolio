@@ -2,6 +2,7 @@
 
 import { Moon } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { switchTheme } from '@/lib/theme-switch';
 import { useSyncExternalStore } from 'react';
 
 const subscribe = () => () => {};
@@ -20,7 +21,7 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
     <button
       type="button"
       aria-pressed={hydrated ? isDark : undefined}
-      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      onClick={(event) => switchTheme(isDark ? 'light' : 'dark', setTheme, event.currentTarget)}
       className={`inline-flex min-h-11 items-center gap-3 rounded-chip px-2 text-sm text-ink hover:bg-surface-2 ${className}`}
     >
       <Moon aria-hidden="true" className="size-4 text-ink-muted" />

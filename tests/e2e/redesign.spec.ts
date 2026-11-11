@@ -1,68 +1,7 @@
 import { expect, test } from '../helpers/test';
 import { profile, timeline } from '../../src/content';
 import { projectsInOrder, visible } from '../../src/lib/content';
-import { categoryLabel } from '../../src/lib/labels';
 import { waitForHydration } from '../helpers/hydration';
-
-const areas = [
-  ...new Set(
-    projectsInOrder()
-      .filter((p) => p.category !== 'hub' && p.category !== 'capstone')
-      .map((p) => categoryLabel(p.category)),
-  ),
-];
-const total = String(areas.length).padStart(2, '0');
-
-test.describe('flip card', () => {
-  test('reads once for screen readers, with the card itself hidden', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.getByTestId('flip-card-text')).toHaveText(
-      `My suites cover ${areas.join(', ')}.`,
-    );
-    await expect(page.locator('[data-flip-card]')).toHaveAttribute('aria-hidden', 'true');
-  });
-
-  test('Next turns the page and Pause stops the rotation', async ({ page }) => {
-    await page.clock.install();
-    await page.goto('/');
-    await waitForHydration(page);
-    const word = page.locator('[data-flip-word]');
-    const pause = page.getByRole('button', { name: 'Pause' });
-    await pause.click();
-    await expect(pause).toHaveAttribute('aria-pressed', 'true');
-    const before = await word.textContent();
-    await page.getByRole('button', { name: 'Next area' }).click();
-    await expect(word).not.toHaveText(before!);
-    await expect(page.locator('[data-flip-card]')).toContainText(`/ ${total}`);
-    const paused = await word.textContent();
-    await page.clock.runFor(6000);
-    await expect(word).toHaveText(paused!);
-  });
-
-  test('turns pages on its own until paused', async ({ page }) => {
-    await page.clock.install();
-    await page.goto('/');
-    await waitForHydration(page);
-    const word = page.locator('[data-flip-word]');
-    await expect(word).toHaveText(areas[0]!);
-    await page.clock.runFor(2700);
-    await expect(word).toHaveText(areas[1]!);
-  });
-
-  test('does not rotate on its own under reduced motion', async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.clock.install();
-    await page.goto('/');
-    await waitForHydration(page);
-    const word = page.locator('[data-flip-word]');
-    await expect(word).toHaveText(areas[0]!);
-    await expect(page.getByRole('button', { name: 'Pause' })).toHaveCount(0);
-    await page.clock.runFor(6000);
-    await expect(word).toHaveText(areas[0]!);
-    await page.getByRole('button', { name: 'Next area' }).click();
-    await expect(word).toHaveText(areas[1]!);
-  });
-});
 
 test.describe('pull cord', () => {
   // The cord is the desktop theme switch; the drawer carries the theme toggle below 1024px.

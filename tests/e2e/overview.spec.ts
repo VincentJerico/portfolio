@@ -10,7 +10,7 @@ test.describe('overview', () => {
   });
 
   test('hero names Vincent and offers the three actions', async ({ page }) => {
-    await expect(page.locator('h1')).toHaveText(profile.fullName);
+    await expect(page.locator('h1')).toHaveAccessibleName(profile.fullName);
     const main = page.locator('main');
     await expect(main.getByRole('link', { name: 'View projects' })).toHaveAttribute(
       'href',
@@ -131,8 +131,9 @@ test.describe('hero runner block', () => {
     await page.goto('/');
     const lastLine = page.locator('[data-runner-hero] [data-line]').last();
     await expect(lastLine).toBeVisible();
-    const clip = await lastLine.evaluate((el) => getComputedStyle(el).clipPath);
-    expect(['none', 'inset(0px)']).toContain(clip);
+    // No cover over the line: the typing reveal is off.
+    const cover = await lastLine.evaluate((el) => getComputedStyle(el, '::after').content);
+    expect(cover).toBe('none');
   });
 });
 

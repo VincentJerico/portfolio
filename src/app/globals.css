@@ -219,22 +219,28 @@
   }
 }
 
-/* Hero runner block: each line types in once. Under reduced motion the global rule collapses the
-   animation to its final frame, so every line is simply shown. */
+/* Hero runner block: each line types in once. A cover in the window's colour steps off each line,
+   so the reveal is a transform the compositor runs; a stepped clip-path was a main-thread frame per
+   step for about 3.5 s of the load. The line's inline animation-delay staggers its cover. Under
+   reduced motion there is no cover, so every line is simply shown. */
 @layer components {
   .runner-line {
-    clip-path: inset(0 100% 0 0);
-    animation: runner-type 0.5s steps(32, end) forwards;
+    position: relative;
+    overflow: hidden;
+  }
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .runner-line::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--surface-2);
+      animation: runner-type 0.5s steps(32, end) forwards;
+      animation-delay: inherit;
+    }
   }
   @keyframes runner-type {
     to {
-      clip-path: inset(0 0 0 0);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .runner-line {
-      clip-path: none;
-      animation: none;
+      translate: 101% 0;
     }
   }
 }
@@ -340,6 +346,18 @@
    the dot shows as passed. */
 .reveal-dot {
   background-color: var(--pass);
+  color: var(--bg);
+}
+/* The check is drawn by the dot's own animation through an inherited custom property, so each
+   section keeps a single scroll timeline (per-element timelines cost blocking time). */
+@property --dot-check {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+.dot-check {
+  stroke-dasharray: 1;
+  stroke-dashoffset: var(--dot-check);
 }
 @supports (animation-timeline: view()) {
   @media screen and (prefers-reduced-motion: no-preference) {
@@ -354,15 +372,447 @@
   from {
     background-color: transparent;
     box-shadow: inset 0 0 0 1.5px var(--text-muted);
+    --dot-check: 1;
   }
   60% {
     box-shadow:
       inset 0 0 0 1.5px var(--pass),
       0 0 0 7px color-mix(in srgb, var(--pass) 30%, transparent);
+    --dot-check: 1;
   }
   to {
     background-color: var(--pass);
     box-shadow: inset 0 0 0 1.5px var(--pass);
+  }
+}
+
+/* Pinned horizontal reel (content/ProjectIndex.tsx). Default: the vertical index. With scroll
+   timelines, room and motion, the section pins and scrolling drives the suites sideways as cards,
+   with a pass bar filling below. */
+.reel-progress {
+  display: none;
+}
+@supports (animation-timeline: view()) {
+  @media screen and (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+    .reel {
+      height: 240vh;
+      view-timeline: --reel block;
+    }
+    .reel-sticky {
+      position: sticky;
+      top: 12vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1.5rem;
+      height: 70vh;
+      overflow: clip;
+      container-type: inline-size;
+    }
+    .reel-track {
+      display: flex;
+      gap: 1.25rem;
+      width: max-content;
+      border-top: 0;
+      animation: reel-x linear both;
+      animation-timeline: --reel;
+      animation-range: contain 0% contain 100%;
+    }
+    /* Every card is the same size: the track stretches its items to the tallest card, and each card
+       fills its item. Content is top-aligned, with two lines kept for the name, so the suite number,
+       name, category and result start at the same height in every card. */
+    .reel-track > li {
+      display: flex;
+      width: 22rem;
+      flex-shrink: 0;
+    }
+    .reel-track > li > * {
+      display: flex;
+      flex: 1;
+    }
+    .reel-track .index-row {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      gap: 0.75rem;
+      min-height: 17rem;
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      background: var(--surface);
+    }
+    .reel-track .index-row::before {
+      border-radius: inherit;
+    }
+    .reel-track .index-name {
+      min-height: 2lh;
+    }
+    .reel-track .index-hook {
+      grid-template-rows: 1fr;
+    }
+    .reel-track .index-row:is(:hover, :focus-within) .index-name {
+      translate: 0 0;
+    }
+    .reel-progress {
+      display: block;
+      position: relative;
+      height: 2px;
+      background: var(--border);
+    }
+    .reel-progress i {
+      position: absolute;
+      inset: 0;
+      background: var(--pass);
+      transform-origin: left;
+      animation: reel-progress linear both;
+      animation-timeline: --reel;
+      animation-range: contain 0% contain 100%;
+    }
+  }
+}
+@keyframes reel-x {
+  to {
+    translate: calc(-100% + 100cqw) 0;
+  }
+}
+@keyframes reel-progress {
+  from {
+    scale: 0 1;
+  }
+}
+
+/* Career path: the current step's marker pulses softly (transform only). */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .career-current {
+    animation: career-pulse 2.4s var(--ease-snap) infinite;
+  }
+}
+@keyframes career-pulse {
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+}
+
+/* Spotlight and tilt cards (ui/TiltHost.tsx): the card tilts toward the cursor and a soft light
+   follows the pointer; it eases back when the pointer leaves. */
+.tilt {
+  position: relative;
+  isolation: isolate;
+  transition:
+    transform var(--dur-base) var(--ease-snap),
+    translate var(--dur-base) var(--ease-snap),
+    box-shadow var(--dur-base) var(--ease-snap),
+    border-color var(--dur-base) var(--ease-snap);
+  will-change: transform;
+}
+.tilt[data-tilting] {
+  transition-duration: 90ms, var(--dur-base), var(--dur-base), var(--dur-base);
+}
+.tilt::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    420px circle at var(--tx, 50%) var(--ty, 50%),
+    color-mix(in srgb, var(--accent) 14%, transparent),
+    transparent 45%
+  );
+  opacity: 0;
+  transition: opacity var(--dur-base);
+}
+.tilt[data-tilting]::before {
+  opacity: 1;
+}
+
+/* Load sequence: on every full page load the sidebar rows cascade in from the left and a run bar
+   sweeps across the top. The sidebar persists across client navigations, so it plays once per load.
+   Load animations fill backwards, not both: once finished they let go of their elements, so nothing
+   keeps a compositing layer after the entrance. */
+.load-bar {
+  display: none;
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  .load-bar {
+    display: block;
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 70;
+    height: 2px;
+    background: var(--pass);
+    transform-origin: left;
+    pointer-events: none;
+    animation:
+      load-run 900ms var(--ease-snap) backwards,
+      load-done 1ms linear 1150ms forwards;
+  }
+  aside nav > ul > li {
+    animation: nav-in 520ms var(--ease-snap) backwards;
+  }
+  aside nav > ul > li:nth-child(1) {
+    animation-delay: 185ms;
+  }
+  aside nav > ul > li:nth-child(2) {
+    animation-delay: 230ms;
+  }
+  aside nav > ul > li:nth-child(3) {
+    animation-delay: 275ms;
+  }
+  aside nav > ul > li:nth-child(4) {
+    animation-delay: 320ms;
+  }
+  aside nav > ul > li:nth-child(5) {
+    animation-delay: 365ms;
+  }
+  aside nav > ul > li:nth-child(6) {
+    animation-delay: 410ms;
+  }
+  aside nav > ul > li:nth-child(7) {
+    animation-delay: 455ms;
+  }
+  aside nav > ul > li:nth-child(8) {
+    animation-delay: 500ms;
+  }
+  aside nav > ul > li:nth-child(9) {
+    animation-delay: 545ms;
+  }
+  aside nav > ul > li:nth-child(10) {
+    animation-delay: 590ms;
+  }
+  aside nav > ul > li:nth-child(11) {
+    animation-delay: 635ms;
+  }
+  aside nav > ul > li:nth-child(12) {
+    animation-delay: 680ms;
+  }
+}
+@keyframes load-run {
+  from {
+    scale: 0 1;
+  }
+}
+@keyframes load-done {
+  from,
+  to {
+    visibility: hidden;
+  }
+}
+@keyframes nav-in {
+  from {
+    translate: -1rem 0;
+  }
+}
+
+/* Hero spotlight (content/HeroSpotlight.tsx): a quiet dot field; around the cursor the dots turn
+   pass-green and a scan ring pulses. The lit layer is the same dots, masked to a circle. */
+.spotlight {
+  position: absolute;
+  inset: -2rem 0;
+  z-index: -1;
+  overflow: clip;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(transparent, black 12%, black 85%, transparent);
+  mask-image: linear-gradient(transparent, black 12%, black 85%, transparent);
+}
+.spotlight-dots,
+.spotlight-lit {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, currentColor 1.4px, transparent 1.8px);
+  background-size: 24px 24px;
+  background-position: 12px 12px;
+}
+.spotlight-dots {
+  color: color-mix(in srgb, var(--text-muted) 22%, transparent);
+}
+.spotlight-lit,
+.spotlight-ring {
+  display: none;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .spotlight-lit {
+    display: block;
+    color: var(--pass);
+    opacity: 0;
+    -webkit-mask-image: radial-gradient(
+      circle 170px at var(--mx, 50%) var(--my, 50%),
+      #000,
+      rgb(0 0 0 / 0.5) 45%,
+      transparent 72%
+    );
+    mask-image: radial-gradient(
+      circle 170px at var(--mx, 50%) var(--my, 50%),
+      #000,
+      rgb(0 0 0 / 0.5) 45%,
+      transparent 72%
+    );
+    transition: opacity var(--dur-base);
+  }
+  .spotlight-ring {
+    display: block;
+    position: absolute;
+    left: var(--mx, 50%);
+    top: var(--my, 50%);
+    width: 320px;
+    height: 320px;
+    translate: -50% -50%;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--pass) 40%, transparent);
+    opacity: 0;
+  }
+  .spotlight[data-active] .spotlight-lit {
+    opacity: 1;
+  }
+  .spotlight[data-active] .spotlight-ring {
+    animation: spotlight-pulse 2.4s var(--ease-snap) infinite;
+  }
+}
+@keyframes spotlight-pulse {
+  from {
+    scale: 0.35;
+    opacity: 1;
+  }
+  to {
+    scale: 1.1;
+    opacity: 0;
+  }
+}
+
+/* Split-letter hero title (content/SplitTitle.tsx): letters rise out of their line in turn; each
+   jumps and tints as the cursor passes. The rise uses translate and the jump uses transform, so the
+   two never fight. */
+.split-w {
+  display: inline-block;
+  overflow: clip;
+  overflow-clip-margin: 0.2em;
+  vertical-align: top;
+  padding-bottom: 0.06em;
+}
+.split-ch {
+  display: inline-block;
+  transition:
+    transform var(--dur-fast) var(--ease-snap),
+    color var(--dur-fast);
+}
+.split-ch:hover {
+  transform: translateY(-12%);
+  color: var(--accent);
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  .split-ch {
+    animation: split-rise 760ms var(--ease-snap) backwards;
+    animation-delay: calc(var(--i) * 28ms);
+  }
+}
+@keyframes split-rise {
+  from {
+    translate: 0 110%;
+    rotate: 8deg;
+  }
+}
+
+/* Odometer (ui/Odometer.tsx): each digit column is one strip of 0 to 9 resting on its digit; on
+   scroll-in it rolls up from 0. All columns share the run summary grid's one view timeline. */
+.odo-word {
+  display: inline-flex;
+  white-space: nowrap;
+  line-height: 1.2;
+  vertical-align: top;
+}
+.odo-col {
+  display: inline-block;
+  height: 1.2em;
+  overflow: hidden;
+}
+/* The roll animates a number, not translate: a scroll-linked translate is composited, so every column
+   held its own layer from the first frame and the extra layers cost blocking time on load. */
+@property --odo-t {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+.odo-strip {
+  display: block;
+  translate: 0 calc(var(--d) * var(--odo-t) * -1.2em);
+}
+.odo-strip::before {
+  content: '0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9';
+  white-space: pre;
+}
+.odo-scope {
+  view-timeline: --odo block;
+}
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .odo-strip {
+      animation: odo-roll linear both;
+      animation-timeline: --odo;
+      animation-range: entry calc(30% + var(--i) * 5%) cover calc(45% + var(--i) * 5%);
+    }
+  }
+}
+@keyframes odo-roll {
+  from {
+    --odo-t: 0;
+  }
+  to {
+    --odo-t: 1;
+  }
+}
+
+/* Docked report title: hidden at rest; once the visitor has scrolled past the report header, a
+   compact bar slides down and pins to the top. Only where scroll timelines exist and motion is welcome. */
+.report-dock {
+  position: sticky;
+  top: 3.5rem;
+  z-index: 20;
+  height: 0;
+  margin-block: calc(var(--spacing-rhythm) * -0.5);
+  pointer-events: none;
+}
+@media (min-width: 1024px) {
+  .report-dock {
+    top: 0;
+  }
+}
+.report-dock-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-inline: -0.5rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border);
+  border-top: 0;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  /* Opaque: at any transparency the report's large headline reads through the bar. */
+  background: var(--surface);
+  box-shadow: 0 12px 24px -16px rgb(0 0 0 / 0.5);
+  visibility: hidden;
+}
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .report-dock-bar {
+      animation: dock-in linear both;
+      /* The page's own scroll position: cheaper than a named timeline scoped over the whole report.
+         Report headers end around 300 to 420 px down, so the bar docks across that stretch. */
+      animation-timeline: scroll(root);
+      animation-range: 300px 420px;
+    }
+  }
+}
+@keyframes dock-in {
+  from {
+    visibility: hidden;
+    translate: 0 -110%;
+  }
+  1% {
+    visibility: visible;
+  }
+  to {
+    visibility: visible;
+    translate: 0 0;
   }
 }
 
@@ -495,15 +945,15 @@
      during load pushed blocking time over budget. */
   main
     :is(header, section[aria-labelledby='hero-heading'] > div:first-child)
-    > :not([data-morph-title]) {
-    animation: header-rise 720ms var(--ease-snap) both;
+    > :not([data-morph-title], .split-title) {
+    animation: header-rise 720ms var(--ease-snap) backwards;
   }
   /* The page title rises out of its own line: it moves up while its clip opens from the top, so it
      looks masked by the line it sits on. Clip, not opacity, so the title still counts as painted. */
   main
     :is(header, section[aria-labelledby='hero-heading'] > div:first-child)
-    > h1:not([data-morph-title]) {
-    animation: line-rise 720ms var(--ease-snap) both;
+    > h1:not([data-morph-title], .split-title) {
+    animation: line-rise 720ms var(--ease-snap) backwards;
   }
   main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(2) {
     animation-delay: 90ms;
@@ -552,10 +1002,30 @@
     inset: 0;
     z-index: 60;
     pointer-events: none;
+    animation: boot-gone 1ms linear 1500ms forwards;
+  }
+  /* The shutter: two halves of the page colour part along the hairline. */
+  .boot-half {
+    position: absolute;
+    inset-inline: 0;
+    height: 50%;
     background: var(--bg);
-    animation:
-      boot-lift 500ms var(--ease-snap) 900ms both,
-      boot-gone 1ms linear 1400ms forwards;
+  }
+  .boot-half-top {
+    top: 0;
+    animation: boot-open-up 560ms cubic-bezier(0.7, 0, 0.2, 1) 920ms both;
+  }
+  .boot-half-bottom {
+    bottom: 0;
+    animation: boot-open-down 560ms cubic-bezier(0.7, 0, 0.2, 1) 920ms both;
+  }
+  /* The counters and hairline clear just as the shutter opens. */
+  .boot-count,
+  .boot-line {
+    z-index: 1;
+  }
+  .boot-count {
+    animation: boot-clear 1ms linear 900ms forwards;
   }
   .boot-count {
     position: absolute;
@@ -576,7 +1046,9 @@
     height: 1px;
     background: var(--text);
     scale: 0 1;
-    animation: boot-split 600ms var(--ease-snap) 250ms both;
+    animation:
+      boot-split 600ms var(--ease-snap) 250ms both,
+      boot-clear 1ms linear 940ms forwards;
   }
 }
 @keyframes boot-count {
@@ -619,9 +1091,20 @@
     scale: 1 1;
   }
 }
-@keyframes boot-lift {
+@keyframes boot-clear {
+  from,
+  to {
+    visibility: hidden;
+  }
+}
+@keyframes boot-open-up {
   to {
     translate: 0 -100%;
+  }
+}
+@keyframes boot-open-down {
+  to {
+    translate: 0 100%;
   }
 }
 @keyframes boot-gone {
@@ -657,21 +1140,6 @@
 /* Time machine redesign (2026-11-08): physical objects that answer the visitor. */
 @layer components {
   /* Flip card: spiral rings over a plate whose word turns like a calendar page. */
-  .flip-ring {
-    position: relative;
-    z-index: 1;
-    width: 0.375rem;
-    height: 0.875rem;
-    border-radius: 999px;
-    border: 1.5px solid var(--text-muted);
-    background: var(--bg);
-  }
-  .flip-page {
-    transform-origin: top;
-    animation: flip-page var(--dur-slow) var(--ease-snap) both;
-    backface-visibility: hidden;
-  }
-
   /* Pull cord: a tug stretches it down and lets it spring back. */
   .pull-cord-tug {
     animation: cord-tug 700ms var(--ease-snap);
@@ -731,16 +1199,6 @@
   .suite-door:is(:hover, :focus-within) .door-panel {
     rotate: y -80deg;
     box-shadow: 18px 0 30px -18px rgb(0 0 0 / 0.6);
-  }
-  .door-handle {
-    position: absolute;
-    right: 0.875rem;
-    top: 50%;
-    width: 0.5rem;
-    height: 2.75rem;
-    border-radius: 999px;
-    background: linear-gradient(var(--text-muted), var(--border));
-    translate: 0 -50%;
   }
   .door-extra {
     pointer-events: none;
@@ -822,59 +1280,6 @@
     view-timeline: --qa block;
   }
 
-  /* Report tools marquee (RunSummaryPanel). Static and wrapped by default; it scrolls only on
-     screens that allow motion. */
-  /* Static: plain blocks, so the real list wraps inside the cell. */
-  .marquee-track,
-  .marquee-half {
-    display: block;
-  }
-  .marquee-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.375rem;
-  }
-  .marquee-copy {
-    display: none;
-  }
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .marquee {
-      overflow: hidden;
-      mask-image: linear-gradient(
-        90deg,
-        transparent,
-        black 1.5rem,
-        black calc(100% - 1.5rem),
-        transparent
-      );
-    }
-    .marquee-track,
-    .marquee-half {
-      display: flex;
-      gap: 0.375rem;
-    }
-    .marquee-track {
-      width: max-content;
-      animation: marquee var(--marquee-dur, 16s) linear infinite;
-    }
-    .marquee-list {
-      flex-wrap: nowrap;
-    }
-    .marquee-copy {
-      display: flex;
-    }
-    .marquee-half {
-      flex-shrink: 0;
-    }
-    .marquee:is(:hover, :focus-within) .marquee-track {
-      animation-play-state: paused;
-    }
-    /* The edge fade would hide the focus ring. */
-    .marquee:focus-visible {
-      mask-image: none;
-    }
-  }
-
   /* Touch screens have no hover: the result shows on the closed door. */
   .door-hook-touch {
     display: none;
@@ -913,16 +1318,6 @@
     stroke-dashoffset: 1;
   }
 }
-@keyframes marquee {
-  to {
-    translate: calc(-50% - 0.1875rem) 0;
-  }
-}
-@keyframes flip-page {
-  from {
-    rotate: x -95deg;
-  }
-}
 @keyframes cord-tug {
   30% {
     translate: 0 1.75rem;
@@ -958,27 +1353,93 @@
     var(--dur-base) ease-out var(--dur-fast) both vt-fade-in,
     var(--dur-slow) var(--ease-snap) both vt-rise;
 }
-/* The curtain: the old page lifts and clips away upward while the new page is revealed from the
-   bottom. No colour fill: an accent band behind the reveal flashed blue across the page. */
-@media (prefers-reduced-motion: no-preference) {
-  ::view-transition-old(.page-curtain-out) {
-    animation: var(--dur-base) var(--ease-snap) both vt-curtain-out;
-  }
-  ::view-transition-new(.page-curtain-in) {
-    animation: 520ms var(--ease-snap) both vt-curtain-in;
-  }
+/* The sidebar's active marker glides from row to row on navigation. */
+::view-transition-group(nav-active-sidebar),
+::view-transition-group(nav-active-drawer) {
+  animation-duration: var(--dur-slow);
+  animation-timing-function: var(--ease-snap);
 }
-@keyframes vt-curtain-out {
-  to {
-    translate: 0 -2rem;
-    clip-path: inset(0 0 100% 0);
-  }
+
+/* A control growing into its dialog (lib/morph.ts): a slower, springier move than the default. */
+::view-transition-group(dialog-morph) {
+  animation-duration: 420ms;
+  animation-timing-function: var(--ease-snap);
 }
-@keyframes vt-curtain-in {
+:active-view-transition-type(dialog-morph)::view-transition-old(root),
+:active-view-transition-type(dialog-morph)::view-transition-new(root) {
+  animation-duration: 420ms;
+}
+
+/* Theme flood (lib/theme-switch.ts): the new theme is revealed by a growing circle animated from
+   script, so the default cross-fade is switched off for that transition. */
+:active-view-transition-type(theme)::view-transition-old(root),
+:active-view-transition-type(theme)::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Test-runner page change (layout/RouteRunner.tsx): the panel joins the navigation's view transition
+   and slides up over the old page; once the new page is in, its line fills, the route's CI result
+   stamps, and it lifts away. */
+.route-runner {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.875rem;
+  padding: 0 clamp(1.5rem, 8vw, 6rem);
+  background: var(--surface-2);
+  pointer-events: none;
+  view-transition-name: route-runner;
+  animation: runner-lift 420ms var(--ease-snap) 760ms both;
+}
+.route-runner-bar {
+  position: relative;
+  height: 2px;
+  max-width: 34rem;
+  background: var(--border);
+  overflow: hidden;
+}
+.route-runner-bar i {
+  position: absolute;
+  inset: 0;
+  background: var(--pass);
+  transform-origin: left;
+  animation: runner-bar 480ms var(--ease-snap) 120ms both;
+}
+.route-runner-stamp {
+  width: fit-content;
+  transform-origin: left center;
+  animation: runner-stamp 220ms ease 560ms both;
+}
+::view-transition-new(route-runner) {
+  animation: runner-in 320ms var(--ease-snap) both;
+}
+@keyframes runner-in {
   from {
-    clip-path: inset(100% 0 0 0);
+    translate: 0 100%;
   }
 }
+@keyframes runner-bar {
+  from {
+    scale: 0 1;
+  }
+}
+@keyframes runner-stamp {
+  from {
+    opacity: 0;
+    scale: 1.4;
+  }
+}
+@keyframes runner-lift {
+  to {
+    translate: 0 -100%;
+    visibility: hidden;
+  }
+}
+
 ::view-transition-group(.morph) {
   animation-duration: var(--dur-slow);
   animation-timing-function: var(--ease-snap);

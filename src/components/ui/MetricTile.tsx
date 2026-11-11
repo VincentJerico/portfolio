@@ -1,5 +1,6 @@
 import { Inspectable } from '@/components/bughunt/Inspectable';
 import type { Metric } from '@/content/schema';
+import { Odometer } from './Odometer';
 
 // HUNT-02 (Bug Hunt only): a total that does not match its parts.
 const PLANTED_VALUES: Record<string, string> = { 'automated-tests': '109' };
@@ -21,7 +22,9 @@ export function MetricTile({ metric }: { metric: Metric }) {
 function TileBody({ metric }: { metric: Metric }) {
   return (
     <div className="flex h-full flex-col gap-2 bg-secondary p-4">
-      <p className="font-mono text-2xl font-medium tracking-tight text-ink">{metric.value}</p>
+      <p className="font-mono text-2xl font-medium tracking-tight text-ink">
+        <Odometer value={metric.value} />
+      </p>
       <p className="text-sm leading-snug text-ink">{metric.label}</p>
       {metric.context && <p className="text-xs leading-snug text-ink-muted">{metric.context}</p>}
       <a

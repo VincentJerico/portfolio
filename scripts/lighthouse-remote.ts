@@ -6,10 +6,10 @@
 // Previews are served with `x-robots-tag: noindex` by Vercel, which Lighthouse's SEO category scores as
 // "blocked from indexing"; there the SEO category is not asserted. Production asserts everything.
 //
-// Blocking time and the performance score use deployed budgets instead of the local gate's (C26): on the
-// CI runner the hydration task measures about 40 ms longer against Vercel than against a local server, for
-// the same build, and blocking time is 30% of the score (300 ms alone scores 0.94). The local-build gate
-// keeps the strict budgets, so code regressions are still caught there.
+// Blocking time and the performance score use deployed budgets (C26): on the CI runner the hydration task
+// measures about 40 ms longer against Vercel than against a local server, for the same build, and blocking
+// time is 30% of the score (300 ms alone scores 0.94). The local gate's blocking budget is also 300 ms
+// since C41; the local gate keeps the stricter performance score.
 import { readFileSync, writeFileSync } from 'node:fs';
 
 const LOCAL = 'http://localhost:3300';

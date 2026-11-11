@@ -87,6 +87,19 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
           ...(project.liveUrl ? { url: project.liveUrl } : {}),
         }}
       />
+      {/* Once the header scrolls away, the title docks here as a compact bar (CSS scroll timeline).
+          It repeats the title, so it is hidden from assistive tech; it takes no layout space. */}
+      <div data-report-dock aria-hidden="true" className="report-dock" data-print-hide>
+        <div className="report-dock-bar">
+          <span className="font-mono text-xs text-ink-muted">
+            suite {String(project.order).padStart(2, '0')}
+          </span>
+          <span className="min-w-0 truncate font-semibold text-ink">{project.name}</span>
+          <span className="ml-auto hidden font-mono text-xs text-ink-muted sm:inline">
+            {categoryLabel(project.category)}
+          </span>
+        </div>
+      </div>
       <header className="flex flex-col gap-5">
         <nav aria-label="Breadcrumb">
           <ol className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
@@ -103,7 +116,17 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
             </li>
           </ol>
         </nav>
-        <p className="label-mono text-ink-muted">Test report · {categoryLabel(project.category)}</p>
+        {/* Suite number, category and name morph in from the row or door the visitor came from. */}
+        <p className="label-mono text-ink-muted">
+          Test report ·{' '}
+          <ViewTransition name={`project-suite-${project.slug}`} share="morph" default="none">
+            <span className="inline-block">suite {String(project.order).padStart(2, '0')}</span>
+          </ViewTransition>
+          {' · '}
+          <ViewTransition name={`project-cat-${project.slug}`} share="morph" default="none">
+            <span className="inline-block">{categoryLabel(project.category)}</span>
+          </ViewTransition>
+        </p>
         <ViewTransition name={`project-title-${project.slug}`} share="morph" default="none">
           {/* The morph target: it skips the entrance rises, so the view transition captures it in
               place rather than clipped and offset. */}
