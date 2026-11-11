@@ -1383,11 +1383,26 @@
     var(--dur-base) ease-out var(--dur-fast) both vt-fade-in,
     var(--dur-slow) var(--ease-snap) both vt-rise;
 }
-/* The sidebar's active marker glides from row to row on navigation. */
+/* The sidebar's active marker glides from row to row on navigation. A named element is drawn above
+   the page snapshot, so the marker is blended rather than painted over the rows: in the dark theme
+   it lightens (light labels stay light), in the light theme it darkens (dark labels stay dark). */
 ::view-transition-group(nav-active-sidebar),
 ::view-transition-group(nav-active-drawer) {
   animation-duration: var(--dur-slow);
   animation-timing-function: var(--ease-snap);
+}
+html.dark::view-transition-group(nav-active-sidebar),
+html.dark::view-transition-group(nav-active-drawer) {
+  mix-blend-mode: lighten;
+}
+html.light::view-transition-group(nav-active-sidebar),
+html.light::view-transition-group(nav-active-drawer) {
+  mix-blend-mode: darken;
+}
+/* The theme flood keeps the marker in the page snapshot, so the circle reveals it with its row
+   instead of the marker covering the row's label for the whole switch. */
+html:active-view-transition-type(theme) [data-nav-marker] {
+  view-transition-name: none !important;
 }
 
 /* A control growing into its dialog (lib/morph.ts): a slower, springier move than the default. */
