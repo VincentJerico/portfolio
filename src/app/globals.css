@@ -1188,17 +1188,47 @@
     mask-image: linear-gradient(transparent, black 15%, black 85%, transparent);
   }
 
-  /* Suite doors: the panel swings open on its left hinge on hover or focus. */
+  /* Suite cards: on hover or focus a pass-green scan line runs down the card and the front clears
+     behind it, showing the result underneath, as if a test run had reached the card. A clip and a
+     moving line, nothing rotates. The clip reaches past the sides and bottom so the card's shadow
+     stays. Under reduced motion the front simply clears and no line runs. */
   .door-panel {
-    transform-origin: left center;
-    transition:
-      rotate var(--dur-slow) var(--ease-snap),
-      box-shadow var(--dur-slow) var(--ease-snap);
-    backface-visibility: hidden;
+    clip-path: inset(0 -2rem -2rem -2rem);
+    transition: clip-path var(--dur-slow) var(--ease-snap);
   }
   .suite-door:is(:hover, :focus-within) .door-panel {
-    rotate: y -80deg;
-    box-shadow: 18px 0 30px -18px rgb(0 0 0 / 0.6);
+    clip-path: inset(100% -2rem -2rem -2rem);
+  }
+  .suite-door::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    z-index: 20;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--pass);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--pass) 60%, transparent);
+    pointer-events: none;
+    visibility: hidden;
+  }
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .suite-door:is(:hover, :focus-within)::before {
+      animation: door-scan var(--dur-slow) var(--ease-snap) forwards;
+    }
+  }
+  @keyframes door-scan {
+    from {
+      top: 0;
+      visibility: visible;
+    }
+    85% {
+      visibility: visible;
+    }
+    to {
+      top: calc(100% - 2px);
+      visibility: hidden;
+    }
   }
   .door-extra {
     pointer-events: none;
@@ -1280,7 +1310,7 @@
     view-timeline: --qa block;
   }
 
-  /* Touch screens have no hover: the result shows on the closed door. */
+  /* Touch screens have no hover: the result shows on the card's front. */
   .door-hook-touch {
     display: none;
   }

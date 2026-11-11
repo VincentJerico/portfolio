@@ -93,6 +93,22 @@ test.describe('suite doors', () => {
     await expect(page).toHaveURL(new RegExp(`/projects/${first.slug}$`));
   });
 
+  test.describe('hover', () => {
+    test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+    test('a scan clears the front to show the result, and nothing rotates', async ({ page }) => {
+      await page.goto('/projects');
+      const door = page.locator('main article.suite-door').first();
+      const front = door.locator('.door-panel');
+      await door.hover();
+      await expect
+        .poll(() => front.evaluate((el) => getComputedStyle(el).clipPath))
+        .toMatch(/^inset\(100%/);
+      expect(await front.evaluate((el) => getComputedStyle(el).rotate)).toBe('none');
+      await expect(door.locator('.door-back').getByText(projectsInOrder()[0]!.hook)).toBeVisible();
+    });
+  });
+
   test('the door grid does not overflow at 320 px', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 800 });
     await page.goto('/projects');
