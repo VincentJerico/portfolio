@@ -36,7 +36,8 @@ test.describe('pull cord', () => {
       page.evaluate(() =>
         document
           .getAnimations()
-          .map((a) => (a as CSSAnimation).animationName)
+          // Script animations (the theme flood) have no CSS name.
+          .map((a) => (a as CSSAnimation).animationName ?? '')
           .filter((n) => n.startsWith('cord-') || n === 'knob-ring'),
       );
     expect(await names()).toContain('cord-sway');
