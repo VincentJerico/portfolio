@@ -9,7 +9,7 @@
 // Blocking time and the performance score use deployed budgets (C26): on the CI runner the hydration task
 // measures about 40 ms longer against Vercel than against a local server, for the same build, and blocking
 // time is 30% of the score (300 ms alone scores 0.94). The local gate's blocking budget is also 300 ms
-// since C41; the local gate keeps the stricter performance score.
+// since C41, with a performance score of 0.94 to match (C43); deployments allow 0.93.
 import { readFileSync, writeFileSync } from 'node:fs';
 
 const LOCAL = 'http://localhost:3300';
