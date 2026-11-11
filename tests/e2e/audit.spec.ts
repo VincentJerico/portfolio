@@ -43,3 +43,42 @@ test.describe('audit fixes', () => {
     await expect(page.getByRole('button', { name: 'Next area' })).toHaveCount(0);
   });
 });
+
+// An endless animation on a property the compositor cannot run (box-shadow, colour, size) repaints on
+// the main thread every frame for as long as the page is open, and shows up as blocking time.
+test.describe('endless animations', () => {
+  const COMPOSITED = new Set([
+    'transform',
+    'translate',
+    'scale',
+    'rotate',
+    'opacity',
+    'offset',
+    'easing',
+    'composite',
+    'computedOffset',
+  ]);
+
+  for (const route of ['/', '/projects', '/about', '/skills', '/projects/accessibility-testing']) {
+    test(`on ${route} they animate only compositor properties`, async ({ page }) => {
+      await page.goto(route);
+      const offenders = await page.evaluate(
+        (allowed) => {
+          const ok = new Set(allowed);
+          return document
+            .getAnimations()
+            .filter((a) => a.effect?.getTiming().iterations === Infinity)
+            .flatMap((a) =>
+              (a.effect as KeyframeEffect)
+                .getKeyframes()
+                .flatMap((frame) => Object.keys(frame))
+                .filter((key) => !ok.has(key))
+                .map((key) => `${(a as CSSAnimation).animationName ?? 'animation'}: ${key}`),
+            );
+        },
+        [...COMPOSITED],
+      );
+      expect(offenders).toEqual([]);
+    });
+  }
+});

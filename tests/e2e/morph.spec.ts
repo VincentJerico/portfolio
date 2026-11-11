@@ -347,6 +347,9 @@ test.describe('test-runner page change', () => {
     await expect(runner).toContainText(/PASS|FAIL|NOT RUN/);
     await expect(runner).toHaveAttribute('aria-hidden', 'true');
     await expect(runner).toHaveCSS('pointer-events', 'none');
+    // It covers the content area only; the sidebar stays on screen beside it.
+    const sidebar = (await page.locator('aside').first().boundingBox())!;
+    expect((await runner.boundingBox())!.x).toBeGreaterThanOrEqual(sidebar.x + sidebar.width - 1);
     await expect(runner).toHaveCount(0, { timeout: 2500 });
   });
 
