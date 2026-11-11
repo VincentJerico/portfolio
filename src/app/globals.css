@@ -768,7 +768,8 @@
   border: 1px solid var(--border);
   border-top: 0;
   border-radius: 0 0 var(--radius-card) var(--radius-card);
-  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  /* Opaque: at any transparency the report's large headline reads through the bar. */
+  background: var(--surface);
   box-shadow: 0 12px 24px -16px rgb(0 0 0 / 0.5);
   visibility: hidden;
 }
