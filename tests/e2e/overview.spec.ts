@@ -131,8 +131,9 @@ test.describe('hero runner block', () => {
     await page.goto('/');
     const lastLine = page.locator('[data-runner-hero] [data-line]').last();
     await expect(lastLine).toBeVisible();
-    const clip = await lastLine.evaluate((el) => getComputedStyle(el).clipPath);
-    expect(['none', 'inset(0px)']).toContain(clip);
+    // No cover over the line: the typing reveal is off.
+    const cover = await lastLine.evaluate((el) => getComputedStyle(el, '::after').content);
+    expect(cover).toBe('none');
   });
 });
 

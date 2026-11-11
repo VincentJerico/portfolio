@@ -219,22 +219,28 @@
   }
 }
 
-/* Hero runner block: each line types in once. Under reduced motion the global rule collapses the
-   animation to its final frame, so every line is simply shown. */
+/* Hero runner block: each line types in once. A cover in the window's colour steps off each line,
+   so the reveal is a transform the compositor runs; a stepped clip-path was a main-thread frame per
+   step for about 3.5 s of the load. The line's inline animation-delay staggers its cover. Under
+   reduced motion there is no cover, so every line is simply shown. */
 @layer components {
   .runner-line {
-    clip-path: inset(0 100% 0 0);
-    animation: runner-type 0.5s steps(32, end) forwards;
+    position: relative;
+    overflow: hidden;
+  }
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .runner-line::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--surface-2);
+      animation: runner-type 0.5s steps(32, end) forwards;
+      animation-delay: inherit;
+    }
   }
   @keyframes runner-type {
     to {
-      clip-path: inset(0 0 0 0);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .runner-line {
-      clip-path: none;
-      animation: none;
+      translate: 101% 0;
     }
   }
 }
@@ -522,7 +528,9 @@
 }
 
 /* Load sequence: on every full page load the sidebar rows cascade in from the left and a run bar
-   sweeps across the top. The sidebar persists across client navigations, so it plays once per load. */
+   sweeps across the top. The sidebar persists across client navigations, so it plays once per load.
+   Load animations fill backwards, not both: once finished they let go of their elements, so nothing
+   keeps a compositing layer after the entrance. */
 .load-bar {
   display: none;
 }
@@ -537,11 +545,11 @@
     transform-origin: left;
     pointer-events: none;
     animation:
-      load-run 900ms var(--ease-snap) both,
+      load-run 900ms var(--ease-snap) backwards,
       load-done 1ms linear 1150ms forwards;
   }
   aside nav > ul > li {
-    animation: nav-in 520ms var(--ease-snap) both;
+    animation: nav-in 520ms var(--ease-snap) backwards;
   }
   aside nav > ul > li:nth-child(1) {
     animation-delay: 185ms;
@@ -694,7 +702,7 @@
 }
 @media screen and (prefers-reduced-motion: no-preference) {
   .split-ch {
-    animation: split-rise 760ms var(--ease-snap) both;
+    animation: split-rise 760ms var(--ease-snap) backwards;
     animation-delay: calc(var(--i) * 28ms);
   }
 }
@@ -718,9 +726,16 @@
   height: 1.2em;
   overflow: hidden;
 }
+/* The roll animates a number, not translate: a scroll-linked translate is composited, so every column
+   held its own layer from the first frame and the extra layers cost blocking time on load. */
+@property --odo-t {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
 .odo-strip {
   display: block;
-  translate: 0 calc(var(--d) * -1.2em);
+  translate: 0 calc(var(--d) * var(--odo-t) * -1.2em);
 }
 .odo-strip::before {
   content: '0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9';
@@ -740,7 +755,10 @@
 }
 @keyframes odo-roll {
   from {
-    translate: 0 0;
+    --odo-t: 0;
+  }
+  to {
+    --odo-t: 1;
   }
 }
 
@@ -928,14 +946,14 @@
   main
     :is(header, section[aria-labelledby='hero-heading'] > div:first-child)
     > :not([data-morph-title], .split-title) {
-    animation: header-rise 720ms var(--ease-snap) both;
+    animation: header-rise 720ms var(--ease-snap) backwards;
   }
   /* The page title rises out of its own line: it moves up while its clip opens from the top, so it
      looks masked by the line it sits on. Clip, not opacity, so the title still counts as painted. */
   main
     :is(header, section[aria-labelledby='hero-heading'] > div:first-child)
     > h1:not([data-morph-title], .split-title) {
-    animation: line-rise 720ms var(--ease-snap) both;
+    animation: line-rise 720ms var(--ease-snap) backwards;
   }
   main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(2) {
     animation-delay: 90ms;
