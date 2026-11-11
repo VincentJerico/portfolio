@@ -23,8 +23,34 @@ test.describe('pull cord', () => {
     await page.goto('/');
     const string = page.locator('[data-pull-cord] > span').first();
     const top = (await string.boundingBox())!.y;
-    // The tug keyframes move the cord down 1.75rem (28px) at most.
-    expect(top).toBeLessThan(-28);
+    // The hover dip (0.5rem) and the tug keyframes (1.75rem) move it down 36px at most.
+    expect(top).toBeLessThan(-36);
+  });
+
+  test('the cord sways at rest and swings after a tug, with the knob sending out a ring', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await waitForHydration(page);
+    const names = () =>
+      page.evaluate(() =>
+        document
+          .getAnimations()
+          .map((a) => (a as CSSAnimation).animationName)
+          .filter((n) => n.startsWith('cord-') || n === 'knob-ring'),
+      );
+    expect(await names()).toContain('cord-sway');
+    await page.getByRole('button', { name: 'Light switch' }).click();
+    await expect
+      .poll(names)
+      .toEqual(expect.arrayContaining(['cord-tug', 'cord-swing', 'knob-ring']));
+  });
+
+  test('under reduced motion the cord hangs still', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    const sway = page.locator('.cord-sway');
+    await expect(sway).toHaveCSS('animation-name', 'none');
   });
 });
 
