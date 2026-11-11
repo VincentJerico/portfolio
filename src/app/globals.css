@@ -481,15 +481,31 @@
   }
 }
 
-/* Career path: the current step's marker pulses softly (transform only). */
+/* Career path: a soft ring pulses out from the current step's marker. The ring scales and fades, so
+   the compositor runs it; an animated box-shadow repainted on the main thread every frame, forever,
+   and pushed /about's blocking time over budget. */
+.career-current {
+  position: relative;
+}
 @media screen and (prefers-reduced-motion: no-preference) {
-  .career-current {
+  .career-current::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    pointer-events: none;
     animation: career-pulse 2.4s var(--ease-snap) infinite;
   }
 }
 @keyframes career-pulse {
-  50% {
-    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 22%, transparent);
+  from {
+    scale: 1;
+    opacity: 1;
+  }
+  to {
+    scale: 1.6;
+    opacity: 0;
   }
 }
 
@@ -996,13 +1012,20 @@
   display: none;
 }
 @media screen and (prefers-reduced-motion: no-preference) {
+  /* Like the page-change runner, the boot covers the content area and leaves the navigation
+     (sidebar on desktop, top bar on mobile) on screen. */
   html[data-boot] [data-boot-overlay] {
     display: block;
     position: fixed;
-    inset: 0;
+    inset: 3.5rem 0 0;
     z-index: 60;
     pointer-events: none;
     animation: boot-gone 1ms linear 1500ms forwards;
+  }
+  @media (min-width: 1024px) {
+    html[data-boot] [data-boot-overlay] {
+      inset: 0 0 0 280px;
+    }
   }
   /* The shutter: two halves of the page colour part along the hairline. */
   .boot-half {
@@ -1426,9 +1449,11 @@ html:active-view-transition-type(theme) [data-nav-marker] {
 /* Test-runner page change (layout/RouteRunner.tsx): the panel joins the navigation's view transition
    and slides up over the old page; once the new page is in, its line fills, the route's CI result
    stamps, and it lifts away. */
+/* Covers the content area only: the sidebar (desktop) and top bar (mobile) stay on screen, since
+   they persist across page changes. */
 .route-runner {
   position: fixed;
-  inset: 0;
+  inset: 3.5rem 0 0;
   z-index: 55;
   display: flex;
   flex-direction: column;
@@ -1439,6 +1464,11 @@ html:active-view-transition-type(theme) [data-nav-marker] {
   pointer-events: none;
   view-transition-name: route-runner;
   animation: runner-lift 420ms var(--ease-snap) 760ms both;
+}
+@media (min-width: 1024px) {
+  .route-runner {
+    inset: 0 0 0 280px;
+  }
 }
 .route-runner-bar {
   position: relative;
