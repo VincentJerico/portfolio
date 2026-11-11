@@ -10,7 +10,8 @@ const subscribe = () => () => {};
  * A light-pull cord hanging from the top of the page: a tug switches between the light and dark
  * themes. It is the only theme switch from 1024px up (smaller screens use the drawer's toggle). It is
  * a real toggle button for keyboards and screen readers. The cord starts 3rem above the viewport, so
- * a tug pulls more cord into view instead of opening a gap at the top edge.
+ * a tug pulls more cord into view instead of opening a gap at the top edge. It sways at rest, dips on
+ * hover and swings after a tug (globals.css).
  */
 export function PullCord() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -37,15 +38,17 @@ export function PullCord() {
         className="group pointer-events-auto flex w-8 flex-col items-center rounded-b-chip"
       >
         <span className="sr-only">Light switch</span>
-        <span
-          key={tug}
-          aria-hidden="true"
-          data-pull-cord
-          className={`pull-cord flex flex-col items-center ${tug ? 'pull-cord-tug' : ''}`}
-        >
-          <span className="h-40 w-px bg-ink-muted/70" />
-          <span className="size-3 rounded-full border border-ink-muted bg-surface shadow-sm transition-colors group-hover:bg-accent" />
-          <span className="h-3 w-1.5 rounded-b-full bg-ink-muted/70" />
+        {/* The sway wraps the cord so a tug (which remounts the cord) never restarts it. */}
+        <span aria-hidden="true" className="cord-sway flex flex-col items-center">
+          <span
+            key={tug}
+            data-pull-cord
+            className={`pull-cord flex flex-col items-center ${tug ? 'pull-cord-tug' : ''}`}
+          >
+            <span className="h-40 w-px bg-ink-muted/70" />
+            <span className="cord-knob relative size-3 rounded-full border border-ink-muted bg-surface shadow-sm transition-colors group-hover:bg-accent" />
+            <span className="h-3 w-1.5 rounded-b-full bg-ink-muted/70" />
+          </span>
         </span>
       </button>
     </div>

@@ -1139,10 +1139,44 @@
 
 /* Time machine redesign (2026-11-08): physical objects that answer the visitor. */
 @layer components {
-  /* Flip card: spiral rings over a plate whose word turns like a calendar page. */
-  /* Pull cord: a tug stretches it down and lets it spring back. */
+  /* Pull cord: it hangs and sways gently from above the page; hovering or focusing it draws it down a
+     little; a tug stretches it, springs it back and sets it swinging to rest while the knob sends out
+     a ring. In the dark theme the knob glows. Rotation, translation, scale and opacity only, so the
+     compositor runs all of it; the sway is off under reduced motion. */
+  .cord-sway,
+  .pull-cord {
+    transform-origin: top center;
+  }
+  .pull-cord {
+    transition: translate var(--dur-base) var(--ease-snap);
+  }
+  .group:is(:hover, :focus-visible) .pull-cord {
+    translate: 0 0.5rem;
+  }
   .pull-cord-tug {
-    animation: cord-tug 700ms var(--ease-snap);
+    animation:
+      cord-tug 700ms var(--ease-snap),
+      cord-swing 1.6s ease-out 280ms;
+  }
+  .cord-knob::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .pull-cord-tug .cord-knob::after {
+    animation: knob-ring 700ms ease-out 180ms;
+  }
+  .dark .cord-knob {
+    box-shadow: 0 0 10px 1px color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .cord-sway {
+      animation: cord-sway 5s ease-in-out infinite alternate;
+    }
   }
 
   /* Time machine: a huge extruded year that rolls up into its window as its group arrives. */
@@ -1346,6 +1380,39 @@
 @keyframes qa-draw {
   from {
     stroke-dashoffset: 1;
+  }
+}
+@keyframes cord-sway {
+  from {
+    rotate: 1.2deg;
+  }
+  to {
+    rotate: -1.2deg;
+  }
+}
+/* It hangs at the right edge, so the first swing goes left, into the page. */
+@keyframes cord-swing {
+  18% {
+    rotate: 7deg;
+  }
+  40% {
+    rotate: -5deg;
+  }
+  60% {
+    rotate: 3deg;
+  }
+  80% {
+    rotate: -1.2deg;
+  }
+}
+@keyframes knob-ring {
+  from {
+    scale: 1;
+    opacity: 0.8;
+  }
+  to {
+    scale: 3.2;
+    opacity: 0;
   }
 }
 @keyframes cord-tug {
