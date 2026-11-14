@@ -1946,3 +1946,30 @@ html:active-view-transition-type(theme) [data-nav-marker] {
     scale: 0 1;
   }
 }
+
+/* Lists that change (part 2). The /projects result count rolls up to each new value. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .count-roll {
+    animation: count-roll var(--dur-base) var(--ease-snap) backwards;
+  }
+}
+@keyframes count-roll {
+  from {
+    clip-path: inset(100% 0 0 0);
+    translate: 0 0.6em;
+  }
+}
+
+/* Command palette: results cascade in as they appear; the highlight is one marker that glides to the
+   active option. */
+.palette-marker {
+  transition:
+    translate var(--dur-fast) var(--ease-snap),
+    height var(--dur-fast) var(--ease-snap);
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  .palette-option {
+    animation: reveal-in 260ms var(--ease-snap) backwards;
+    animation-delay: calc(var(--i, 0) * 25ms);
+  }
+}

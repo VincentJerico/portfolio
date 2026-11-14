@@ -1,7 +1,7 @@
 'use client';
 
 import { Search } from 'lucide-react';
-import { useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 interface FilterCard {
   slug: string;
@@ -17,6 +17,110 @@ interface ProjectFilterProps {
 }
 
 const ALL = 'all';
+const EASE = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+
+interface Snapshot {
+  /** Position relative to the list, so scrolling between filters never skews a move. */
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  node: HTMLElement;
+}
+
+/**
+ * Animates the result list when it changes, without a view transition (one swallowed clicks and
+ * focus on this page, so the input and chips must stay live): cards that stay glide from their old
+ * place, new cards rise in, and removed cards leave a copy behind that shrinks away. Transforms on
+ * cards and opacity on the aria-hidden copies only. Off under reduced motion.
+ */
+function useResultMotion(
+  list: React.RefObject<HTMLUListElement | null>,
+  ghosts: React.RefObject<HTMLDivElement | null>,
+  shownKey: string,
+) {
+  const last = useRef(new Map<string, Snapshot>());
+  useLayoutEffect(() => {
+    const ul = list.current;
+    const layer = ghosts.current;
+    const before = last.current;
+    const next = new Map<string, Snapshot>();
+    if (!ul || !layer) {
+      last.current = next;
+      return;
+    }
+    const origin = ul.getBoundingClientRect();
+    const items = [...ul.querySelectorAll<HTMLElement>(':scope > li[data-slug]')];
+    for (const li of items) {
+      const box = li.getBoundingClientRect();
+      next.set(li.dataset.slug!, {
+        x: box.left - origin.left,
+        y: box.top - origin.top,
+        width: box.width,
+        height: box.height,
+        node: li,
+      });
+    }
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (before.size > 0 && !reduced) {
+      let entered = 0;
+      for (const [slug, now] of next) {
+        const then = before.get(slug);
+        if (then) {
+          const dx = then.x - now.x;
+          const dy = then.y - now.y;
+          if (dx || dy) {
+            now.node.animate([{ translate: `${dx}px ${dy}px` }, { translate: '0 0' }], {
+              duration: 420,
+              easing: EASE,
+            });
+          }
+        } else {
+          now.node.animate(
+            [
+              { translate: '0 1.5rem', scale: 0.94 },
+              { translate: '0 0', scale: 1 },
+            ],
+            {
+              duration: 380,
+              easing: EASE,
+              delay: Math.min(entered++, 6) * 40,
+              fill: 'backwards',
+            },
+          );
+        }
+      }
+      for (const [slug, then] of before) {
+        if (next.has(slug)) continue;
+        const ghost = then.node.cloneNode(true) as HTMLElement;
+        ghost.removeAttribute('data-slug');
+        // Outside its list a copied item would show a bullet; a block has none.
+        Object.assign(ghost.style, {
+          display: 'block',
+          position: 'absolute',
+          left: `${then.x}px`,
+          top: `${then.y}px`,
+          width: `${then.width}px`,
+          height: `${then.height}px`,
+          margin: '0',
+        });
+        layer.append(ghost);
+        ghost
+          .animate(
+            [
+              { scale: 1, opacity: 1 },
+              { scale: 0.9, opacity: 0 },
+            ],
+            { duration: 260, easing: 'ease-in', fill: 'forwards' },
+          )
+          .finished.catch(() => {})
+          .finally(() => ghost.remove());
+      }
+    }
+    // A removed card's element keeps its contents after React detaches it, so it can be copied then.
+    last.current = next;
+  }, [list, ghosts, shownKey]);
+}
 const EVENT = 'project-filter-change';
 const noop = () => () => {};
 
@@ -46,6 +150,8 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
     () => ALL,
   );
   const [query, setQuery] = useState('');
+  const listRef = useRef<HTMLUListElement>(null);
+  const ghostsRef = useRef<HTMLDivElement>(null);
   const active = categories.some((c) => c.value === requested) ? requested : ALL;
   const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
   const shown = cards.filter(
@@ -53,6 +159,8 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
       (active === ALL || c.category === active) &&
       terms.every((term) => c.text.toLowerCase().includes(term)),
   );
+
+  useResultMotion(listRef, ghostsRef, shown.map((c) => c.slug).join(' '));
 
   function choose(value: string) {
     const url = new URL(window.location.href);
@@ -111,16 +219,35 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
         </div>
       </div>
       <p role="status" aria-live="polite" className="label-mono mb-4 min-h-5 text-ink-muted">
-        {hydrated ? `Showing ${shown.length} of ${cards.length} projects` : ''}
+        {hydrated && (
+          <>
+            Showing {/* The count rolls up to its new value whenever the results change. */}
+            <span key={shown.length} className="count-roll inline-block">
+              {shown.length}
+            </span>{' '}
+            of {cards.length} projects
+          </>
+        )}
       </p>
-      {shown.length > 0 ? (
-        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="relative">
+        {/* Copies of removed cards shrink away here; React never renders into it. */}
+        <div
+          ref={ghostsRef}
+          aria-hidden="true"
+          inert
+          className="pointer-events-none absolute inset-0 z-10"
+        />
+        {/* Always mounted, even when empty, so the last cards can still leave. */}
+        <ul ref={listRef} className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {shown.map(({ slug, card }) => (
-            <li key={slug}>{card}</li>
+            <li key={slug} data-slug={slug}>
+              {card}
+            </li>
           ))}
         </ul>
-      ) : (
-        <div className="rounded-card border border-line bg-surface p-6">
+      </div>
+      {shown.length === 0 && (
+        <div className="reveal-in rounded-card border border-line bg-surface p-6">
           <p className="text-ink">
             {terms.length > 0
               ? `No projects match "${query.trim()}"${active === ALL ? '' : ' in this category'}.`
