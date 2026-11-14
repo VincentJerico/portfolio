@@ -544,7 +544,8 @@
 }
 
 /* Load sequence: on every full page load the sidebar rows cascade in from the left and a run bar
-   sweeps across the top. The sidebar persists across client navigations, so it plays once per load.
+   sweeps across the top. The sidebar persists across client navigations, so it plays once per load;
+   the drawer's rows replay it each time the drawer opens.
    Load animations fill backwards, not both: once finished they let go of their elements, so nothing
    keeps a compositing layer after the entrance. */
 .load-bar {
@@ -564,43 +565,43 @@
       load-run 900ms var(--ease-snap) backwards,
       load-done 1ms linear 1150ms forwards;
   }
-  aside nav > ul > li {
+  :is(aside, .drawer[open]) nav > ul > li {
     animation: nav-in 520ms var(--ease-snap) backwards;
   }
-  aside nav > ul > li:nth-child(1) {
+  :is(aside, .drawer[open]) nav > ul > li:nth-child(1) {
     animation-delay: 185ms;
   }
-  aside nav > ul > li:nth-child(2) {
+  :is(aside, .drawer[open]) nav > ul > li:nth-child(2) {
     animation-delay: 230ms;
   }
-  aside nav > ul > li:nth-child(3) {
+  :is(aside, .drawer[open]) nav > ul > li:nth-child(3) {
     animation-delay: 275ms;
   }
-  aside nav > ul > li:nth-child(4) {
+  :is(aside, .drawer[open]) nav > ul > li:nth-child(4) {
     animation-delay: 320ms;
   }
-  aside nav > ul > li:nth-child(5) {
+  :is(aside, .drawer[open]) nav > ul > li:nth-child(5) {
     animation-delay: 365ms;
   }
-  aside nav > ul > li:nth-child(6) {
+  :is(aside, .drawer[open]) nav > ul > li:nth-child(6) {
     animation-delay: 410ms;
   }
-  aside nav > ul > li:nth-child(7) {
+  :is(aside, .drawer[open]) nav > ul > li:nth-child(7) {
     animation-delay: 455ms;
   }
-  aside nav > ul > li:nth-child(8) {
+  :is(aside, .drawer[open]) nav > ul > li:nth-child(8) {
     animation-delay: 500ms;
   }
-  aside nav > ul > li:nth-child(9) {
+  :is(aside, .drawer[open]) nav > ul > li:nth-child(9) {
     animation-delay: 545ms;
   }
-  aside nav > ul > li:nth-child(10) {
+  :is(aside, .drawer[open]) nav > ul > li:nth-child(10) {
     animation-delay: 590ms;
   }
-  aside nav > ul > li:nth-child(11) {
+  :is(aside, .drawer[open]) nav > ul > li:nth-child(11) {
     animation-delay: 635ms;
   }
-  aside nav > ul > li:nth-child(12) {
+  :is(aside, .drawer[open]) nav > ul > li:nth-child(12) {
     animation-delay: 680ms;
   }
 }
@@ -734,6 +735,9 @@
 .odo-word {
   display: inline-flex;
   white-space: nowrap;
+  /* Every digit column is as wide as the widest digit, so figures must share one width or a 1 shows
+     a gap after it. */
+  font-variant-numeric: tabular-nums;
   line-height: 1.2;
   vertical-align: top;
 }
@@ -956,28 +960,25 @@
     block-size: auto;
   }
 
-  /* Page headers rise in once, line by line, on load. Transform only: no opacity (the title paints at
+  /* Page headers, and the home hero's text column (data-hero-text), rise in once, line by line, on
+     load. Transform only: no opacity (the title paints at
      once, so LCP is unaffected and axe never scans faded text) and no filter, whose per-frame repaint
      during load pushed blocking time over budget. */
-  main
-    :is(header, section[aria-labelledby='hero-heading'] > div:first-child)
-    > :not([data-morph-title], .split-title) {
+  main :is(header, [data-hero-text]) > :not([data-morph-title], .split-title) {
     animation: header-rise 720ms var(--ease-snap) backwards;
   }
   /* The page title rises out of its own line: it moves up while its clip opens from the top, so it
      looks masked by the line it sits on. Clip, not opacity, so the title still counts as painted. */
-  main
-    :is(header, section[aria-labelledby='hero-heading'] > div:first-child)
-    > h1:not([data-morph-title], .split-title) {
+  main :is(header, [data-hero-text]) > h1:not([data-morph-title], .split-title) {
     animation: line-rise 720ms var(--ease-snap) backwards;
   }
-  main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(2) {
+  main :is(header, [data-hero-text]) > :nth-child(2) {
     animation-delay: 90ms;
   }
-  main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(3) {
+  main :is(header, [data-hero-text]) > :nth-child(3) {
     animation-delay: 180ms;
   }
-  main :is(header, section[aria-labelledby='hero-heading'] > div:first-child) > :nth-child(n + 4) {
+  main :is(header, [data-hero-text]) > :nth-child(n + 4) {
     animation-delay: 270ms;
   }
 
@@ -1608,5 +1609,340 @@ html:active-view-transition-type(theme) [data-nav-marker] {
 @keyframes vt-via-blur {
   30% {
     filter: blur(3px);
+  }
+}
+
+/* No dead areas (docs/superpowers/plans/2026-11-15-no-dead-areas.md): every part arrives, answers or
+   changes shape. Decoration may fade; content text only moves, clips or recolours. All of it is
+   screen-only and collapses under reduced motion through the global rule. */
+
+/* Every button presses in. The pull cord opts out: it is a whole hanging cord, not a control face. */
+@layer base {
+  /* Beats Tailwind's important display:none on [hidden] (same layer, higher specificity). */
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .nav-folder[hidden] {
+      display: block !important;
+      height: 0;
+      visibility: hidden;
+    }
+  }
+  button:not(:disabled, [data-no-press]):active,
+  :is(aside, .drawer) nav a:active {
+    scale: 0.96;
+  }
+}
+
+/* Reading progress: a hairline at the top of the content area fills as the page scrolls. It sits
+   beside the sidebar on desktop and under the top bar on mobile; pages too short to scroll show none. */
+.scroll-progress {
+  display: none;
+}
+@supports (animation-timeline: scroll()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .scroll-progress {
+      display: block;
+      position: fixed;
+      inset: 3.5rem 0 auto;
+      z-index: 40;
+      height: 2px;
+      background: var(--accent);
+      transform-origin: left;
+      scale: 0 1;
+      pointer-events: none;
+      animation: scroll-fill linear both;
+      animation-timeline: scroll(root);
+    }
+  }
+  @media screen and (prefers-reduced-motion: no-preference) and (min-width: 1024px) {
+    .scroll-progress {
+      inset: 0 0 auto 280px;
+    }
+  }
+}
+@keyframes scroll-fill {
+  from {
+    scale: 0 1;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  /* The sidebar's project folder slides open and shut instead of snapping; its rows cascade in. A
+     closed folder stays laid out at zero height and hidden (out of the accessibility tree and the tab
+     order), so its height can ease both ways. */
+  .nav-folder {
+    overflow: clip;
+    transition:
+      height var(--dur-base) var(--ease-snap),
+      visibility var(--dur-base);
+  }
+  .nav-folder:not([hidden]) > li {
+    animation: nav-in 420ms var(--ease-snap) backwards;
+    animation-delay: calc(var(--i, 0) * 35ms);
+  }
+
+  /* A page's visited check pops in. */
+  [data-visited-check] {
+    animation: check-pop 420ms var(--ease-snap) backwards;
+  }
+
+  /* The top bar's Menu icon turns into a close X while the drawer is open. */
+  .menu-icon line {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+      translate var(--dur-base) var(--ease-snap),
+      rotate var(--dur-base) var(--ease-snap),
+      scale var(--dur-fast) var(--ease-snap);
+  }
+  [aria-expanded='true'] .menu-icon line:nth-child(1) {
+    translate: 0 6px;
+    rotate: 45deg;
+  }
+  [aria-expanded='true'] .menu-icon line:nth-child(2) {
+    scale: 0 1;
+  }
+  [aria-expanded='true'] .menu-icon line:nth-child(3) {
+    translate: 0 -6px;
+    rotate: -45deg;
+  }
+}
+@keyframes check-pop {
+  from {
+    scale: 0;
+    rotate: -30deg;
+  }
+  70% {
+    scale: 1.2;
+  }
+}
+
+/* Feedback: anything that appears in answer to the visitor (errors, alerts, statuses, results, notes)
+   slides open from its top edge instead of popping in; small marks pop. Clip and translate only. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .reveal-in {
+    animation: reveal-in var(--dur-base) var(--ease-snap) backwards;
+  }
+  .pop-in {
+    animation: pop-in var(--dur-base) var(--ease-snap) backwards;
+  }
+  /* After a failed send, the fields still in error shake once. */
+  form[data-status='invalid'] [aria-invalid='true'] {
+    animation: field-shake 380ms var(--ease-snap);
+  }
+  /* The run-checks sheet slides up; results stream in as they arrive; the loading sweep keeps going
+     until they do; the running chip's dot breathes. */
+  :is([data-runner-panel], [data-runner-loading]) {
+    animation: sheet-up 360ms var(--ease-snap) backwards;
+  }
+  :is([data-runner-panel], [data-runner-loading]) .skeleton::after {
+    animation-iteration-count: infinite;
+  }
+  [data-runner-panel] li[data-check] {
+    animation: reveal-in var(--dur-base) var(--ease-snap) backwards;
+  }
+  [data-status='running'] [data-status-icon] {
+    animation: dot-breathe 900ms ease-in-out infinite alternate;
+  }
+  /* Bug Hunt: inspect tags pop in, the "No defect here." note rises, holds and sinks away. The note is
+     aria-hidden (a live region announces it), so it may fade. */
+  [data-hunt-inspect] {
+    animation: pop-in var(--dur-base) var(--ease-snap) backwards;
+  }
+  .hunt-toast {
+    animation: toast-life 2.8s var(--ease-snap) forwards;
+  }
+}
+@keyframes reveal-in {
+  from {
+    clip-path: inset(0 0 100% 0);
+    translate: 0 -0.4rem;
+  }
+}
+@keyframes pop-in {
+  from {
+    scale: 0.6;
+  }
+  70% {
+    scale: 1.08;
+  }
+}
+@keyframes field-shake {
+  20% {
+    translate: -6px 0;
+  }
+  40% {
+    translate: 5px 0;
+  }
+  60% {
+    translate: -3px 0;
+  }
+  80% {
+    translate: 2px 0;
+  }
+}
+@keyframes sheet-up {
+  from {
+    translate: 0 100%;
+  }
+}
+@keyframes dot-breathe {
+  from {
+    scale: 0.7;
+  }
+  to {
+    scale: 1;
+  }
+}
+@keyframes toast-life {
+  0% {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  12%,
+  85% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+/* Answers: chips tint and rise under the pointer; a result callout rises in as it scrolls into view
+   while its accent rule draws down; CI badges ease in over their placeholder. */
+@layer components {
+  .chip {
+    transition:
+      translate var(--dur-fast) var(--ease-snap),
+      background-color var(--dur-fast),
+      border-color var(--dur-fast);
+  }
+  @media (hover: hover) {
+    .chip:hover {
+      translate: 0 -2px;
+      background-color: color-mix(in srgb, var(--accent) 14%, var(--surface-2));
+    }
+  }
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  .skeleton > img {
+    animation: badge-in 500ms ease-out backwards;
+  }
+}
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .result-callout {
+      position: relative;
+      border-left-color: transparent;
+      animation: section-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+    .result-callout::before {
+      content: '';
+      position: absolute;
+      inset: 0 auto 0 -2px;
+      width: 2px;
+      background: var(--accent);
+      transform-origin: top;
+      animation: draw-y linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 40%;
+    }
+  }
+}
+@keyframes badge-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Quieter pages. Skills: each card's chips pop in and its status turns to a check as the card scrolls
+   in (one timeline per card). Quality: Lighthouse scores roll and their bars fill on the table's one
+   timeline; the latest-run facts stream in. Resume: entries rise in turn on screen, one timeline per
+   list; print is untouched. */
+.score-bar {
+  display: block;
+  position: relative;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--border);
+}
+.score-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--pass);
+  transform-origin: left;
+  scale: var(--v, 1) 1;
+}
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .skill-card {
+      view-timeline: --card block;
+    }
+    .skill-card .chip {
+      animation: chip-pop linear both;
+      animation-timeline: --card;
+      animation-range: entry calc(25% + var(--i, 0) * 4%) entry calc(60% + var(--i, 0) * 4%);
+    }
+    .skill-check svg {
+      animation: check-pop linear both;
+      animation-timeline: --card;
+      animation-range: entry 50% cover 35%;
+    }
+    .score-bar::before {
+      animation: score-fill linear both;
+      animation-timeline: --odo;
+      animation-range: entry 30% cover 50%;
+    }
+    .latest-run {
+      view-timeline: --latest block;
+    }
+    .latest-run > * {
+      animation: stream-in linear both;
+      animation-timeline: --latest;
+      animation-range: entry 10% cover 35%;
+    }
+    .resume-list {
+      view-timeline: --resume block;
+    }
+    /* A registered length, not translate: /resume is a Lighthouse route, and a scroll-linked
+       translate holds a compositing layer per entry from the first frame (see .odo-strip). */
+    .resume-list > li {
+      translate: var(--rise) 0;
+      animation: rise-var linear both;
+      animation-timeline: --resume;
+      animation-range: entry 0% cover 25%;
+    }
+  }
+}
+@property --rise {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@keyframes rise-var {
+  from {
+    --rise: -3rem;
+  }
+  to {
+    --rise: 0px;
+  }
+}
+@keyframes chip-pop {
+  from {
+    scale: 0.6;
+  }
+}
+@keyframes score-fill {
+  from {
+    scale: 0 1;
   }
 }

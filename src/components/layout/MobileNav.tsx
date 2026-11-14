@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
@@ -125,7 +125,20 @@ export function MobileNav({ fullName, identity, nav, links }: MobileNavProps) {
           aria-expanded={open}
           className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-chip px-3 text-sm font-medium text-ink hover:bg-surface-2"
         >
-          <Menu aria-hidden="true" className="size-5" />
+          {/* Three lines that fold into an X while the drawer is open (globals.css). */}
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            className="menu-icon size-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="18" x2="20" y2="18" />
+          </svg>
           Menu
         </button>
       </header>

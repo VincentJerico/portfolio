@@ -59,8 +59,18 @@ test.describe('endless animations', () => {
     'computedOffset',
   ]);
 
-  for (const route of ['/', '/projects', '/about', '/skills', '/projects/accessibility-testing']) {
-    test(`on ${route} they animate only compositor properties`, async ({ page }) => {
+  // An SVG element's animations never reach the compositor either, whatever they animate: a
+  // breathing status icon cost the overview about 70 ms of main-thread work on load until its
+  // animation moved to the box around it.
+  for (const route of [
+    '/',
+    '/projects',
+    '/about',
+    '/skills',
+    '/work',
+    '/projects/accessibility-testing',
+  ]) {
+    test(`on ${route} they animate only compositor properties on boxes`, async ({ page }) => {
       await page.goto(route);
       const offenders = await page.evaluate(
         (allowed) => {
@@ -68,13 +78,20 @@ test.describe('endless animations', () => {
           return document
             .getAnimations()
             .filter((a) => a.effect?.getTiming().iterations === Infinity)
-            .flatMap((a) =>
-              (a.effect as KeyframeEffect)
-                .getKeyframes()
-                .flatMap((frame) => Object.keys(frame))
-                .filter((key) => !ok.has(key))
-                .map((key) => `${(a as CSSAnimation).animationName ?? 'animation'}: ${key}`),
-            );
+            .flatMap((a) => {
+              const effect = a.effect as KeyframeEffect;
+              const name = (a as CSSAnimation).animationName ?? 'animation';
+              const onSvg =
+                effect.target instanceof SVGElement ? [`${name}: on an SVG element`] : [];
+              return [
+                ...onSvg,
+                ...effect
+                  .getKeyframes()
+                  .flatMap((frame) => Object.keys(frame))
+                  .filter((key) => !ok.has(key))
+                  .map((key) => `${name}: ${key}`),
+              ];
+            });
         },
         [...COMPOSITED],
       );

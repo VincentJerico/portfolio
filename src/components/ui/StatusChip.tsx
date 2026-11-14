@@ -23,9 +23,14 @@ export function StatusChip({ status, label }: { status: ChipStatus; label?: stri
   const { tone, Icon, label: fallback } = STYLE[status];
   return (
     <span
+      data-status={status}
       className={`inline-flex items-center gap-1.5 rounded-chip border bg-surface px-2 py-0.5 font-mono text-xs font-medium tracking-[0.04em] uppercase ${tone}`}
     >
-      <Icon aria-hidden="true" className="size-3.5 shrink-0" />
+      {/* The icon sits in a box so its animations can run on the compositor (an SVG element's
+          cannot). */}
+      <span data-status-icon className="inline-flex shrink-0">
+        <Icon aria-hidden="true" className="size-3.5" />
+      </span>
       {label ?? fallback}
     </span>
   );

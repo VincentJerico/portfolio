@@ -1,6 +1,6 @@
 'use client';
 
-import { LoaderCircle } from 'lucide-react';
+import { Check, LoaderCircle } from 'lucide-react';
 import {
   useActionState,
   useEffect,
@@ -104,6 +104,7 @@ export function ContactForm({ email }: { email: string }) {
       action={formAction}
       onSubmit={ignoreWhilePending}
       noValidate
+      data-status={pending ? 'pending' : state.status}
       className="flex max-w-3xl flex-col gap-6"
     >
       <Field
@@ -153,7 +154,7 @@ export function ContactForm({ email }: { email: string }) {
           <p
             aria-hidden="true"
             data-testid="message-count"
-            className={`font-mono text-xs tabular-nums ${nearLimit ? 'text-warn' : 'text-ink-muted'}`}
+            className={`font-mono text-xs tabular-nums transition-colors duration-300 ${nearLimit ? 'text-warn' : 'text-ink-muted'}`}
           >
             {messageLength.toLocaleString('en-US')} / {MESSAGE_MAX.toLocaleString('en-US')}
           </p>
@@ -174,22 +175,27 @@ export function ContactForm({ email }: { email: string }) {
             {pending ? 'Sending…' : 'Send message'}
           </Button>
           <div role="status" className="text-sm text-ink">
-            {!pending && state.status === 'sent' && <p>Message sent. I&apos;ll reply by email.</p>}
+            {!pending && state.status === 'sent' && (
+              <p className="reveal-in inline-flex items-center gap-2">
+                <Check aria-hidden="true" className="pop-in size-4 text-pass" />
+                Message sent. I&apos;ll reply by email.
+              </p>
+            )}
           </div>
         </div>
 
         {!pending && state.status === 'invalid' && (
-          <p role="alert" className="text-sm font-semibold text-fail">
+          <p role="alert" className="reveal-in text-sm font-semibold text-fail">
             Check the highlighted fields.
           </p>
         )}
         {!pending && state.status === 'rate-limited' && (
-          <p role="alert" className="text-sm font-semibold text-fail">
+          <p role="alert" className="reveal-in text-sm font-semibold text-fail">
             Too many messages. Try again in a few minutes, or email me directly.
           </p>
         )}
         {!pending && state.status === 'failed' && (
-          <p role="alert" className="text-sm font-semibold text-fail">
+          <p role="alert" className="reveal-in text-sm font-semibold text-fail">
             Your message could not be sent. Email me directly at{' '}
             <a href={`mailto:${email}`} className="break-all">
               {email}
@@ -266,7 +272,7 @@ function Field(props: FieldProps) {
         {(error || footer) && (
           <div className="mt-2 flex items-start justify-between gap-4">
             {error ? (
-              <p id={errorId} className="text-sm text-fail">
+              <p id={errorId} className="reveal-in text-sm text-fail">
                 {error}
               </p>
             ) : (

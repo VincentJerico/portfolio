@@ -18,7 +18,7 @@ export function NextSpec({ order, reportsWithNext }: { order: Step[]; reportsWit
     <nav aria-label="Next page" data-print-hide className="mt-20 border-t border-line pt-8">
       <Link
         href={next.href}
-        className="group flex min-h-11 items-center justify-between gap-4 rounded-card border border-line bg-surface p-5 no-underline hover:border-accent/60"
+        className="lift group flex min-h-11 items-center justify-between gap-4 rounded-card border border-line bg-surface p-5 no-underline"
       >
         <span className="flex flex-col gap-1">
           <span className="label-mono text-ink-muted">Next</span>

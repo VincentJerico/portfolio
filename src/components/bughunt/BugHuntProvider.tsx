@@ -98,7 +98,7 @@ export function BugHuntProvider({ children }: { children: ReactNode }) {
         <p
           aria-hidden="true"
           data-print-hide
-          className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-chip border border-line bg-surface px-3 py-2 font-mono text-xs text-ink shadow-lg"
+          className="hunt-toast fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-chip border border-line bg-surface px-3 py-2 font-mono text-xs text-ink shadow-lg"
         >
           {message}
         </p>

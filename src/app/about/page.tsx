@@ -36,7 +36,7 @@ export default function AboutPage() {
 
       {degree && (
         <Section id="education" title="Education">
-          <div className="rounded-card border border-line bg-surface p-5">
+          <div className="lift rounded-card border border-line bg-surface p-5">
             <h3>{degree.degree}</h3>
             <p className="mt-1 text-ink-muted">{degree.school}</p>
             <p className="label-mono mt-3 text-ink-muted">
@@ -66,7 +66,7 @@ export default function AboutPage() {
         <Section id="experience" title="Earlier experience">
           <ul className="grid gap-4 lg:grid-cols-2">
             {earlier.map((item) => (
-              <li key={item.slug} className="rounded-card border border-line bg-surface p-5">
+              <li key={item.slug} className="lift rounded-card border border-line bg-surface p-5">
                 <p className="label-mono text-ink-muted">{formatPeriod(item.start, item.end)}</p>
                 <h3 className="mt-2">{item.title}</h3>
                 <p className="mt-1 text-sm text-ink-muted">
@@ -111,7 +111,7 @@ export default function AboutPage() {
         <Section id="capstone" title="Capstone">
           <Link
             href={`/projects/${capstone.slug}`}
-            className="block rounded-card border border-line bg-surface p-5 no-underline hover:border-accent/60"
+            className="lift block rounded-card border border-line bg-surface p-5 no-underline"
           >
             <p className="label-mono text-ink-muted">
               Capstone{capstone.team && ' (team project)'}

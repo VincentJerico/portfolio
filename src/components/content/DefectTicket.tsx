@@ -53,7 +53,7 @@ export function DefectTicket({
     <details
       id={`ticket-${finding.id}`}
       data-ticket-severity={finding.severity}
-      className="group scroll-mt-20 rounded-card border border-line bg-surface open:border-accent/50"
+      className="group scroll-mt-20 rounded-card border border-line bg-surface transition-colors duration-300 open:border-accent/50"
     >
       <summary className="flex min-h-11 cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 [&::-webkit-details-marker]:hidden">
         <span

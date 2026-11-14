@@ -14,8 +14,14 @@ export default function HuntTicketDialog({ bug, onClose }: { bug: Bug; onClose: 
   useEffect(() => {
     const dialog = dialogRef.current!;
     dialog.showModal();
-    dialog.addEventListener('close', onClose);
-    return () => dialog.removeEventListener('close', onClose);
+    // Let the dialog's scale-out transition play before it unmounts.
+    const onDialogClose = () => {
+      Promise.all(dialog.getAnimations().map((animation) => animation.finished))
+        .catch(() => {})
+        .then(onClose);
+    };
+    dialog.addEventListener('close', onDialogClose);
+    return () => dialog.removeEventListener('close', onDialogClose);
   }, [onClose]);
 
   return (

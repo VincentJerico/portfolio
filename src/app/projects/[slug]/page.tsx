@@ -225,10 +225,14 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
         {prev ? (
           <Link
             href={`/projects/${prev.slug}`}
-            className="flex min-h-11 flex-col gap-1 rounded-card border border-line bg-surface p-4 no-underline hover:border-accent/60"
+            className="lift group flex min-h-11 flex-col gap-1 rounded-card border border-line bg-surface p-4 no-underline"
           >
             <span className="label-mono flex items-center gap-1.5 text-ink-muted">
-              <ArrowLeft aria-hidden="true" className="size-3.5" /> Previous
+              <ArrowLeft
+                aria-hidden="true"
+                className="size-3.5 transition-transform group-hover:-translate-x-1"
+              />{' '}
+              Previous
             </span>
             <span className="font-mono text-ink">{prev.name}</span>
           </Link>
@@ -238,10 +242,14 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
         {next && (
           <Link
             href={`/projects/${next.slug}`}
-            className="flex min-h-11 flex-col items-end gap-1 rounded-card border border-line bg-surface p-4 text-right no-underline hover:border-accent/60"
+            className="lift group flex min-h-11 flex-col items-end gap-1 rounded-card border border-line bg-surface p-4 text-right no-underline"
           >
             <span className="label-mono flex items-center gap-1.5 text-ink-muted">
-              Next <ArrowRight aria-hidden="true" className="size-3.5" />
+              Next{' '}
+              <ArrowRight
+                aria-hidden="true"
+                className="size-3.5 transition-transform group-hover:translate-x-1"
+              />
             </span>
             <span className="font-mono text-ink">{next.name}</span>
           </Link>

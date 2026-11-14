@@ -26,7 +26,10 @@ export function RunSummaryPanel({
     'Tools',
     <ul key="tools" aria-label={`${project.name} tools`} className="flex flex-wrap gap-1.5">
       {project.stack.map((tool) => (
-        <li key={tool} className="rounded-chip bg-surface-2 px-2 py-0.5 font-mono text-xs text-ink">
+        <li
+          key={tool}
+          className="chip rounded-chip bg-surface-2 px-2 py-0.5 font-mono text-xs text-ink"
+        >
           {tool}
         </li>
       ))}
@@ -66,7 +69,7 @@ export function RunSummaryPanel({
               <a
                 href={`#ticket-${project.findings.find((f) => f.severity === severity)!.id}`}
                 data-open-severity={severity}
-                className="inline-flex items-center no-underline pointer-coarse:min-h-11"
+                className="press inline-flex items-center no-underline pointer-coarse:min-h-11"
               >
                 <SeverityChip severity={severity} count={count} />
               </a>

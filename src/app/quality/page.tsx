@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import { DataTable } from '@/components/content/DataTable';
 import { Section } from '@/components/content/Section';
 import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
+import { Odometer } from '@/components/ui/Odometer';
 import { StatusChip } from '@/components/ui/StatusChip';
+import type { CSSProperties } from 'react';
 import { formatDay } from '@/lib/format';
 import { qualityReport } from '@/lib/quality-report';
 import { pageMetadata } from '@/lib/seo';
@@ -55,6 +57,20 @@ const GATES: { name: string; what: string; selfTest: string }[] = [
   },
 ];
 
+/** A 0 to 100 Lighthouse score: rolls on the odometer, with a bar that fills to the score. */
+function Score({ value }: { value: number }) {
+  return (
+    <span className="inline-flex min-w-[3.5rem] flex-col gap-1">
+      <Odometer value={String(value)} />
+      <span
+        aria-hidden="true"
+        className="score-bar"
+        style={{ '--v': value / 100 } as CSSProperties}
+      />
+    </span>
+  );
+}
+
 export default function QualityPage() {
   const report = qualityReport;
   const real = !report.sample;
@@ -76,7 +92,7 @@ export default function QualityPage() {
       <Section id="latest-run" title="Latest run">
         {real ? (
           <div className="flex flex-col gap-6">
-            <dl className="grid gap-x-8 gap-y-3 rounded-card border border-line bg-surface p-5 sm:grid-cols-[8rem_1fr]">
+            <dl className="latest-run grid gap-x-8 gap-y-3 rounded-card border border-line bg-surface p-5 sm:grid-cols-[8rem_1fr]">
               <dt className="label-mono pt-0.5 text-ink-muted">Result</dt>
               <dd>
                 <StatusChip status={report.overall} />
@@ -96,17 +112,20 @@ export default function QualityPage() {
               rows={report.gates.map((g) => [g.gate, g.tool, g.result.toUpperCase(), g.details])}
             />
             {report.lighthouse.length > 0 && (
-              <DataTable
-                caption="Lighthouse (mobile, median of 5 runs)"
-                columns={['Route', 'Performance', 'Accessibility', 'Best practices', 'SEO']}
-                rows={report.lighthouse.map((l) => [
-                  l.route,
-                  String(l.performance),
-                  String(l.accessibility),
-                  String(l.bestPractices),
-                  String(l.seo),
-                ])}
-              />
+              // One shared scroll timeline: the scores roll and their bars fill as the table scrolls in.
+              <div className="odo-scope">
+                <DataTable
+                  caption="Lighthouse (mobile, median of 5 runs)"
+                  columns={['Route', 'Performance', 'Accessibility', 'Best practices', 'SEO']}
+                  rows={report.lighthouse.map((l) => [
+                    l.route,
+                    <Score key="p" value={l.performance} />,
+                    <Score key="a" value={l.accessibility} />,
+                    <Score key="b" value={l.bestPractices} />,
+                    <Score key="s" value={l.seo} />,
+                  ])}
+                />
+              </div>
             )}
             {Object.keys(report.routes).length > 0 && (
               <DataTable
@@ -140,7 +159,7 @@ export default function QualityPage() {
           {GATES.map((gate) => (
             <li
               key={gate.name}
-              className="flex flex-col gap-2 rounded-card border border-line bg-surface p-5"
+              className="lift flex flex-col gap-2 rounded-card border border-line bg-surface p-5"
             >
               <h3>{gate.name}</h3>
               <p className="text-[0.9375rem] text-ink">{gate.what}</p>
