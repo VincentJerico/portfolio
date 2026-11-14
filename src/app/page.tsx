@@ -70,7 +70,7 @@ export default function OverviewPage() {
         className="relative isolate grid items-start gap-10 md:grid-cols-[1fr_auto]"
       >
         <HeroSpotlight />
-        <div className="measure min-w-0">
+        <div data-hero-text className="measure min-w-0">
           <SplitTitle id="hero-heading" text={profile.fullName} />
           <p className="mt-5 text-xl font-semibold text-ink lg:text-2xl">{profile.headline}</p>
           <p className="mt-4 text-lg text-ink">{introLead}</p>

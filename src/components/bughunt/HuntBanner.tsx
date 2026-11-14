@@ -12,7 +12,7 @@ export function HuntBanner({ email }: { email: string }) {
     <section
       aria-label="Bug Hunt"
       data-print-hide
-      className="mb-10 rounded-card border border-warn/60 bg-surface p-4 lg:p-5"
+      className="reveal-in mb-10 rounded-card border border-warn/60 bg-surface p-4 lg:p-5"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-ink">
@@ -27,7 +27,7 @@ export function HuntBanner({ email }: { email: string }) {
         </button>
       </div>
       {done && (
-        <div className="mt-4 border-t border-line pt-4">
+        <div className="reveal-in mt-4 border-t border-line pt-4">
           <p className="font-display text-2xl text-ink">
             {bugs.length} of {bugs.length} found.
           </p>
@@ -37,7 +37,7 @@ export function HuntBanner({ email }: { email: string }) {
           </p>
           <a
             href={`mailto:${email}`}
-            className="mt-3 inline-flex min-h-11 items-center rounded-chip bg-accent px-4 font-semibold text-bg no-underline"
+            className="press mt-3 inline-flex min-h-11 items-center rounded-chip bg-accent px-4 font-semibold text-bg no-underline hover:brightness-110"
           >
             Email me
           </a>

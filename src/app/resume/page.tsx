@@ -67,7 +67,7 @@ export default function ResumePage() {
       </ResumeSection>
 
       <ResumeSection title="Experience">
-        <ol className="flex flex-col gap-5 print:gap-3">
+        <ol className="resume-list flex flex-col gap-5 print:gap-3">
           {jobs.map((job) => (
             <li key={job.slug} className="break-inside-avoid">
               <div className="flex flex-wrap items-baseline justify-between gap-x-4">
@@ -91,7 +91,7 @@ export default function ResumePage() {
       </ResumeSection>
 
       <ResumeSection title="Selected projects">
-        <ul className="flex flex-col gap-2 text-[0.9375rem] print:text-[10pt]">
+        <ul className="resume-list flex flex-col gap-2 text-[0.9375rem] print:text-[10pt]">
           {projects.map((project) => (
             <li key={project.slug} className="break-inside-avoid">
               <span className="font-mono font-medium text-ink">{project.name}</span>

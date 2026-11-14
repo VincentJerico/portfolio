@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/seo';
+import { Check } from 'lucide-react';
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import type { SkillGroup } from '@/content/schema';
 import { skills } from '@/content';
 import { Inspectable } from '@/components/bughunt/Inspectable';
@@ -17,19 +19,29 @@ export const metadata: Metadata = pageMetadata({
 
 function GroupCard({ group }: { group: SkillGroup }) {
   return (
-    <li className="flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
-      <Inspectable
-        id={`skills-${githubSlug(group.group)}-heading`}
-        label={`${group.group} heading`}
-        planted={PLANTED_HEADINGS[group.group] && <h3>{PLANTED_HEADINGS[group.group]}</h3>}
-      >
-        <h3>{group.group}</h3>
-      </Inspectable>
+    <li className="skill-card lift flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
+      <div className="flex items-start justify-between gap-3">
+        <Inspectable
+          id={`skills-${githubSlug(group.group)}-heading`}
+          label={`${group.group} heading`}
+          planted={PLANTED_HEADINGS[group.group] && <h3>{PLANTED_HEADINGS[group.group]}</h3>}
+        >
+          <h3>{group.group}</h3>
+        </Inspectable>
+        {/* Turns to a check as the card scrolls in, like the section headings' status dots. */}
+        <span
+          aria-hidden="true"
+          className="skill-check grid size-6 shrink-0 place-items-center rounded-full border border-pass/60 text-pass"
+        >
+          <Check className="size-3.5" />
+        </span>
+      </div>
       <ul className="flex flex-wrap gap-1.5">
-        {group.skills.map((skill) => (
+        {group.skills.map((skill, i) => (
           <li
             key={skill}
-            className={`rounded-chip px-2 py-0.5 text-sm ${
+            style={{ '--i': i } as CSSProperties}
+            className={`chip rounded-chip px-2 py-0.5 text-sm ${
               group.learning
                 ? 'border border-dashed border-accent/60 text-ink-muted'
                 : 'bg-surface-2 text-ink'

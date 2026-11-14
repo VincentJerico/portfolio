@@ -26,9 +26,13 @@ export function BugHuntToggle() {
         <span className="ml-auto font-mono text-xs text-ink-muted">{enabled ? 'on' : 'off'}</span>
       </button>
       {active && (
-        <div className="rounded-chip border border-warn/50 px-2.5 py-2">
+        <div className="reveal-in rounded-chip border border-warn/50 px-2.5 py-2">
           <p className="font-mono text-xs text-warn">
-            Bugs found {found.length}/{bugs.length}
+            Bugs found{' '}
+            <span key={found.length} className="pop-in inline-block">
+              {found.length}
+            </span>
+            /{bugs.length}
           </p>
           {hints.length > 0 && (
             <ul aria-label="Hints" className="mt-1.5 flex flex-col">

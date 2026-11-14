@@ -30,6 +30,7 @@ export function PullCord() {
     >
       <button
         type="button"
+        data-no-press
         aria-pressed={hydrated ? lightOn : undefined}
         onClick={(event) => {
           setTug((n) => n + 1);

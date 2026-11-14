@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { ViewTransition } from 'react';
 import { notFound } from 'next/navigation';
 import { Section } from '@/components/content/Section';
 import { StatusChip } from '@/components/ui/StatusChip';
@@ -62,7 +63,10 @@ export default async function CaseStudyPage({ params }: PageProps<'/work/[slug]'
           </ol>
         </nav>
         <p className="label-mono text-ink-muted">Case study · anonymised</p>
-        <h1>{study.title}</h1>
+        {/* The title morphs in from the case study card the visitor came from. */}
+        <ViewTransition name={`case-title-${study.slug}`} share="morph" default="none">
+          <h1 data-morph-title>{study.title}</h1>
+        </ViewTransition>
         {study.currentlyTesting && (
           <p>
             <StatusChip status="running" label="Currently testing" />

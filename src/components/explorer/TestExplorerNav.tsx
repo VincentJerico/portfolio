@@ -3,7 +3,7 @@
 import { Check, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import { getCoverage, getServerCoverage, markVisited, subscribeCoverage } from '@/lib/coverage';
 import { isActive } from '@/lib/nav';
 import type { RunStatus } from '@/lib/quality';
@@ -89,7 +89,7 @@ function Row({
           aria-hidden="true"
           className="ml-auto flex shrink-0 items-center gap-1.5 font-mono text-[0.6875rem] tracking-tight text-ink-muted"
         >
-          {visited && <Check className="size-3 text-accent" />}
+          {visited && <Check data-visited-check className="size-3 text-accent" />}
           {showSpec && <span className="hidden xl:inline">{row.spec}</span>}
           {row.duration && <span>{row.duration}</span>}
         </span>
@@ -157,10 +157,10 @@ export function TestExplorerNav({ rows, projects, summary, idPrefix }: TestExplo
                   <ul
                     id={folderId}
                     hidden={!folderOpen}
-                    className="ml-3.5 border-l border-line pl-1.5"
+                    className="nav-folder ml-3.5 border-l border-line pl-1.5"
                   >
-                    {projects.map((project) => (
-                      <li key={project.href} className="flex">
+                    {projects.map((project, i) => (
+                      <li key={project.href} className="flex" style={{ '--i': i } as CSSProperties}>
                         <Row
                           row={project}
                           active={pathname === project.href}

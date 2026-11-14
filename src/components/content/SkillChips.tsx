@@ -15,7 +15,7 @@ export function SkillChips({ groups }: { groups: readonly SkillGroup[] }) {
               {group.skills.map((skill) => (
                 <li
                   key={skill}
-                  className={`rounded-chip px-2 py-0.5 text-sm ${
+                  className={`chip rounded-chip px-2 py-0.5 text-sm ${
                     group.learning
                       ? 'border border-dashed border-accent/60 text-ink-muted'
                       : 'bg-surface-2 text-ink'
