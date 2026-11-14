@@ -6,7 +6,11 @@ import { morph } from '@/lib/morph';
 import type { PaletteItem } from './CommandPalette';
 
 export const OPEN_PALETTE = 'vj:open-palette';
-type Palette = ComponentType<{ items: PaletteItem[]; onClose: () => void }>;
+type Palette = ComponentType<{
+  items: PaletteItem[];
+  onClose: () => void;
+  growFrom: HTMLElement | null;
+}>;
 
 /**
  * P3: listens for Cmd/Ctrl+K (a modifier, so WCAG 2.1.4 safe) and Search buttons, and loads the
@@ -15,6 +19,8 @@ type Palette = ComponentType<{ items: PaletteItem[]; onClose: () => void }>;
 export function CommandPaletteRoot({ items }: { items: PaletteItem[] }) {
   const [Palette, setPalette] = useState<Palette | null>(null);
   const [open, setOpen] = useState(false);
+  // The Search button the palette grew from, which it shrinks back into on close.
+  const [growFrom, setGrowFrom] = useState<HTMLElement | null>(null);
   const openerRef = useRef<HTMLElement | null>(null);
 
   const show = useCallback(
@@ -30,6 +36,7 @@ export function CommandPaletteRoot({ items }: { items: PaletteItem[] }) {
       morph(opener, () => {
         flushSync(() => {
           setPalette(() => Component);
+          setGrowFrom(opener ?? null);
           setOpen(true);
         });
         return document.querySelector<HTMLElement>('dialog[open][aria-label="Search"]');
@@ -59,5 +66,5 @@ export function CommandPaletteRoot({ items }: { items: PaletteItem[] }) {
     openerRef.current?.focus();
   }, []);
 
-  return open && Palette ? <Palette items={items} onClose={close} /> : null;
+  return open && Palette ? <Palette items={items} onClose={close} growFrom={growFrom} /> : null;
 }

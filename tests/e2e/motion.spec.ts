@@ -166,3 +166,75 @@ test.describe('reduced motion', () => {
     expect(await animationName(page.locator('.resume-list > li').first())).toBe('none');
   });
 });
+
+test.describe('lists that change', () => {
+  test.use({ viewport: { width: 1280, height: 900 }, isMobile: false, hasTouch: false });
+
+  test('filtering moves the cards that stay, shrinks away the ones that go, and rolls the count', async ({
+    page,
+  }) => {
+    await page.goto('/projects');
+    await waitForHydration(page);
+    // Record every card animation the filter starts (they are short, so read them as they begin).
+    await page.evaluate(() => {
+      const w = window as unknown as { __moves: string[] };
+      w.__moves = [];
+      const original = Element.prototype.animate;
+      Element.prototype.animate = function (keyframes, options) {
+        const frames = keyframes as Keyframe[];
+        const ghost = Boolean(this.parentElement?.hasAttribute('inert'));
+        w.__moves.push(ghost ? 'ghost' : Object.keys(frames[0] ?? {}).join('+'));
+        return original.call(this, keyframes, options);
+      };
+    });
+    await page.getByRole('button', { name: 'Security', exact: true }).click();
+    await expect(page.locator('main article:not([inert] *)')).toHaveCount(1);
+    const moves = await page.evaluate(() => (window as unknown as { __moves: string[] }).__moves);
+    expect(moves).toContain('ghost');
+    const roll = page.getByRole('status').filter({ hasText: 'Showing' }).locator('.count-roll');
+    expect(await animationName(roll)).toBe('count-roll');
+    await page.getByRole('button', { name: 'All', exact: true }).click();
+    await expect
+      .poll(() => page.evaluate(() => (window as unknown as { __moves: string[] }).__moves))
+      .toEqual(expect.arrayContaining(['translate+scale']));
+    // The removed cards' copies leave once they have shrunk away.
+    await expect(page.locator('[inert] > li')).toHaveCount(0);
+  });
+
+  test('the palette shrinks back into the Search button it grew from', async ({ page }) => {
+    await page.addInitScript(() => {
+      const w = window as unknown as { __vt: string[][] };
+      w.__vt = [];
+      const start = document.startViewTransition?.bind(document);
+      if (!start) return;
+      document.startViewTransition = ((arg: unknown) => {
+        w.__vt.push([...((arg as { types?: string[] })?.types ?? [])]);
+        return start(arg as never);
+      }) as typeof document.startViewTransition;
+    });
+    await page.goto('/');
+    await waitForHydration(page);
+    const search = page.locator('aside').getByRole('button', { name: /Search/ });
+    await search.click();
+    const dialog = page.getByRole('dialog', { name: 'Search' });
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    const types = await page.evaluate(() => (window as unknown as { __vt: string[][] }).__vt);
+    expect(types.filter((t) => t.includes('dialog-morph'))).toHaveLength(2);
+    await expect(search).toBeFocused();
+  });
+
+  test('palette results cascade in and the highlight glides between them', async ({ page }) => {
+    await page.goto('/');
+    await waitForHydration(page);
+    await page.keyboard.press('ControlOrMeta+k');
+    const option = page.getByRole('option').first();
+    await expect(option).toBeVisible();
+    expect(await animationName(option)).toBe('reveal-in');
+    const marker = page.locator('.palette-marker');
+    const before = await marker.evaluate((el) => el.style.translate);
+    await page.keyboard.press('ArrowDown');
+    await expect.poll(() => marker.evaluate((el) => el.style.translate)).not.toBe(before);
+  });
+});
