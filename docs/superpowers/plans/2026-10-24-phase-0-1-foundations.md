@@ -35,8 +35,7 @@ Later phases get their own plan file, written when the previous phase is approve
   never committed.
 - No client names, regions, URLs or staff names in any committed file or commit message.
 - Never run `vercel login`; Vercel auth is the token in `.env.cli`. Auth failure means stop and ask Vincent.
-- Commits: identity `Vincent Jerico Alcuran <vincentjericoalcuran@gmail.com>`, trailer
-  `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+- Commits: identity `Vincent Jerico Alcuran <vincentjericoalcuran@gmail.com>`, no co-author trailer.
 
 ## Review Focus
 

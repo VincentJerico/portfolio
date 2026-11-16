@@ -109,7 +109,7 @@ DOM for screen readers.
 - The stack tools on each report scroll in a slow marquee that pauses on hover and under reduced motion,
   with the static list kept for screen readers.
 
-## Calls Claude made (check these)
+## Default calls (check these)
 
 - Home gets the index list and `/projects` keeps the doors, so nothing from PR #22 is thrown away.
 - The masthead skips name, clock and run totals, which already appear elsewhere on the page.

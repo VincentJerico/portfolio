@@ -3,7 +3,7 @@
 Vincent (2026-11-10): "I am still not satisfied with the UI/UX. I want something advanced and a lot of
 motion, transition and animation, but still proper to the theme. I want morphing or something like
 that." Asked for specifics, he said: "anything applicable. Be creative." So the choices below are
-Claude's, made within the existing Site Under Test / spec-sheet system, and reviewed by Vincent on a PR
+defaults, made within the existing Site Under Test / spec-sheet system, and reviewed by Vincent on a PR
 before anything merges.
 
 ## Principle
@@ -12,7 +12,7 @@ Things should change shape instead of appearing and disappearing. When the visit
 they touched becomes the thing they asked for: a button grows into its dialog, a row becomes the page
 header, the light switch floods the page with the new theme. That is what "morphing" means here.
 
-## How it is built (Claude's call)
+## How it is built (default)
 
 The browser's View Transitions API, already used through React's `<ViewTransition>`, for every morph
 triggered by a click or navigation, and scroll-driven CSS for morphs tied to scrolling. No animation
