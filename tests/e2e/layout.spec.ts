@@ -5,7 +5,7 @@ const ROUTES = ['/', '/projects', '/about', '/projects/accessibility-testing'];
 const WIDTHS = [320, 768, 1024, 1280];
 
 /**
- * Every bordered box (cards, doors, the portrait's back face, the terminal) must hold its content.
+ * Every bordered box (cards, doors, the portrait's back face) must hold its content.
  * Scroll containers are exempt, since scrolling is how they hold it, and so is anything not on show:
  * inert faces, closed disclosures and screen-reader-only text.
  */

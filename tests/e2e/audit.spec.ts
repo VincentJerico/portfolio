@@ -37,6 +37,12 @@ test.describe('audit fixes', () => {
     await expect(page.locator('main')).toContainText(profile.tagline);
   });
 
+  test('the homepage has no fake terminal window', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('[data-runner-hero]')).toHaveCount(0);
+    await expect(page.locator('main')).not.toContainText('npx playwright test');
+  });
+
   test('the homepage has no rotating word box', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('[data-flip-card]')).toHaveCount(0);
