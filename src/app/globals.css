@@ -219,32 +219,6 @@
   }
 }
 
-/* Hero runner block: each line types in once. A cover in the window's colour steps off each line,
-   so the reveal is a transform the compositor runs; a stepped clip-path was a main-thread frame per
-   step for about 3.5 s of the load. The line's inline animation-delay staggers its cover. Under
-   reduced motion there is no cover, so every line is simply shown. */
-@layer components {
-  .runner-line {
-    position: relative;
-    overflow: hidden;
-  }
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .runner-line::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--surface-2);
-      animation: runner-type 0.5s steps(32, end) forwards;
-      animation-delay: inherit;
-    }
-  }
-  @keyframes runner-type {
-    to {
-      translate: 101% 0;
-    }
-  }
-}
-
 /* Bug Hunt: planted values only on screen; print always shows the true ones. */
 @layer components {
   .hunt-screen {

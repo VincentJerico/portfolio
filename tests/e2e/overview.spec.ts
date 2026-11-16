@@ -112,31 +112,6 @@ test.describe('overview', () => {
   });
 });
 
-test.describe('hero runner block', () => {
-  test('is decorative and repeats only facts shown as text in the run summary', async ({
-    page,
-  }) => {
-    await page.goto('/');
-    const block = page.locator('[data-runner-hero]');
-    await expect(block).toHaveAttribute('aria-hidden', 'true');
-    await expect(block).toContainText('$ npx playwright test --project=vincent');
-    const values = await block.locator('[data-metric-value]').allTextContents();
-    expect(values.length).toBeGreaterThanOrEqual(4);
-    const summary = page.getByRole('region', { name: 'Run summary' });
-    for (const value of values) await expect(summary).toContainText(value);
-  });
-
-  test('is fully shown without animation under reduced motion', async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/');
-    const lastLine = page.locator('[data-runner-hero] [data-line]').last();
-    await expect(lastLine).toBeVisible();
-    // No cover over the line: the typing reveal is off.
-    const cover = await lastLine.evaluate((el) => getComputedStyle(el, '::after').content);
-    expect(cover).toBe('none');
-  });
-});
-
 test.describe('portrait card', () => {
   test('flips to its fixture data and back, exposing only the face on show', async ({ page }) => {
     await page.goto('/');

@@ -8,7 +8,6 @@ import { Masthead } from '@/components/content/Masthead';
 import { PortraitCard } from '@/components/content/PortraitCard';
 import { ProjectIndex } from '@/components/content/ProjectIndex';
 import { QaAreaGrid } from '@/components/content/QaAreaGrid';
-import { RunnerHeroBlock } from '@/components/content/RunnerHeroBlock';
 import { SplitTitle } from '@/components/content/SplitTitle';
 import { Section } from '@/components/content/Section';
 import { SkillChips } from '@/components/content/SkillChips';
@@ -105,9 +104,6 @@ export default function OverviewPage() {
                 Email me
               </ButtonLink>
             </Inspectable>
-          </div>
-          <div className="mt-10 max-w-xl">
-            <RunnerHeroBlock metrics={metrics} />
           </div>
         </div>
         <div className="flex w-full min-w-0 flex-col items-start gap-4 md:w-[12.5rem] md:items-end lg:w-[13.5rem] xl:w-[15rem]">
