@@ -145,8 +145,8 @@ Display order: 1 accessibility, 2 security, 3 performance, 4 api, 5 framework te
 - Findings source: https://github.com/VincentJerico/security-testing/blob/main/docs/FINDINGS.md
 - Dates: 2026-10-05 to 2026-10-20 · 14 commits · findings report dated 2026-10-20
 - Category: Security
-- Stack: Playwright · TypeScript · OWASP ZAP 2.17.0 · Trivy 0.76.0 · Docker · npm audit
-- Target: OWASP Juice Shop v18.0.0, run locally in Docker on `localhost:3000`
+- Stack: Playwright · TypeScript · OWASP ZAP 2.17.0 · Trivy 0.76.0 · OrbStack · npm audit
+- Target: OWASP Juice Shop v18.0.0, run locally in OrbStack on `localhost:3000`
 - Summary: Defensive security checks a QA team can run in CI, with findings mapped to the OWASP Top 10 (2021).
 - Hook: 8 findings mapped to the OWASP Top 10, and every check has a self-test that proves it can fail.
 - Scope guard: localhost only; `src/target.ts` refuses any other host, and a test proves it
