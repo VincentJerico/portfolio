@@ -1,7 +1,7 @@
 # Decisions log
 
 Addendum to `03-MASTER-PROMPT.md` (the spec). Where this file and the spec disagree, this file wins.
-Each entry says who decided: **Vincent** (answered in chat) or **Claude's call** (Vincent can reverse it).
+Each entry says who decided: **Vincent** (decided outright) or **Default** (a build-time choice Vincent can reverse).
 
 ---
 
@@ -34,12 +34,12 @@ How it works:
 
 ### D3. Commit identity
 
-Repo-local git config: `Vincent Jerico Alcuran <vincentjericoalcuran@gmail.com>`. Commits made by Claude also
-carry a `Co-Authored-By: Claude` trailer.
+Repo-local git config: `Vincent Jerico Alcuran <vincentjericoalcuran@gmail.com>`. Commits carry no co-author
+trailer (**Vincent, 2026-11-16**).
 
 ### D4. ui-ux-pro-max
 
-Installed as a user-level skill (`~/.claude/skills/ui-ux-pro-max`) from
+Installed locally from
 `github.com/nextlevelbuilder/ui-ux-pro-max-skill` (v2.15.0, commit `d14efff`). Its scripts were read before
 install: local CSV search only, no network or shell calls. Used for all UI work in Phases 3 and 3b. Its
 generic palette and font suggestions do not override the spec's tokens (4.1).
@@ -50,15 +50,15 @@ Regions are removed from what the site shows: "Office-furniture distribution", "
 multi-company group without location. Because the repository is public, the regions are removed from the data
 file as well (Section 5 rule added).
 
-**Claude's call, pending Vincent:** the `/work` confidentiality note drops the words "with BossLabs.AI approval"
+**Default, pending Vincent:** the `/work` confidentiality note drops the words "with BossLabs.AI approval"
 until Vincent confirms BossLabs.AI itself (not just Vincent) signed off. Note reads: "Client names, data and
 screenshots are withheld."
 
 ### D6. Private deny-list
 
-Claude creates `tests/fixtures/client-denylist.txt` (git-ignored) and the `CLIENT_DENYLIST` GitHub secret.
-Contents: the client names (Vincent to supply in chat), the postal code and the street address from the CV.
-These values never appear in committed files, commit messages or chat summaries.
+The build creates `tests/fixtures/client-denylist.txt` (git-ignored) and the `CLIENT_DENYLIST` GitHub secret.
+Contents: the client names (Vincent to supply privately), the postal code and the street address from the CV.
+These values never appear in committed files, commit messages or summaries.
 
 ### D7. Spoken languages
 
@@ -72,7 +72,7 @@ until supplied.
 
 ---
 
-## Claude's calls (reversible)
+## Defaults (reversible)
 
 | # | Decision | Why |
 | --- | --- | --- |
@@ -113,21 +113,21 @@ until supplied.
 | C35 | Fonts (**Vincent, 2026-11-07**: did not prefer the spec's pairing): Archivo (variable `wdth`/`wght`) for display and body, headings condensed and heavy; Martian Mono (variable `wdth`) for labels and data. Replaces spec 4.1 typography and section 3's font row; OG images use `@fontsource/archivo` and `@fontsource/martian-mono` | A width axis gives one family both a display and a reading voice |
 | C36 | Anti-generic pass (**Vincent, 2026-11-07**: avoid AI-obvious output): sentence-case mono labels instead of uppercase tracked labels (status chips keep their uppercase CI vocabulary), no per-section slide-up, no glow on hover, no appended arrows on card links, no hero eyebrow. Adds an email input mask, a project search box, a severity bar on report run summaries, a sidebar coverage bar, runner and evidence loading placeholders, and fluid spacing tokens | Each structural device now encodes information |
 | C37 | Motion everywhere (**Vincent, 2026-11-07**: "add transitions and animations in every component and content"; a cursor-swarm trial was built and then removed at his request). Every interactive element transitions its colours, borders and transforms; dialogs scale in with a fading backdrop; tickets expand smoothly; page headers rise in on load; sections rise and list items and table rows stream in as they scroll into view; cards are scanned; the timeline draws; severity bars fill. CSS only. Only transforms animate on content, never text opacity, so contrast and click targets stay stable; everything is off under reduced motion and in print. This reverses C36's removal of the per-section rise | Vincent's explicit request |
-| C38 | Time machine redesign (**Vincent, 2026-11-08**: "combine my concept and that reference's concept"): a spiral flip card in the hero cycling the areas the public suites cover ("My suites cover", project category labels minus hub and capstone) with pause and next controls; a pull-cord light switch fixed at the top right on desktop, in sync with the sidebar toggle; Vincent's local time (Asia/Manila) under the identity block; /about's timeline as a time machine with a pinned, extruded year per group; /projects suites as doors that swing open to show the result; the portrait in black and white turning to colour on hover. **Claude's calls:** keep the sidebar (spec 2.4) instead of the reference's top bar; local time sits in the sidebar rather than a status line; no copy the data file does not state | Adapts the reference's physical objects to the Site Under Test concept |
-| C39 | Spec sheet direction (**Vincent, 2026-11-08**, from his design-gallery folder; plan in `docs/superpowers/plans/2026-11-08-spec-sheet-direction.md`). Fonts: Geist and Geist Mono (Vincent's pick after a pixel mono read poorly at small sizes; amends C35), small mono text at 12 px with an 11 px floor. Home: a masthead (location, the areas the suites cover, CI coverage), featured projects as an index whose rows sweep and open their result on hover, and the 12 QA areas as a checklist whose marks draw in on scroll (a radial coverage map was tried and replaced: it only restated the list). Motion: labels decode on hover (screen readers read the real text), a once-per-session first-visit boot, page titles rise out of their line, a route curtain (morph navigations keep the fade), a report tools marquee, drawn link underlines. The pull cord is the desktop theme switch; the drawer keeps its toggle. **Claude's calls:** the masthead is an at-a-glance summary of facts shown in fuller form elsewhere on the page (location, the areas the suites cover, CI coverage); no pass/fail column in the index (no live CI state to claim); the boot holds no large text, so it never becomes the LCP element; the token `--spacing-block` became `--spacing-rhythm` because Tailwind turned it into an `inline-block` width | Gallery-grade craft inside the existing system |
+| C38 | Time machine redesign (**Vincent, 2026-11-08**: "combine my concept and that reference's concept"): a spiral flip card in the hero cycling the areas the public suites cover ("My suites cover", project category labels minus hub and capstone) with pause and next controls; a pull-cord light switch fixed at the top right on desktop, in sync with the sidebar toggle; Vincent's local time (Asia/Manila) under the identity block; /about's timeline as a time machine with a pinned, extruded year per group; /projects suites as doors that swing open to show the result; the portrait in black and white turning to colour on hover. **Defaults:** keep the sidebar (spec 2.4) instead of the reference's top bar; local time sits in the sidebar rather than a status line; no copy the data file does not state | Adapts the reference's physical objects to the Site Under Test concept |
+| C39 | Spec sheet direction (**Vincent, 2026-11-08**, from his design-gallery folder; plan in `docs/superpowers/plans/2026-11-08-spec-sheet-direction.md`). Fonts: Geist and Geist Mono (Vincent's pick after a pixel mono read poorly at small sizes; amends C35), small mono text at 12 px with an 11 px floor. Home: a masthead (location, the areas the suites cover, CI coverage), featured projects as an index whose rows sweep and open their result on hover, and the 12 QA areas as a checklist whose marks draw in on scroll (a radial coverage map was tried and replaced: it only restated the list). Motion: labels decode on hover (screen readers read the real text), a once-per-session first-visit boot, page titles rise out of their line, a route curtain (morph navigations keep the fade), a report tools marquee, drawn link underlines. The pull cord is the desktop theme switch; the drawer keeps its toggle. **Defaults:** the masthead is an at-a-glance summary of facts shown in fuller form elsewhere on the page (location, the areas the suites cover, CI coverage); no pass/fail column in the index (no live CI state to claim); the boot holds no large text, so it never becomes the LCP element; the token `--spacing-block` became `--spacing-rhythm` because Tailwind turned it into an `inline-block` width | Gallery-grade craft inside the existing system |
 | C40 | Lighthouse runs each route 5 times and asserts the median of 5 (was 3), locally and against previews (**Vincent, 2026-11-10**: "Median of 5 runs"; amends C27). Budgets unchanged | On slow CI runners the report page's blocking time sat near 250 ms with tasks identical to main; whether one late task fell inside Lighthouse's simulated interactive window decided the verdict, so the same commit failed and then passed on a re-run. Five runs make one unlucky run unable to decide the median |
 | C41 | Lighthouse Total Blocking Time budget on the local-build gate is 300 ms, the same as against deployments (**Vincent, 2026-11-11**: "Raise to 300 ms"; amends C22 and C26). Performance score stays at 0.95 locally and 0.93 against deployments | Slow GitHub runners (Lighthouse `benchmarkIndex` about 2050, against about 2550 on fast ones) put the median of 5 at 250–294 ms on main as well as on branches: main's own run measured `/about` at 294 ms. Locally, with Lighthouse slowed to match a slow runner, main and the morph branch measured the same (report page 35 vs 36 ms), so the misses come from the runner, not the code. The performance score, which includes blocking time, still catches real regressions |
-| C42 | /projects suite cards no longer swing open like a door (**Vincent, 2026-11-11**: "I don't like the window style thing"; amends C38). **Claude's call:** on hover or focus a pass-green scan line runs down the card and the front clears behind it, showing the result underneath. Clip-path and a moving line only; touch screens keep the result on the front; reduced motion clears the front with no line | Keeps the reveal and the Site Under Test idea (a test run reaching the card) without the 3D hinge |
+| C42 | /projects suite cards no longer swing open like a door (**Vincent, 2026-11-11**: "I don't like the window style thing"; amends C38). **Default:** on hover or focus a pass-green scan line runs down the card and the front clears behind it, showing the result underneath. Clip-path and a moving line only; touch screens keep the result on the front; reduced motion clears the front with no line | Keeps the reveal and the Site Under Test idea (a test run reaching the card) without the 3D hinge |
 | C43 | Lighthouse performance score minimum on the local-build gate is 0.94, was 0.95 (**Vincent, 2026-11-11**: "Yes, set 0.94"; amends C41). Deployments stay at 0.93 | Blocking time is 30% of the score and 300 ms alone scores about 0.94, so 0.95 contradicted C41's 300 ms budget: on main after PR #24 a slow runner (`benchmarkIndex` about 2060) put the unchanged report page at 265–281 ms, inside the budget, and scored it 0.94, while a fast runner an hour earlier scored the same page 0.97–0.98 |
-| C44 | No dead areas (**Vincent, 2026-11-15**: "more animated and transition in all modules and parts", "no static area or dead area"; plan in `docs/superpowers/plans/2026-11-15-no-dead-areas.md`, approved). Every part arrives, answers or changes shape: a reading-progress line, press-in on every button, the sidebar folder slides, drawer rows cascade and its Menu icon folds into an X, form errors slide open and shake once, copy buttons pop a check and reset, the run sheet slides up and streams results, Bug Hunt notes rise and dismiss, cards lift, chips rise, arrows nudge, Skills chips pop with a check per card, Quality scores roll with bars, a case study card morphs into its page, resume entries rise. Fixes the home hero text entrance (its rule targeted the dot field) and gives the 404 page one. **Claude's calls:** endless motion runs only on boxes (never SVG elements, whose animations stay on the main thread: a breathing status icon cost the overview about 70 ms of load work); the Lighthouse route /resume rises on a registered length rather than translate; the filter and command palette motion ship in a second PR | Vincent's request, held to C37's rules and the Lighthouse budgets |
+| C44 | No dead areas (**Vincent, 2026-11-15**: "more animated and transition in all modules and parts", "no static area or dead area"; plan in `docs/superpowers/plans/2026-11-15-no-dead-areas.md`, approved). Every part arrives, answers or changes shape: a reading-progress line, press-in on every button, the sidebar folder slides, drawer rows cascade and its Menu icon folds into an X, form errors slide open and shake once, copy buttons pop a check and reset, the run sheet slides up and streams results, Bug Hunt notes rise and dismiss, cards lift, chips rise, arrows nudge, Skills chips pop with a check per card, Quality scores roll with bars, a case study card morphs into its page, resume entries rise. Fixes the home hero text entrance (its rule targeted the dot field) and gives the 404 page one. **Defaults:** endless motion runs only on boxes (never SVG elements, whose animations stay on the main thread: a breathing status icon cost the overview about 70 ms of load work); the Lighthouse route /resume rises on a registered length rather than translate; the filter and command palette motion ship in a second PR | Vincent's request, held to C37's rules and the Lighthouse budgets |
 | C45 | security-testing names OrbStack, not Docker, in its tools and its target line ("run locally in OrbStack on `localhost:3000`") (**Vincent, 2026-11-16**: "change the docker into orbstack", then "Security project only"). The Skills list keeps Docker | Vincent's correction to his own data. `tests/fixtures/findings/security-testing.md` stays a verbatim copy of the repo's report, which still says Docker; the ticket-quote test does not check the target line |
 
 ---
 
 ## UX additions P1–P5 (approved)
 
-Approved by Vincent on 2026-10-25 (first relayed from another Claude session, then confirmed directly in this
-session: "I confirm P1–P5"). Built in Phase 3b.
+Approved by Vincent on 2026-10-25 (relayed first, then confirmed directly:
+"I confirm P1–P5"). Built in Phase 3b.
 
 Vincent asked for a site that is unique, pretty, user-friendly and "addictive to explore". These fit the
 "Site Under Test" concept, keep to the spec's constraints (CSS-only motion, no animation library, no invented

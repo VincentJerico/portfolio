@@ -28,7 +28,6 @@ Tailwind v4, next/font (google and local), Vitest, Playwright with axe.
 - Lighthouse budgets in `lighthouserc.json` stay green (TBT ≤ 250 ms local, performance ≥ 0.95, LCP ≤ 2000 ms, CLS ≤ 0.05).
 - Departure Mono text sizes snap to its 11 px grid: 11 px (`0.6875rem`) and 13.75 px (`0.859375rem`).
 - Done means `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e` pass.
-- Commits end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 
 ## Review Focus
 

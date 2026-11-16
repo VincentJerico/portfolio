@@ -37,7 +37,7 @@ blob-report/
 .pnp
 .pnp.*
 
-# Claude Code local state (agent worktrees)
+# Local tool state (worktrees)
 .claude/
 
 # Lighthouse CI output

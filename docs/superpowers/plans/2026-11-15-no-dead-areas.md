@@ -3,7 +3,7 @@
 Vincent (2026-11-15): "I want a more animated and transition in all modules and parts", then "as in no
 static area or dead area". An inventory of origin/main found that the home, report and about pages move
 a lot, but many controls, state changes and the quieter pages snap or sit still. This plan closes every
-gap it found. The specific choices are Claude's, made inside the existing Site Under Test / spec-sheet
+gap it found. The specific choices are defaults, made inside the existing Site Under Test / spec-sheet
 system, and Vincent reviews them on the PRs before anything merges.
 
 ## Principle

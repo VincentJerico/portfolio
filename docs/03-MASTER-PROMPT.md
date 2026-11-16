@@ -2,7 +2,6 @@
 
 Version: 1.1 · 2026-10-24 (CV, job details, LegataLink, approvals)
 Owner: Vincent Jerico Alcuran (github.com/VincentJerico)
-Executor: Claude Code
 Data source of truth: `docs/01-PORTFOLIO-DATA.md`
 Assets checklist: `docs/02-ASSETS-CHECKLIST.md`
 
@@ -10,7 +9,7 @@ Assets checklist: `docs/02-ASSETS-CHECKLIST.md`
 
 ## 0. How to run this
 
-Open a terminal in the `Portfolio` folder and start Claude Code, then paste:
+Open a terminal in the `Portfolio` folder and start the build with:
 
 ```
 Read docs/03-MASTER-PROMPT.md (the spec) and docs/01-PORTFOLIO-DATA.md (the content source of truth) in full.

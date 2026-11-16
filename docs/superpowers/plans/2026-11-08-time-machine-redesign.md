@@ -21,7 +21,7 @@ confirmed by Vincent on 2026-11-08.
 - Every rendered fact comes from `docs/01-PORTFOLIO-DATA.md` through `src/content`. No new copy that
   states a fact (no "available for work", no "remote-first"; `openToWork` is not verified).
 - No client names, no emojis, no placeholder text.
-- Sidebar navigation on desktop, drawer on mobile (spec 2.4). Decided by Claude, reversible: no top bar.
+- Sidebar navigation on desktop, drawer on mobile (spec 2.4). Default, reversible: no top bar.
 - WCAG 2.2 AA. Anything that moves on its own for more than 5 s has a pause control (SC 2.2.2). Every
   object is operable by keyboard and named for screen readers. Nothing animates under reduced motion.
 - Lighthouse: performance at least 0.95 and TBT at most 250 ms on every audited route (lighthouserc.json).
