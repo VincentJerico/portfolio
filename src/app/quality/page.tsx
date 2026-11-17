@@ -103,7 +103,9 @@ export default function QualityPage() {
               <dd className="font-mono text-ink">{report.commit}</dd>
               <dt className="label-mono pt-0.5 text-ink-muted">Run</dt>
               <dd>
-                <a href={report.runUrl}>View the GitHub Actions run</a>
+                <a href={report.runUrl} className="inline-flex min-h-11 items-center">
+                  View the GitHub Actions run
+                </a>
               </dd>
             </dl>
             <DataTable

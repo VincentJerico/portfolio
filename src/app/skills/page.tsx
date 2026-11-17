@@ -57,11 +57,14 @@ function GroupCard({ group }: { group: SkillGroup }) {
           {group.evidence.map((item) => (
             <li key={item.label}>
               {item.href.startsWith('/') ? (
-                <Link href={item.href} className="inline-flex min-h-11 items-center text-sm">
+                <Link
+                  href={item.href}
+                  className="inline-flex min-h-11 min-w-11 items-center text-sm"
+                >
                   {item.label}
                 </Link>
               ) : (
-                <a href={item.href} className="inline-flex min-h-11 items-center text-sm">
+                <a href={item.href} className="inline-flex min-h-11 min-w-11 items-center text-sm">
                   {item.label}
                 </a>
               )}

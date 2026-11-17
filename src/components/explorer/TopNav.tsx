@@ -125,7 +125,7 @@ export function TopNav({
                     aria-expanded={menuOpen}
                     aria-controls={menuId}
                     onClick={toggle}
-                    className="-ml-1 inline-flex size-11 items-center justify-center rounded-chip text-ink-muted hover:bg-surface-2 hover:text-ink"
+                    className="inline-flex size-11 items-center justify-center rounded-chip text-ink-muted hover:bg-surface-2 hover:text-ink"
                   >
                     <ChevronDown
                       aria-hidden="true"

@@ -1,9 +1,11 @@
+import Link from 'next/link';
 import type { Metric } from '@/content/schema';
 import { DecodeLabel } from '@/components/ui/DecodeLabel';
 
 interface MastheadProps {
   location: string;
-  testedAreas: readonly string[];
+  /** Each area links to the projects filtered to it. */
+  testedAreas: readonly { label: string; href: string }[];
   /** The "repos with CI" metric; the CI row is left out when it is missing. */
   ci?: Metric;
 }
@@ -16,7 +18,20 @@ interface MastheadProps {
 export function Masthead({ location, testedAreas, ci }: MastheadProps) {
   const rows: [string, React.ReactNode][] = [
     ['based in', location],
-    ['tests for', testedAreas.join(' · ')],
+    [
+      'tests for',
+      testedAreas.map((area, i) => (
+        <span key={area.href}>
+          {i > 0 && ' · '}
+          <Link
+            href={area.href}
+            className="hit-area text-ink underline decoration-line decoration-dotted underline-offset-[3px] hover:text-accent hover:decoration-accent hover:decoration-solid"
+          >
+            {area.label}
+          </Link>
+        </span>
+      )),
+    ],
   ];
   if (ci) {
     rows.push([

@@ -17,7 +17,7 @@ import { CopyButton } from '@/components/ui/CopyButton';
 import { MetricTile } from '@/components/ui/MetricTile';
 import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
 import { education, experience, metrics, profile, qaAreas, skills, timeline } from '@/content';
-import { approvedCaseStudies, projectsInOrder, testedAreas, visible } from '@/lib/content';
+import { approvedCaseStudies, projectsInOrder, testedAreaLinks, visible } from '@/lib/content';
 import { formatDay, formatPeriod } from '@/lib/format';
 import { getEnv } from '@/lib/env';
 import { pageMetadata } from '@/lib/seo';
@@ -27,7 +27,7 @@ export const metadata: Metadata = pageMetadata({ description: profile.oneLiner, 
 
 export default function OverviewPage() {
   const featured = projectsInOrder().filter((project) => project.featured);
-  const areas = testedAreas();
+  const areas = testedAreaLinks();
   const caseStudies = approvedCaseStudies().slice(0, 3);
   const role = visible(experience).find((item) => item.hasCaseStudies);
   const latestEvents = visible(timeline)

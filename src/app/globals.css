@@ -2052,3 +2052,20 @@ html:active-view-transition-type(theme) [data-nav-marker] {
 [data-statusbar] li:last-child .tip:is(:hover, :focus-visible)::after {
   translate: 0 0;
 }
+
+/* Hit area: grows a small link's clickable area to at least 24 px tall (WCAG 2.5.8) without
+   changing how it looks or where it sits, for links in tables, timelines, the masthead and the
+   resume, where padding would shift the layout or the print. Timeline and other drawn links get it
+   too. */
+@layer components {
+  .hit-area,
+  .draw-link {
+    position: relative;
+  }
+  .hit-area::before,
+  .draw-link::before {
+    content: '';
+    position: absolute;
+    inset: -0.5rem -0.25rem;
+  }
+}
