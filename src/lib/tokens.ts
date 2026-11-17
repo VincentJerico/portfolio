@@ -53,7 +53,7 @@ function readBlock(css: string, selector: string): ThemeTokens {
   return tokens;
 }
 
-/** Reads the dark (`:root`) and light (`.light`) token blocks from tokens.css. */
+/** Reads the light (`:root, .light`, the no-JS default) and dark (`.dark`) token blocks (C51). */
 export function parseTokens(css: string): { dark: ThemeTokens; light: ThemeTokens } {
-  return { dark: readBlock(css, ':root'), light: readBlock(css, '.light') };
+  return { dark: readBlock(css, '.dark'), light: readBlock(css, ':root,\n.light') };
 }

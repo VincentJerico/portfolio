@@ -1,44 +1,44 @@
-/* Design tokens (spec 4.1, amended by the 2026-11-07 design pass). Dark "control panel" is the default for
-   no-JS visitors and crawlers; next-themes adds .light or .dark to <html>.
-   Colour split 70/20/10: neutrals (bg, surface, surface-2) / secondary (top bar, status bar, run summary band)
-   / accent (links, primary actions, focus). pass, warn and fail mark status only.
-   tests/unit/tokens.test.ts enforces AA contrast for every pair and bans pure black and white.
-   Nothing reads as white or black either (C48): dark is a deep slate, light a tinted paper, and the text
-   is an off-white or a deep navy. */
+/* Design tokens (C51, the minimal reset). Paper and ink: the light theme is a warm paper with deep navy
+   ink and one vermilion accent; the dark theme is the C48 slate with paper-coloured text and a coral
+   accent. Paper is the default for no-JS visitors and crawlers (the poster is designed paper-first);
+   next-themes adds .light or .dark to <html>.
+   pass, warn and fail mark status only. tests/unit/tokens.test.ts enforces AA contrast for every pair
+   and bans anything that reads as white or black. */
 
-:root {
+:root,
+.light {
+  color-scheme: light;
+  --bg: #efe9de;
+  --surface: #e9e2d5;
+  --surface-2: #e1d9ca;
+  --secondary: #e9e2d5;
+  --border: #cdc3b1;
+  --text: #20263a;
+  --text-muted: #4c5163;
+  --accent: #a5341e;
+  --pass: #1d6331;
+  --warn: #744b00;
+  --fail: #9f1f2d;
+  --focus-ring: #a5341e;
+  --shadow: none;
+  /* Dialog backdrops: a dim of the page's own ink, never plain black. */
+  --backdrop: rgb(32 38 58 / 0.45);
+}
+
+.dark {
   color-scheme: dark;
   --bg: #151c26;
   --surface: #1b2430;
   --surface-2: #222d3b;
-  --secondary: #1b263a;
+  --secondary: #1b2430;
   --border: #33435a;
-  --text: #e1e8ef;
-  --text-muted: #a7b1bd;
-  --accent: #58a6ff;
-  --pass: #3fb950;
-  --warn: #d29922;
-  --fail: #fb6a62;
-  --focus-ring: #58a6ff;
+  --text: #ece4d6;
+  --text-muted: #a9adb8;
+  --accent: #ff7a59;
+  --pass: #5cc27a;
+  --warn: #e0ae48;
+  --fail: #ff8b84;
+  --focus-ring: #ff7a59;
   --shadow: none;
-  /* Dialog backdrops: a dim of the page's own slate, never plain black. */
   --backdrop: rgb(10 15 24 / 0.62);
-}
-
-.light {
-  color-scheme: light;
-  --bg: #e7edf6;
-  --surface: #f0f4fa;
-  --surface-2: #dde5f1;
-  --secondary: #d2ddef;
-  --border: #b9c7dd;
-  --text: #16243c;
-  --text-muted: #3f4d68;
-  --accent: #0a56d0;
-  --pass: #0b6b2e;
-  --warn: #7f5300;
-  --fail: #bb1b2c;
-  --focus-ring: #0a56d0;
-  --shadow: 0 1px 2px rgb(22 36 60 / 0.08), 0 1px 1px rgb(22 36 60 / 0.05);
-  --backdrop: rgb(22 36 60 / 0.45);
 }

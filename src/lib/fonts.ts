@@ -7,7 +7,7 @@ import { Bricolage_Grotesque, IBM_Plex_Mono } from 'next/font/google';
 export const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
   display: 'swap',
-  axes: ['opsz'],
+  axes: ['opsz', 'wdth'],
   variable: '--font-bricolage',
 });
 

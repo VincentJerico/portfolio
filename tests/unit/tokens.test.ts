@@ -11,7 +11,13 @@ describe('tokens.css', () => {
     expect(Object.keys(themes[theme]).sort()).toEqual([...TOKEN_NAMES].sort());
   });
 
-  it('keeps dark as the no-JS default, as a deep slate rather than near-black (C48)', () => {
+  // C51: the poster is designed paper-first, so visitors without JavaScript get the paper theme.
+  it('makes paper the no-JS default (C51)', () => {
+    expect(css).toMatch(/:root[^{]*\{[^}]*color-scheme:\s*light/);
+    expect(themes.light.bg?.toLowerCase()).toBe('#efe9de');
+  });
+
+  it('keeps the dark theme a deep slate rather than near-black (C48)', () => {
     expect(themes.dark.bg?.toLowerCase()).toBe('#151c26');
   });
 
