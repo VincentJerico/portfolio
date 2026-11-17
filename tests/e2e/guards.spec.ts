@@ -6,10 +6,9 @@ import { tabKey } from '../helpers/keys';
 test.use({ viewport: { width: 1280, height: 900 } });
 
 test('every input has a visible label, never a placeholder alone (F-6)', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/projects');
   await waitForHydration(page);
-  await page.keyboard.press('ControlOrMeta+k');
-  const inputs = page.locator('input, textarea, select');
+  const inputs = page.locator('main').locator('input, textarea, select');
   await expect(inputs.first()).toBeVisible();
   const unlabelled = await inputs.evaluateAll((els) =>
     els
@@ -38,7 +37,7 @@ test('controls activate with Enter and Space (F-1)', async ({ page }) => {
   await page.keyboard.press('Enter');
   await expect(all).toHaveAttribute('aria-pressed', 'true');
 
-  const toggle = page.getByRole('button', { name: 'Light switch' });
+  const toggle = page.locator('[data-site-header]').getByRole('button', { name: 'Dark theme' });
   const before = await toggle.getAttribute('aria-pressed');
   await toggle.focus();
   await page.keyboard.press('Space');
@@ -47,9 +46,9 @@ test('controls activate with Enter and Space (F-1)', async ({ page }) => {
 
 test('reduced motion turns transitions off', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
+  await page.goto('/about');
   const duration = await page
-    .locator('[data-topbar] a[aria-current="page"]')
+    .locator('[data-site-header] nav[aria-label="Site"] a[aria-current="page"]')
     .evaluate((el) => parseFloat(getComputedStyle(el).transitionDuration));
   expect(duration).toBeLessThan(0.02);
 });
@@ -107,8 +106,11 @@ test('page changes cross-fade, in-page filter updates do not (P5)', async ({ pag
   await page.getByRole('button', { name: 'Security', exact: true }).click();
   await expect(page).toHaveURL(/category=security/);
   expect(await page.evaluate(() => (window as unknown as { __vt: number }).__vt)).toBe(0);
-  await page.locator('[data-topbar]').getByRole('link', { name: 'Skills', exact: true }).click();
-  await expect(page).toHaveURL(/\/skills$/);
+  await page
+    .locator('[data-site-header]')
+    .getByRole('link', { name: 'About', exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/about$/);
   await expect
     .poll(() => page.evaluate(() => (window as unknown as { __vt: number }).__vt))
     .toBeGreaterThan(0);

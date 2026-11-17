@@ -14,19 +14,17 @@ export function DataTable({ caption, columns, rows }: DataTableProps) {
       role="region"
       aria-label={caption}
       tabIndex={0}
-      className="overflow-x-auto rounded-card border border-line bg-surface"
+      className="overflow-x-auto border-t border-line"
     >
       <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
-        <caption className="label-mono border-b border-line px-4 py-3 text-left text-ink-muted">
-          {caption}
-        </caption>
-        <thead className="bg-surface-2">
+        <caption className="label-mono py-3 text-left text-ink-muted">{caption}</caption>
+        <thead className="border-y border-line">
           <tr>
             {columns.map((column) => (
               <th
                 key={column}
                 scope="col"
-                className="px-4 py-2.5 font-mono text-xs font-medium text-ink-muted"
+                className="py-2.5 pr-4 font-mono text-xs font-medium text-ink-muted"
               >
                 {column}
               </th>
@@ -37,7 +35,7 @@ export function DataTable({ caption, columns, rows }: DataTableProps) {
           {rows.map((row, r) => (
             <tr key={r}>
               {row.map((cell, c) => (
-                <td key={c} className="px-4 py-3 align-top text-ink">
+                <td key={c} className="py-3 pr-4 align-top text-ink">
                   {typeof cell === 'string' ? <InlineCode text={cell} /> : cell}
                 </td>
               ))}

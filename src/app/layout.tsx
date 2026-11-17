@@ -1,31 +1,14 @@
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata } from 'next';
-import { BugHuntProvider } from '@/components/bughunt/BugHuntProvider';
-import { BugHuntToggle } from '@/components/bughunt/BugHuntToggle';
-import { HuntBanner } from '@/components/bughunt/HuntBanner';
-import { NextSpec } from '@/components/content/NextSpec';
-import { SiteChecksChip } from '@/components/explorer/SiteChecksChip';
-import { TestExplorerNav } from '@/components/explorer/TestExplorerNav';
-import { IdentityBlock } from '@/components/layout/IdentityBlock';
-import { MobileNav } from '@/components/layout/MobileNav';
-import { PullCord } from '@/components/layout/PullCord';
-import { RouteRunner } from '@/components/layout/RouteRunner';
 import { RouteTransition } from '@/components/layout/RouteTransition';
-import { ShellLinks } from '@/components/layout/ShellLinks';
-import { StatusBar } from '@/components/layout/StatusBar';
-import { TopBar } from '@/components/layout/TopBar';
+import { SiteFooter } from '@/components/layout/SiteFooter';
+import { SiteHeader } from '@/components/layout/SiteHeader';
 import { SkipLink } from '@/components/layout/SkipLink';
-import { CommandPaletteRoot } from '@/components/palette/CommandPaletteRoot';
-import { SearchButton } from '@/components/palette/SearchButton';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
-import { RunnerHost } from '@/components/runner/RunnerHost';
-import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
 import { profile } from '@/content';
 import { getEnv } from '@/lib/env';
-import { explorerData } from '@/lib/explorer-rows';
 import { fontVariables } from '@/lib/fonts';
-import { paletteItems, siteReadingOrder } from '@/lib/site-index';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -39,59 +22,20 @@ export const metadata: Metadata = {
   twitter: { card: 'summary_large_image' },
 };
 
+// The minimal shell (C51): a plain top bar, the page, and a footer. Nothing else.
 export default function RootLayout({ children }: LayoutProps<'/'>) {
-  const { rows, projects, summary, site } = explorerData();
-  const { order, reportsWithNext } = siteReadingOrder();
   return (
     <html lang="en" className={fontVariables} suppressHydrationWarning>
       <body>
-        <div data-scroll-progress aria-hidden="true" className="scroll-progress" data-print-hide />
         <ThemeProvider>
-          <BugHuntProvider>
-            <SkipLink />
-            <MobileNav
-              fullName={profile.fullName}
-              identity={<IdentityBlock />}
-              nav={
-                <>
-                  <SearchButton />
-                  <TestExplorerNav
-                    idPrefix="drawer"
-                    rows={rows}
-                    projects={projects}
-                    summary={summary}
-                  />
-                </>
-              }
-              links={
-                <>
-                  <ShellLinks />
-                  <RunSuiteButton />
-                  <BugHuntToggle />
-                  <SiteChecksChip status={site} />
-                </>
-              }
-            />
-            <TopBar />
-            <PullCord />
-            <main id="main" tabIndex={-1} className="focus:outline-none lg:pt-14 lg:pb-11">
-              <div className="mx-auto w-full max-w-[1100px] px-4 py-10 sm:px-6 lg:px-12 lg:py-16">
-                <HuntBanner email={profile.email} />
-                <RouteTransition>{children}</RouteTransition>
-                <NextSpec order={order} reportsWithNext={reportsWithNext} />
-              </div>
-            </main>
-            <StatusBar />
-            <CommandPaletteRoot items={paletteItems()} />
-            <RunnerHost />
-            <RouteRunner
-              specs={[...rows, ...projects].map(({ href, spec, status }) => ({
-                href,
-                spec,
-                status,
-              }))}
-            />
-          </BugHuntProvider>
+          <SkipLink />
+          <SiteHeader />
+          <main id="main" tabIndex={-1} className="focus:outline-none">
+            <div className="shell pt-6 pb-4 lg:pt-10">
+              <RouteTransition>{children}</RouteTransition>
+            </div>
+          </main>
+          <SiteFooter />
           {/* Cookieless analytics, only on Vercel builds: elsewhere their first-party scripts 404. */}
           {process.env.VERCEL === '1' && (
             <>

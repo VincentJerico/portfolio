@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ImageResponse } from 'next/og';
 
-// Social cards (spec 9): dark control-panel style, name, page title and one line (a metric or hook).
+// Social cards (spec 9, C51): paper and ink, the page title set big, one line, and the name.
 export const OG_SIZE = { width: 1200, height: 630 };
 
 const font = (pkg: string, file: string) =>
@@ -15,14 +15,13 @@ const fonts = Promise.all([
   font('bricolage-grotesque', 'bricolage-grotesque-latin-800-normal.woff'),
 ]);
 
-// Dark theme tokens (src/styles/tokens.css).
+// Paper theme tokens (src/styles/tokens.css).
 const C = {
-  bg: '#0B0F14',
-  surface: '#10161F',
-  border: '#243246',
-  text: '#E6EDF3',
-  muted: '#9AA4AF',
-  accent: '#58A6FF',
+  bg: '#efe9de',
+  border: '#cdc3b1',
+  text: '#20263a',
+  muted: '#4c5163',
+  accent: '#a5341e',
 };
 
 export async function renderOgImage({
@@ -59,8 +58,7 @@ export async function renderOgImage({
           color: C.muted,
         }}
       >
-        <div style={{ width: 12, height: 12, borderRadius: 999, background: C.accent }} />
-        <div style={{ display: 'flex' }}>{kicker}</div>
+        <div style={{ display: 'flex', color: C.accent }}>{kicker}</div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         <div
@@ -68,9 +66,9 @@ export async function renderOgImage({
             display: 'flex',
             fontFamily: 'Bricolage Grotesque',
             fontWeight: 800,
-            fontSize: 80,
-            lineHeight: 1,
-            letterSpacing: -1,
+            fontSize: 88,
+            lineHeight: 0.95,
+            letterSpacing: -2,
             wordBreak: 'break-word',
           }}
         >

@@ -46,12 +46,12 @@ export default async function CaseStudyPage({ params }: PageProps<'/work/[slug]'
 
   return (
     <article className="flex flex-col gap-rhythm">
-      <header className="flex flex-col gap-5">
+      <header className="flex flex-col gap-6">
         <nav aria-label="Breadcrumb">
-          <ol className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
+          <ol className="label-mono flex flex-wrap items-center gap-2 text-ink-muted">
             <li>
               <Link href="/work" className="inline-flex min-h-11 items-center">
-                Client Work
+                Client work
               </Link>
             </li>
             <li aria-hidden="true">/</li>
@@ -63,7 +63,7 @@ export default async function CaseStudyPage({ params }: PageProps<'/work/[slug]'
           </ol>
         </nav>
         <p className="label-mono text-ink-muted">Case study · anonymised</p>
-        {/* The title morphs in from the case study card the visitor came from. */}
+        {/* The title morphs in from the case study row the visitor came from. */}
         <ViewTransition name={`case-title-${study.slug}`} share="morph" default="none">
           <h1 data-morph-title>{study.title}</h1>
         </ViewTransition>
@@ -74,7 +74,7 @@ export default async function CaseStudyPage({ params }: PageProps<'/work/[slug]'
         )}
       </header>
 
-      <dl className="grid gap-x-8 gap-y-4 rounded-card border border-line bg-surface p-5 sm:grid-cols-[8rem_1fr]">
+      <dl className="grid gap-x-8 gap-y-3 border-t border-line pt-4 sm:grid-cols-[8rem_1fr]">
         {facts.map(([term, value]) => (
           <div key={term} className="contents">
             <dt className="label-mono pt-0.5 text-ink-muted">{term}</dt>

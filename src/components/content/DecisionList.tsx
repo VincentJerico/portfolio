@@ -3,9 +3,9 @@ import { InlineCode } from '@/components/ui/InlineCode';
 
 export function DecisionList({ decisions }: { decisions: Project['decisions'] }) {
   return (
-    <ul className="grid gap-3 md:grid-cols-2">
+    <ul className="border-t border-line">
       {decisions.map((decision) => (
-        <li key={decision.title} className="lift rounded-card border border-line bg-surface p-4">
+        <li key={decision.title} className="measure border-b border-line py-4">
           <p className="font-semibold text-ink">
             <InlineCode text={decision.title} />
           </p>

@@ -88,7 +88,7 @@ describe('case studies and navigation', () => {
     expect(caseStudies[2]?.currentlyTesting).toBe(true);
   });
 
-  it('shows Client Work in the nav while a case study is approved', () => {
-    expect(navItems().map((n) => n.label)).toContain('Client Work');
+  it('shows Work in the nav while a case study is approved', () => {
+    expect(navItems().map((n) => n.label)).toContain('Work');
   });
 });

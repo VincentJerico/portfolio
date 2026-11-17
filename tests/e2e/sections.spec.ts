@@ -1,5 +1,6 @@
 import { expect, test } from '../helpers/test';
 import { profile, skills } from '../../src/content';
+import { approvedCaseStudies } from '../../src/lib/content';
 
 test.describe('client work', () => {
   test('lists the role, the confidentiality note and three case studies', async ({ page }) => {
@@ -7,7 +8,8 @@ test.describe('client work', () => {
     await expect(page.locator('main')).toContainText(
       'Client names, data and screenshots are withheld.',
     );
-    await expect(page.getByRole('link', { name: /^Read the case study/ })).toHaveCount(3);
+    const studies = page.getByRole('region', { name: 'Case studies' }).locator('.work-row-link');
+    await expect(studies).toHaveText(approvedCaseStudies().map((study) => study.title));
     await expect(page.locator('main img')).toHaveCount(0);
   });
 

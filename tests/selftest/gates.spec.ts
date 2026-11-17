@@ -25,19 +25,3 @@ test('the focus-obscured guard catches the planted focus-trap bug', async ({
   }
   expect(obscured).toContain(true);
 });
-
-test('the in-page runner reports the planted defects as failures', async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto('/selftest');
-  await waitForHydration(page);
-  // The planted overlay covers the page (that is the bug), so start the run from the keyboard.
-  const trigger = page
-    .locator('[data-statusbar]')
-    .getByRole('button', { name: 'Run tests on this page' });
-  await trigger.focus();
-  await page.keyboard.press('Enter');
-  const panel = page.getByRole('region', { name: 'Test run' });
-  await expect(panel.locator('[data-check="Accessibility"]')).toContainText('color-contrast', {
-    timeout: 20_000,
-  });
-});

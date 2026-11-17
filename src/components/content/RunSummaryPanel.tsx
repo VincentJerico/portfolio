@@ -1,14 +1,15 @@
 import type { Project } from '@/content/schema';
 import { CiBadge } from '@/components/ui/CiBadge';
-import { SeverityBar } from '@/components/ui/SeverityBar';
 import { SeverityChip } from '@/components/ui/SeverityChip';
-import { StatusChip } from '@/components/ui/StatusChip';
 import { formatDay, formatProjectPeriod } from '@/lib/format';
 import type { RepoMeta } from '@/lib/github';
 import { severityCounts } from '@/lib/labels';
 import { InlineCode } from '@/components/ui/InlineCode';
 
-/** Control-panel header of a test report (spec 7.3.3). Counts come from the listed findings. */
+/**
+ * A report's facts (spec 7.3.3, restyled for C51): a ruled list of target, period, commits, tools and
+ * findings, with the CI badge and the repo and live links. Finding counts open their tickets.
+ */
 export function RunSummaryPanel({
   project,
   github,
@@ -24,14 +25,13 @@ export function RunSummaryPanel({
   if (project.commits !== undefined) rows.push(['Commits', String(project.commits)]);
   rows.push([
     'Tools',
-    <ul key="tools" aria-label={`${project.name} tools`} className="flex flex-wrap gap-1.5">
+    <ul
+      key="tools"
+      aria-label={`${project.name} tools`}
+      className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-[0.8125rem]"
+    >
       {project.stack.map((tool) => (
-        <li
-          key={tool}
-          className="chip rounded-chip bg-surface-2 px-2 py-0.5 font-mono text-xs text-ink"
-        >
-          {tool}
-        </li>
+        <li key={tool}>{tool}</li>
       ))}
     </ul>,
   ]);
@@ -45,14 +45,13 @@ export function RunSummaryPanel({
     if (github.topics.length > 0) {
       rows.push([
         'Topics',
-        <ul key="topics" aria-label="GitHub topics" className="flex flex-wrap gap-1.5">
+        <ul
+          key="topics"
+          aria-label="GitHub topics"
+          className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-[0.8125rem]"
+        >
           {github.topics.map((topic) => (
-            <li
-              key={topic}
-              className="rounded-chip bg-surface-2 px-2 py-0.5 font-mono text-xs text-ink"
-            >
-              {topic}
-            </li>
+            <li key={topic}>{topic}</li>
           ))}
         </ul>,
       ]);
@@ -61,43 +60,33 @@ export function RunSummaryPanel({
   if (counts.length > 0) {
     rows.push([
       'Findings',
-      <div key="f" className="flex flex-col gap-2.5">
-        <SeverityBar counts={counts} />
-        <ul className="flex flex-wrap gap-1.5">
-          {counts.map(({ severity, count }) => (
-            <li key={severity}>
-              <a
-                href={`#ticket-${project.findings.find((f) => f.severity === severity)!.id}`}
-                data-open-severity={severity}
-                className="press inline-flex min-h-11 items-center no-underline"
-              >
-                <SeverityChip severity={severity} count={count} />
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>,
+      <ul key="f" className="flex flex-wrap gap-x-5">
+        {counts.map(({ severity, count }) => (
+          <li key={severity}>
+            <a
+              href={`#ticket-${project.findings.find((f) => f.severity === severity)!.id}`}
+              data-open-severity={severity}
+              className="inline-flex min-h-11 items-center no-underline hover:underline"
+            >
+              <SeverityChip severity={severity} count={count} />
+            </a>
+          </li>
+        ))}
+      </ul>,
     ]);
   }
 
   return (
-    <section
-      aria-labelledby="run-summary-heading"
-      data-inspect
-      className="rounded-card border border-line bg-surface shadow-card"
-    >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3">
+    <section aria-labelledby="run-summary-heading" className="border-t border-line pt-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 id="run-summary-heading" className="label-mono text-ink-muted">
-          Run summary
+          Summary{project.team && ' · team project'}
         </h2>
-        <div className="flex flex-wrap items-center gap-3">
-          {project.team && <StatusChip status="info" label="Team project" />}
-          {project.ciBadge && (
-            <CiBadge src={project.ciBadge} href={project.ciUrl} repo={project.name} />
-          )}
-        </div>
+        {project.ciBadge && (
+          <CiBadge src={project.ciBadge} href={project.ciUrl} repo={project.name} />
+        )}
       </div>
-      <dl className="grid gap-x-8 gap-y-4 px-5 py-5 grid-cols-[minmax(0,1fr)] sm:grid-cols-[8rem_minmax(0,1fr)]">
+      <dl className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-x-8 gap-y-3 sm:grid-cols-[8rem_minmax(0,1fr)]">
         {rows.map(([term, value]) => (
           <div key={term} className="contents">
             <dt className="label-mono pt-0.5 text-ink-muted">{term}</dt>
@@ -105,16 +94,19 @@ export function RunSummaryPanel({
           </div>
         ))}
       </dl>
-      {github && <p className="px-5 pb-4 text-sm text-ink-muted">From GitHub, refreshed daily.</p>}
+      {github && <p className="mt-3 text-sm text-ink-muted">From GitHub, refreshed daily.</p>}
       {(project.repo || project.liveUrl) && (
-        <div className="flex flex-wrap gap-x-6 border-t border-line px-5 py-2">
+        <div className="mt-4 flex flex-wrap gap-x-6">
           {project.repo && (
-            <a href={project.repo} className="inline-flex min-h-11 items-center font-semibold">
+            <a href={project.repo} className="inline-flex min-h-11 items-center font-mono text-sm">
               Repo<span className="sr-only">: {project.name} on GitHub</span>
             </a>
           )}
           {project.liveUrl && (
-            <a href={project.liveUrl} className="inline-flex min-h-11 items-center font-semibold">
+            <a
+              href={project.liveUrl}
+              className="inline-flex min-h-11 items-center font-mono text-sm"
+            >
               Live site<span className="sr-only">: {project.name}</span>
             </a>
           )}

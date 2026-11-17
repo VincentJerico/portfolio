@@ -14,26 +14,27 @@ async function expectTouchSized(targets: Locator, what: string) {
 }
 
 test('metric source links are touch sized', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/about');
   await expectTouchSized(
-    page.locator('#run-summary').getByRole('link', { name: /^source/ }),
+    page.locator('#numbers').getByRole('link', { name: /^source/ }),
     'source link',
   );
 });
 
-test('severity chip links in a run summary are touch sized', async ({ page }) => {
+test('severity links in a report summary are touch sized', async ({ page }) => {
   await page.goto('/projects/accessibility-testing');
   await expectTouchSized(
-    page.getByRole('region', { name: 'Run summary' }).locator('a[data-open-severity]'),
+    page.getByRole('region', { name: /^Summary/ }).locator('a[data-open-severity]'),
     'severity link',
   );
 });
 
-test('home index rows show their result without hover', async ({ page }) => {
+test('the footer links are touch sized', async ({ page }) => {
   await page.goto('/');
-  const first = page
-    .getByRole('region', { name: 'Featured projects' })
-    .getByRole('listitem')
-    .first();
-  await expect(first.locator('[data-index-hook]')).toBeVisible();
+  await expectTouchSized(page.locator('[data-site-footer]').getByRole('link'), 'footer link');
+});
+
+test('the top bar controls are touch sized', async ({ page }) => {
+  await page.goto('/');
+  await expectTouchSized(page.locator('[data-site-header]').getByRole('button'), 'top bar button');
 });

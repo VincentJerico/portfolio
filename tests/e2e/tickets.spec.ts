@@ -46,7 +46,7 @@ test('a severity count in the run summary opens every ticket of that severity', 
   await page.goto('/projects/accessibility-testing');
   const serious = a11y.findings.filter((f) => f.severity === 'serious');
   await page
-    .getByRole('region', { name: 'Run summary' })
+    .getByRole('region', { name: /^Summary/ })
     .getByRole('link', { name: /serious/i })
     .click();
   await expect(page.locator('[data-ticket-severity="serious"][open]')).toHaveCount(serious.length);

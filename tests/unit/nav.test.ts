@@ -18,17 +18,17 @@ describe('isActive', () => {
 });
 
 describe('NAV_ITEMS', () => {
-  it('lists the nine sections in order', () => {
+  it('lists home, the top bar pages, then the footer pages (C51)', () => {
     expect(NAV_ITEMS.map((item) => item.label)).toEqual([
-      'Overview',
+      'Home',
       'Projects',
-      'Client Work',
-      'Skills',
+      'Work',
       'About',
       'Resume',
-      'Quality',
-      'Notes',
       'Contact',
+      'Skills',
+      'Notes',
+      'Quality',
     ]);
   });
 });

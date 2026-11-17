@@ -21,21 +21,24 @@
 
   --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
 
-  /* Fluid rhythm, 375 to 1440 px: between page blocks, and between overview sections. Not named
+  /* Fluid rhythm, 375 to 1440 px: between page blocks, and between home sections. Not named
      "block": Tailwind would turn that into an inline-block width utility. */
   --spacing-rhythm: clamp(2.5rem, 2.148rem + 1.502vw, 3.5rem);
-  --spacing-section: clamp(4rem, 3.296rem + 3.005vw, 6rem);
+  --spacing-section: clamp(4.5rem, 3.5rem + 4vw, 8rem);
 
   --radius-card: 6px;
   --radius-chip: 4px;
   --shadow-card: var(--shadow);
 }
 
+/* The minimal reset (C51): paper and ink, two typefaces, big condensed titles, text and thin rules. */
 @layer base {
   html {
     background-color: var(--bg);
     color: var(--text);
     -webkit-text-size-adjust: 100%;
+    /* Keep focused elements clear of the 56 px sticky top bar (SC 2.4.11). */
+    scroll-padding-top: 4.5rem;
   }
 
   body {
@@ -50,27 +53,33 @@
   :root {
     --dur-fast: 180ms;
     --dur-base: 400ms;
-    --dur-slow: 400ms;
   }
 
-  /* Fluid between the spec's mobile and desktop sizes (4.1): 40/64, 24/30, 18/20 px from 375 to 1440 px. */
+  /* Page titles: Bricolage at its narrowest, heaviest display cut, the poster's voice on every page. */
   h1 {
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: clamp(2.5rem, 1.972rem + 2.254vw, 4rem);
-    line-height: 0.98;
-    letter-spacing: -0.025em;
+    font-variation-settings:
+      'opsz' 96,
+      'wdth' 75;
+    font-size: clamp(3rem, 1.6rem + 6vw, 7rem);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
   }
 
   h2 {
-    font-weight: 700;
-    font-size: clamp(1.5rem, 1.368rem + 0.563vw, 1.875rem);
-    line-height: 1.25;
-    letter-spacing: -0.015em;
+    font-weight: 750;
+    font-variation-settings:
+      'opsz' 72,
+      'wdth' 85;
+    font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.75rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
   }
 
   h3 {
-    font-weight: 600;
+    font-weight: 650;
     font-size: clamp(1.125rem, 1.081rem + 0.188vw, 1.25rem);
     line-height: 1.35;
   }
@@ -101,55 +110,339 @@
       scroll-behavior: auto !important;
     }
   }
+
+  /* Transitions on every interactive part: colour, underline and transform changes ease instead of
+     snapping. Reduced motion collapses them through the rule above. */
+  a,
+  button,
+  summary,
+  input,
+  textarea,
+  select,
+  label {
+    transition-property:
+      color, background-color, border-color, text-decoration-color, outline-color, translate, scale;
+    transition-duration: var(--dur-fast);
+    transition-timing-function: var(--ease-snap);
+  }
+  a {
+    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  }
+  a:hover {
+    text-decoration-color: currentColor;
+  }
+  button:not(:disabled, [data-no-press]):active {
+    scale: 0.96;
+  }
 }
 
-/* Labels read like runner output, in sentence case: no tracked-out all-caps eyebrows. */
+/* The page's width, gutters included: wide for the poster, reading columns use measure inside it. */
+@utility shell {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1440px;
+  padding-inline: 1rem;
+  @media (min-width: 640px) {
+    padding-inline: 1.5rem;
+  }
+  @media (min-width: 1024px) {
+    padding-inline: 2.5rem;
+  }
+}
+
+/* Small mono labels, in sentence case: no tracked-out all-caps eyebrows. */
 @utility label-mono {
   font-family: var(--font-mono);
   font-weight: 400;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   letter-spacing: 0;
-}
-
-@layer base {
-  .font-display {
-    font-weight: 700;
-  }
 }
 
 @utility measure {
   max-width: 68ch;
 }
 
-@layer base {
-  /* Keep focused elements clear of the 56px top bar (sticky on mobile, fixed on desktop) and, on
-     desktop, of the 44px status bar along the bottom (SC 2.4.11). */
-  html {
-    scroll-padding-top: 4.5rem;
-  }
-  @media (min-width: 1024px) {
-    html {
-      scroll-padding-bottom: 3.5rem;
-    }
-  }
-}
-
 @layer components {
-  .drawer {
-    translate: 0 0;
-    transition:
-      translate var(--dur-base) var(--ease-snap),
-      overlay var(--dur-base) allow-discrete,
-      display var(--dur-base) allow-discrete;
+  .font-display {
+    font-weight: 700;
   }
-  .drawer:not([open]) {
-    translate: -100% 0;
-    transition-duration: var(--dur-fast);
+
+  /* The home page's poster (C51): the name as wide as the page allows, on two lines with the second
+     pushed right; the headline sits in the gap the second line leaves, the details underneath. The
+     hero is the size container, so the type scales with the content width, never the viewport. */
+  .poster-hero {
+    position: relative;
+    container-type: inline-size;
+    /* Until the condensed face arrives (or if it never does) the fallback is wider; it is clipped
+       here rather than pushing the page sideways. */
+    overflow-x: clip;
   }
-  @starting-style {
-    .drawer[open] {
-      translate: -100% 0;
+  .poster {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-variation-settings:
+      'opsz' 96,
+      'wdth' 75;
+    text-transform: uppercase;
+    line-height: 0.8;
+    letter-spacing: -0.02em;
+    overflow-wrap: normal;
+  }
+  .poster > span:not(.sr-only) {
+    display: block;
+    /* "VINCENT" at wdth 75 is about 2.7em wide, so 34% of the width fills it to about 92%. */
+    font-size: 34cqw;
+  }
+  .poster > span + span {
+    text-align: right;
+  }
+  .poster-line {
+    margin-top: 1.5rem;
+    max-width: 24ch;
+    font-size: 1.25rem;
+    font-weight: 500;
+    font-variation-settings: 'opsz' 32;
+    line-height: 1.2;
+  }
+  @media (min-width: 768px) {
+    .poster-line {
+      position: absolute;
+      left: 0;
+      /* Just under the first line, in the space left of the second. */
+      top: calc(34cqw * 0.8 + 2cqw);
+      max-width: 21cqw;
+      margin-top: 0;
+      font-size: clamp(1rem, 1.7cqw, 1.625rem);
     }
+  }
+  .poster-details {
+    display: grid;
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+  @media (min-width: 768px) {
+    .poster-details {
+      grid-template-columns: 1fr 1.4fr 1fr;
+      align-items: end;
+    }
+  }
+
+  /* The email, set large at the foot of the home page. */
+  .contact-email {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-variation-settings:
+      'opsz' 96,
+      'wdth' 75;
+    font-size: clamp(2rem, 0.6rem + 5.6vw, 6rem);
+    line-height: 1;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+  .contact-email:hover {
+    color: var(--accent);
+  }
+
+  /* Top bar links: mono, ink; the page you are on takes the accent and an underline. */
+  .nav-link {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .nav-link:hover,
+  .nav-link[aria-current='page'] {
+    color: var(--accent);
+  }
+  .nav-link[aria-current='page'] {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+  }
+
+  /* Phone menu links: the page titles' condensed voice. */
+  .menu-link {
+    display: block;
+    padding-block: 0.25rem;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-variation-settings:
+      'opsz' 96,
+      'wdth' 75;
+    font-size: clamp(3rem, 14vw, 4.5rem);
+    line-height: 1;
+    text-transform: uppercase;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .menu-link:hover,
+  .menu-link[aria-current='page'] {
+    color: var(--accent);
+  }
+
+  /* A list of work (components/content/WorkList.tsx): big names between thin rules. The name is the
+     link and its overlay covers the row. Hovering the row or focusing its link nudges it right, takes
+     the accent and opens its hook; touch screens always show the hook. The hook is always in the page (it only
+     clips), so screen readers read it either way. */
+  .work-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    column-gap: 1rem;
+    padding-block: 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .work-row:last-child {
+    border-bottom: 1px solid var(--border);
+  }
+  @media (min-width: 768px) {
+    .work-row {
+      grid-template-columns: 3.5rem minmax(0, 1fr) 13rem 3.5rem;
+      align-items: baseline;
+    }
+  }
+  .work-row-num,
+  .work-row-meta {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+  }
+  .work-row-meta {
+    grid-column: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1rem;
+    margin-top: 0.25rem;
+  }
+  @media (min-width: 768px) {
+    .work-row-meta {
+      display: contents;
+    }
+  }
+  .work-row-name {
+    min-width: 0;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-variation-settings:
+      'opsz' 72,
+      'wdth' 85;
+    font-size: clamp(1.5rem, 1rem + 2.6vw, 3.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+  }
+  .work-row-link {
+    color: var(--text);
+    text-decoration: none;
+  }
+  .work-row-link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  /* The nudge moves the name's text, never an ancestor of the link: a transform on one would become
+     the overlay's containing block and shrink the clickable area to the name. */
+  .work-row-link > span {
+    display: inline-block;
+    transition: translate var(--dur-fast) var(--ease-snap);
+  }
+  .work-row-hook {
+    grid-column: 2 / -1;
+    display: grid;
+    grid-template-rows: 1fr;
+    transition:
+      grid-template-rows var(--dur-fast) var(--ease-snap),
+      translate var(--dur-fast) var(--ease-snap);
+  }
+  .work-row-hook > p {
+    min-height: 0;
+    overflow: hidden;
+    max-width: 62ch;
+    color: var(--text-muted);
+  }
+  /* The gap above the hook lives inside it, so a closed hook takes no space at all. */
+  .work-row-hook > p::before {
+    content: '';
+    display: block;
+    height: 0.5rem;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .work-row-hook {
+      grid-template-rows: 0fr;
+    }
+    .work-row:is(:hover, :focus-within) .work-row-hook {
+      grid-template-rows: 1fr;
+    }
+  }
+  .work-row:is(:hover, :focus-within) :is(.work-row-link > span, .work-row-hook) {
+    translate: 0.75rem 0;
+  }
+  .work-row:is(:hover, :focus-within) .work-row-link {
+    color: var(--accent);
+  }
+
+  /* Pending placeholder for the moments a visitor actually waits (an external badge). */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-chip);
+    background-color: var(--surface-2);
+  }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--text) 9%, transparent),
+      transparent
+    );
+    translate: -100% 0;
+    animation: skeleton-sweep 1.4s var(--ease-snap) 4;
+  }
+  .skeleton > * {
+    position: relative;
+    z-index: 1;
+  }
+  @keyframes skeleton-sweep {
+    to {
+      translate: 100% 0;
+    }
+  }
+
+  /* Hit area: grows a small link's clickable area to at least 24 px tall (WCAG 2.5.8) without
+     changing how it looks or where it sits: links in tables, timelines and the resume. */
+  .hit-area {
+    position: relative;
+  }
+  .hit-area::before {
+    content: '';
+    position: absolute;
+    inset: -0.5rem -0.25rem;
+  }
+
+  /* Quality: each Lighthouse score has a thin bar filled to the score. */
+  .score-bar {
+    display: block;
+    position: relative;
+    height: 3px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--border);
+  }
+  .score-bar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--pass);
+    transform-origin: left;
+    scale: var(--v, 1) 1;
   }
 }
 
@@ -220,21 +513,13 @@
   }
 }
 
-/* Bug Hunt: planted values only on screen; print always shows the true ones. */
-@layer components {
-  .hunt-screen {
-    display: contents;
-  }
-  .hunt-print {
-    display: none;
-  }
-  @media print {
-    .hunt-screen {
-      display: none;
-    }
-    .hunt-print {
-      display: contents;
-    }
+/* Motion: C50's one rhythm. Everything that arrives rises 16 px over 400 ms on the shared easing,
+   on load or as it scrolls in; list rows answer the pointer over 180 ms; page changes take 120 ms out
+   and 240 ms in. Transform only, never opacity, so text contrast never drops. Screen only, and off
+   under reduced motion. */
+@keyframes rise {
+  from {
+    translate: 0 16px;
   }
 }
 
@@ -247,326 +532,20 @@
   }
 }
 
-/* Motion (2026-11-07 design pass). Only transform-like properties, shadows and colours animate. */
-@layer components {
-  /* Cards: lift and pick up the accent on hover, keep the accent border while a child has focus. */
-  .lift {
-    transition:
-      translate var(--dur-fast) var(--ease-snap),
-      border-color var(--dur-fast) var(--ease-snap);
-  }
-  .lift:focus-within {
-    border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
-  }
-  @media (hover: hover) {
-    .lift:hover {
-      translate: 0 -2px;
-      border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
-    }
-  }
-
-  .press {
-    transition:
-      scale var(--dur-fast) var(--ease-snap),
-      translate var(--dur-fast) var(--ease-snap),
-      filter var(--dur-fast),
-      background-color var(--dur-fast);
-  }
-  @media (hover: hover) {
-    .press:hover:not([aria-disabled='true']) {
-      translate: 0 -2px;
-    }
-  }
-  .press:active:not([aria-disabled='true']) {
-    translate: 0 0;
-    scale: 0.94;
-  }
-
-  /* Pending placeholder for the moments a visitor actually waits (an external badge, queued checks).
-     The sweep is a transformed pseudo-element so it stays on the compositor. Children paint above it. */
-  .skeleton {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--radius-chip);
-    background-color: var(--surface-2);
-  }
-  .skeleton::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      color-mix(in srgb, var(--text) 9%, transparent),
-      transparent
-    );
-    translate: -100% 0;
-    animation: skeleton-sweep 1.4s var(--ease-snap) 4;
-  }
-  .skeleton > * {
-    position: relative;
-    z-index: 1;
-  }
-  @keyframes skeleton-sweep {
-    to {
-      translate: 100% 0;
-    }
-  }
-}
-
-/* On scroll: each section's status dot turns from pending to pass as it comes into view, the one
-   scroll-linked moment on the page. Without scroll-driven animation support, or under reduced motion,
-   the dot shows as passed. */
-.reveal-dot {
-  background-color: var(--pass);
-  color: var(--bg);
-}
-/* The check is drawn by the dot's own animation through an inherited custom property, so each
-   section keeps a single scroll timeline (per-element timelines cost blocking time). */
-@property --dot-check {
-  syntax: '<number>';
-  inherits: true;
-  initial-value: 0;
-}
-.dot-check {
-  stroke-dasharray: 1;
-  stroke-dashoffset: var(--dot-check);
-}
-@supports (animation-timeline: view()) {
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .reveal-dot {
-      animation: dot-pass linear both;
-      animation-timeline: view();
-      animation-range: cover 140px cover 320px;
-    }
-  }
-}
-@keyframes dot-pass {
-  from {
-    background-color: transparent;
-    box-shadow: inset 0 0 0 1.5px var(--text-muted);
-    --dot-check: 1;
-  }
-  60% {
-    box-shadow:
-      inset 0 0 0 1.5px var(--pass),
-      0 0 0 7px color-mix(in srgb, var(--pass) 30%, transparent);
-    --dot-check: 1;
-  }
-  to {
-    background-color: var(--pass);
-    box-shadow: inset 0 0 0 1.5px var(--pass);
-  }
-}
-
-/* Hero spotlight (content/HeroSpotlight.tsx): a quiet dot field; around the cursor the dots turn
-   pass-green and a scan ring pulses. The lit layer is the same dots, masked to a circle. */
-.spotlight {
-  position: absolute;
-  inset: -2rem 0;
-  z-index: -1;
-  overflow: clip;
-  pointer-events: none;
-  -webkit-mask-image: linear-gradient(transparent, black 12%, black 85%, transparent);
-  mask-image: linear-gradient(transparent, black 12%, black 85%, transparent);
-}
-.spotlight-dots,
-.spotlight-lit {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(circle, currentColor 1.4px, transparent 1.8px);
-  background-size: 24px 24px;
-  background-position: 12px 12px;
-}
-.spotlight-dots {
-  color: color-mix(in srgb, var(--text-muted) 22%, transparent);
-}
-.spotlight-lit,
-.spotlight-ring {
-  display: none;
-}
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .spotlight-lit {
-    display: block;
-    color: var(--pass);
-    opacity: 0;
-    -webkit-mask-image: radial-gradient(
-      circle 170px at var(--mx, 50%) var(--my, 50%),
-      #000,
-      rgb(0 0 0 / 0.5) 45%,
-      transparent 72%
-    );
-    mask-image: radial-gradient(
-      circle 170px at var(--mx, 50%) var(--my, 50%),
-      #000,
-      rgb(0 0 0 / 0.5) 45%,
-      transparent 72%
-    );
-    transition: opacity var(--dur-base);
-  }
-  .spotlight-ring {
-    display: block;
-    position: absolute;
-    left: var(--mx, 50%);
-    top: var(--my, 50%);
-    width: 320px;
-    height: 320px;
-    translate: -50% -50%;
-    border-radius: 50%;
-    border: 1px solid color-mix(in srgb, var(--pass) 40%, transparent);
-    opacity: 0;
-  }
-  .spotlight[data-active] .spotlight-lit {
-    opacity: 1;
-  }
-  .spotlight[data-active] .spotlight-ring {
-    animation: spotlight-pulse 2.4s var(--ease-snap) infinite;
-  }
-}
-@keyframes spotlight-pulse {
-  from {
-    scale: 0.35;
-    opacity: 1;
-  }
-  to {
-    scale: 1.1;
-    opacity: 0;
-  }
-}
-
-/* Docked report title: hidden at rest; once the visitor has scrolled past the report header, a
-   compact bar slides down and pins to the top. Only where scroll timelines exist and motion is welcome. */
-.report-dock {
-  position: sticky;
-  top: 3.5rem;
-  z-index: 20;
-  height: 0;
-  margin-block: calc(var(--spacing-rhythm) * -0.5);
-  pointer-events: none;
-}
-.report-dock-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-inline: -0.5rem;
-  padding: 0.625rem 0.875rem;
-  border: 1px solid var(--border);
-  border-top: 0;
-  border-radius: 0 0 var(--radius-card) var(--radius-card);
-  /* Opaque: at any transparency the report's large headline reads through the bar. */
-  background: var(--surface);
-  box-shadow: 0 12px 24px -16px var(--backdrop);
-  visibility: hidden;
-}
-@supports (animation-timeline: view()) {
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .report-dock-bar {
-      animation: dock-in linear both;
-      /* The page's own scroll position: cheaper than a named timeline scoped over the whole report.
-         Report headers end around 300 to 420 px down, so the bar docks across that stretch. */
-      animation-timeline: scroll(root);
-      animation-range: 300px 420px;
-    }
-  }
-}
-@keyframes dock-in {
-  from {
-    visibility: hidden;
-    translate: 0 -110%;
-  }
-  1% {
-    visibility: visible;
-  }
-  to {
-    visibility: visible;
-    translate: 0 0;
-  }
-}
-
-/* Content motion, linked to scroll and tied to the runner idea: result rows stream in, the timeline
-   draws down and severity bars fill. Only transforms move, so contrast and hit targets never change.
-   (A tinted sweep across cards was removed: it read as a flash of blue.) Without scroll-driven
-   animation support, or under reduced motion, everything shows in its final state. */
-.timeline-track {
-  position: relative;
-}
-.timeline-track::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: -1px;
-  width: 1px;
-  background-color: color-mix(in srgb, var(--accent) 70%, transparent);
-  transform-origin: top;
-}
-@supports (animation-timeline: view()) {
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .draw-x {
-      transform-origin: left;
-      animation: draw-x linear both;
-      animation-timeline: view();
-      animation-range: entry 40% cover 45%;
-    }
-    .timeline-track::before {
-      animation: draw-y linear both;
-      animation-timeline: view();
-      animation-range: cover 10% cover 70%;
-    }
-  }
-}
-@keyframes draw-x {
-  from {
-    scale: 0 1;
-  }
-}
-@keyframes draw-y {
-  from {
-    scale: 1 0;
-  }
-}
-
-/* Transitions on every interactive part: colour, border, underline, shadow and transform changes
-   ease instead of snapping. Reduced motion collapses them through the global rule above. */
-@layer base {
-  a,
-  button,
-  summary,
-  input,
-  textarea,
-  select,
-  label,
-  [role='option'] {
-    transition-property:
-      color, background-color, border-color, text-decoration-color, outline-color, box-shadow,
-      translate, scale, rotate, filter;
-    transition-duration: var(--dur-fast);
-    transition-timing-function: var(--ease-snap);
-  }
-  a {
-    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
-  }
-  a:hover {
-    text-decoration-color: currentColor;
-  }
-}
-
-/* Dialogs (palette, ticket, evidence) scale in and out; the backdrop fades. The drawer has its own
-   slide. Only the backdrop changes opacity, so dialog text is never scanned half-faded. Screen only:
-   print and the generated CV must render every element in its final state. */
 @media screen and (prefers-reduced-motion: no-preference) {
-  dialog:not(.drawer) {
+  /* Dialogs (the phone menu, evidence images) rise in; the backdrop fades. */
+  dialog {
     transition:
-      scale var(--dur-base) var(--ease-snap),
       translate var(--dur-base) var(--ease-snap),
       overlay var(--dur-base) allow-discrete,
       display var(--dur-base) allow-discrete;
   }
-  dialog:not(.drawer):not([open]) {
+  dialog:not([open]) {
     translate: 0 16px;
+    transition-duration: var(--dur-fast);
   }
   @starting-style {
-    dialog[open]:not(.drawer) {
+    dialog[open] {
       translate: 0 16px;
     }
   }
@@ -584,8 +563,24 @@
       opacity: 0;
     }
   }
+  /* The phone menu's links arrive in turn. */
+  dialog[open] nav > ul > li {
+    animation: rise var(--dur-base) var(--ease-snap) backwards;
+  }
+  dialog[open] nav > ul > li:nth-child(2) {
+    animation-delay: 40ms;
+  }
+  dialog[open] nav > ul > li:nth-child(3) {
+    animation-delay: 80ms;
+  }
+  dialog[open] nav > ul > li:nth-child(4) {
+    animation-delay: 120ms;
+  }
+  dialog[open] nav > ul > li:nth-child(n + 5) {
+    animation-delay: 160ms;
+  }
 
-  /* Defect tickets and other disclosures open and close smoothly where details content can animate. */
+  /* Findings and other disclosures open and close smoothly where details content can animate. */
   :root {
     interpolate-size: allow-keywords;
   }
@@ -600,644 +595,43 @@
     block-size: auto;
   }
 
-  /* Page headers, and the home hero's text column (data-hero-text), rise in once, line by line, on
-     load, with the shared rise. Transform only: no opacity (the title paints at once, so LCP is
-     unaffected and axe never scans faded text) and no filter. */
-  main :is(header, [data-hero-text]) > :not([data-morph-title]) {
+  /* Page headers, and the poster on the home page, rise in once, line by line, on load. No opacity:
+     the title paints at once, so LCP is unaffected and axe never scans faded text. */
+  main header > :not([data-morph-title]) {
     animation: rise var(--dur-base) var(--ease-snap) backwards;
   }
-  main :is(header, [data-hero-text]) > :nth-child(2) {
+  main header > :nth-child(2) {
     animation-delay: 40ms;
   }
-  main :is(header, [data-hero-text]) > :nth-child(3) {
+  main header > :nth-child(3) {
     animation-delay: 80ms;
   }
-  main :is(header, [data-hero-text]) > :nth-child(n + 4) {
+  main header > :nth-child(n + 4) {
     animation-delay: 120ms;
   }
 
-  /* Thumbnails lean in on hover. */
-  main button:hover > img,
-  main a:hover > img {
-    scale: 1.05;
-  }
-  main button > img,
-  main a > img {
-    transition: scale var(--dur-base) var(--ease-snap);
+  /* Feedback: anything that appears in answer to the visitor (errors, alerts, statuses) rises in. */
+  .reveal-in,
+  .pop-in,
+  .count-roll {
+    animation: rise var(--dur-base) var(--ease-snap) backwards;
   }
 }
 
-/* On scroll: sections rise into place, timeline entries and table rows stream in. Transform only,
-   never opacity, so text contrast never drops; final state without support or under reduced motion. */
+/* On scroll: sections rise into place, list rows and table rows stream in. Final state without
+   support or under reduced motion. */
 @supports (animation-timeline: view()) {
   @media screen and (prefers-reduced-motion: no-preference) {
-    main section:not([aria-labelledby='hero-heading']) {
+    main section {
       animation: rise linear both;
       animation-timeline: view();
       animation-range: cover 0px cover 380px;
     }
-    /* Scoped, not every li: one scroll timeline per list item cost measurable blocking time. */
-    main :is(.timeline-track > li, tbody > tr) {
+    /* Scoped, not every li: one scroll timeline per list item costs blocking time. */
+    main :is(.work-row, tbody > tr) {
       animation: rise linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 100%;
-    }
-  }
-}
-
-/* Time machine redesign (2026-11-08): physical objects that answer the visitor. */
-@layer components {
-  /* Pull cord: it hangs and sways gently from above the page; hovering or focusing it draws it down a
-     little; a tug stretches it, springs it back and sets it swinging to rest while the knob sends out
-     a ring. In the dark theme the knob glows. Rotation, translation, scale and opacity only, so the
-     compositor runs all of it; the sway is off under reduced motion. */
-  .cord-sway,
-  .pull-cord {
-    transform-origin: top center;
-  }
-  .pull-cord {
-    transition: translate var(--dur-base) var(--ease-snap);
-  }
-  .group:is(:hover, :focus-visible) .pull-cord {
-    translate: 0 0.5rem;
-  }
-  .pull-cord-tug {
-    animation:
-      cord-tug 700ms var(--ease-snap),
-      cord-swing 1.6s ease-out 280ms;
-  }
-  .cord-knob::after {
-    content: '';
-    position: absolute;
-    inset: -3px;
-    border: 1px solid var(--accent);
-    border-radius: 50%;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .pull-cord-tug .cord-knob::after {
-    animation: knob-ring 700ms ease-out 180ms;
-  }
-  .dark .cord-knob {
-    box-shadow: 0 0 10px 1px color-mix(in srgb, var(--accent) 45%, transparent);
-  }
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .cord-sway {
-      animation: cord-sway 5s ease-in-out infinite alternate;
-    }
-  }
-
-  /* Time machine: a huge extruded year that rolls up into its window as its group arrives. */
-  .tm-year-window {
-    overflow: hidden;
-    padding: 0.25rem 1rem 0.75rem 0;
-    container-type: inline-size;
-  }
-  .tm-year {
-    font-family: var(--font-display);
-    font-weight: 800;
-    /* Sized to its column, not the viewport, so all four digits (and the extrusion) always fit:
-       Four digits plus the shadow run about 2.7em wide. */
-    font-size: min(8.5rem, 36cqi);
-    line-height: 0.9;
-    letter-spacing: -0.04em;
-    color: var(--text);
-    /* Three hard layers read as an extrusion at this size; a blurred layer cost paint time on every
-       frame of the roll. */
-    text-shadow:
-      2px 2px 0 var(--border),
-      4px 4px 0 var(--border),
-      6px 6px 0 var(--border);
-  }
-  .time-machine {
-    isolation: isolate;
-    overflow: clip;
-    overflow-clip-margin: 2rem;
-  }
-  /* The dust drifts by transform, so scrolling never repaints the grid. It is 120px taller than the
-     section so the drift never shows an edge. */
-  .time-machine::before {
-    content: '';
-    position: absolute;
-    inset: calc(-2rem - 60px) 0;
-    z-index: -1;
-    pointer-events: none;
-    background-image: radial-gradient(
-      color-mix(in srgb, var(--text-muted) 35%, transparent) 1px,
-      transparent 1.5px
-    );
-    background-size: 46px 46px;
-    mask-image: linear-gradient(transparent, black 15%, black 85%, transparent);
-  }
-
-  /* Suite cards: on hover or focus a pass-green scan line runs down the card and the front clears
-     behind it, showing the result underneath, as if a test run had reached the card. A clip and a
-     moving line, nothing rotates. The clip reaches past the sides and bottom so the card's shadow
-     stays. Under reduced motion the front simply clears and no line runs. */
-  .door-panel {
-    clip-path: inset(0 -2rem -2rem -2rem);
-    transition: clip-path var(--dur-slow) var(--ease-snap);
-  }
-  .suite-door:is(:hover, :focus-within) .door-panel {
-    clip-path: inset(100% -2rem -2rem -2rem);
-  }
-  .suite-door::before {
-    content: '';
-    position: absolute;
-    inset-inline: 0;
-    top: 0;
-    z-index: 20;
-    height: 2px;
-    border-radius: 1px;
-    background: var(--pass);
-    box-shadow: 0 0 12px color-mix(in srgb, var(--pass) 60%, transparent);
-    pointer-events: none;
-    visibility: hidden;
-  }
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .suite-door:is(:hover, :focus-within)::before {
-      animation: door-scan var(--dur-slow) var(--ease-snap) forwards;
-    }
-  }
-  @keyframes door-scan {
-    from {
-      top: 0;
-      visibility: visible;
-    }
-    85% {
-      visibility: visible;
-    }
-    to {
-      top: calc(100% - 2px);
-      visibility: hidden;
-    }
-  }
-  .door-extra {
-    pointer-events: none;
-  }
-  .suite-door:is(:hover, :focus-within) .door-extra {
-    pointer-events: auto;
-  }
-
-  /* Drawn underline: a faint line at rest keeps the link recognisable; on hover or focus an accent
-     line draws over it from the left. */
-  .draw-link {
-    text-decoration: none;
-    background-image:
-      linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--border), var(--border));
-    background-position:
-      0 100%,
-      0 100%;
-    background-repeat: no-repeat;
-    background-size:
-      0 1px,
-      100% 1px;
-    padding-bottom: 2px;
-    transition: background-size var(--dur-base) var(--ease-snap);
-  }
-  .draw-link:is(:hover, :focus-visible) {
-    background-size:
-      100% 1px,
-      100% 1px;
-  }
-
-  /* QA checklist: each check mark draws in as the section arrives (see the scroll rules below). */
-  .qa-check {
-    stroke-dasharray: 1;
-  }
-  .qa-grid {
-    view-timeline: --qa block;
-  }
-
-  /* Touch screens have no hover: the result shows on the card's front. */
-  .door-hook-touch {
-    display: none;
-  }
-  @media (hover: none) {
-    .door-hook-touch {
-      display: block;
-    }
-    .door-summary {
-      display: none;
-    }
-  }
-}
-@supports (animation-timeline: view()) {
-  @media screen and (prefers-reduced-motion: no-preference) {
-    /* Checklist marks draw one after another as the grid scrolls in. */
-    .qa-check {
-      animation: qa-draw linear both;
-      /* One shared timeline (the grid) instead of one per mark. */
-      animation-timeline: --qa;
-      animation-range: entry calc(30% + var(--i) * 3%) cover calc(42% + var(--i) * 3%);
-    }
-    .tm-year {
-      animation: rise linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 90%;
-    }
-  }
-}
-@keyframes qa-draw {
-  from {
-    stroke-dashoffset: 1;
-  }
-}
-@keyframes cord-sway {
-  from {
-    rotate: 1.2deg;
-  }
-  to {
-    rotate: -1.2deg;
-  }
-}
-/* It hangs at the right edge, so the first swing goes left, into the page. */
-@keyframes cord-swing {
-  18% {
-    rotate: 7deg;
-  }
-  40% {
-    rotate: -5deg;
-  }
-  60% {
-    rotate: 3deg;
-  }
-  80% {
-    rotate: -1.2deg;
-  }
-}
-@keyframes knob-ring {
-  from {
-    scale: 1;
-    opacity: 0.8;
-  }
-  to {
-    scale: 3.2;
-    opacity: 0;
-  }
-}
-@keyframes cord-tug {
-  30% {
-    translate: 0 1.75rem;
-  }
-  55% {
-    translate: 0 -0.35rem;
-  }
-  75% {
-    translate: 0 0.2rem;
-  }
-}
-
-/* Route change: quick and light, one page at a time. The old page lifts away in 120 ms, then the new
-   one rises into place over 240 ms, so the two never overlap into a double image; the top bar and
-   status bar never move. No blur: a filter on a whole-page snapshot is costly to draw and stuttered
-   on phones. A project's name morphs from its card into the report title (.morph). */
-::view-transition-old(.page-exit) {
-  animation: 120ms var(--ease-snap) both vt-out;
-}
-::view-transition-new(.page-enter) {
-  animation: 240ms var(--ease-snap) 110ms both vt-in;
-}
-/* The active page's marker (the top bar's underline, the drawer's row) glides to the new page on
-   navigation. A named element is drawn above
-   the page snapshot, so the marker is blended rather than painted over the rows: in the dark theme
-   it lightens (light labels stay light), in the light theme it darkens (dark labels stay dark). */
-::view-transition-group(nav-active-topbar),
-::view-transition-group(nav-active-drawer) {
-  animation-duration: var(--dur-slow);
-  animation-timing-function: var(--ease-snap);
-}
-html.dark::view-transition-group(nav-active-topbar),
-html.dark::view-transition-group(nav-active-drawer) {
-  mix-blend-mode: lighten;
-}
-html.light::view-transition-group(nav-active-topbar),
-html.light::view-transition-group(nav-active-drawer) {
-  mix-blend-mode: darken;
-}
-/* The theme flood keeps the marker in the page snapshot, so the circle reveals it with its row
-   instead of the marker covering the row's label for the whole switch. */
-html:active-view-transition-type(theme) [data-nav-marker] {
-  view-transition-name: none !important;
-}
-
-/* A control growing into its dialog (lib/morph.ts): a slower, springier move than the default. */
-::view-transition-group(dialog-morph) {
-  animation-duration: var(--dur-base);
-  animation-timing-function: var(--ease-snap);
-}
-:active-view-transition-type(dialog-morph)::view-transition-old(root),
-:active-view-transition-type(dialog-morph)::view-transition-new(root) {
-  animation-duration: var(--dur-base);
-}
-
-/* Theme flood (lib/theme-switch.ts): the new theme is revealed by a growing circle animated from
-   script, so the default cross-fade is switched off for that transition. */
-:active-view-transition-type(theme)::view-transition-old(root),
-:active-view-transition-type(theme)::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-
-/* Test-runner chip (layout/RouteRunner.tsx): on a page change a small chip in the corner reports the
-   page as a spec (its file name, a filling line, then its real CI result) and slides away about a
-   second later. It sits in the bottom corner, clear of the page header: at the screen's edge on
-   phones, above the status bar on desktop. Decorative and pointer-transparent; off under reduced
-   motion. */
-.route-runner {
-  position: fixed;
-  bottom: 1rem;
-  left: 1rem;
-  z-index: 55;
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  padding: 0.375rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-chip);
-  background: var(--surface-2);
-  box-shadow: 0 10px 24px -14px var(--backdrop);
-  pointer-events: none;
-  animation: runner-chip 1100ms var(--ease-snap) both;
-}
-@media (min-width: 1024px) {
-  .route-runner {
-    bottom: 3.5rem;
-  }
-}
-.route-runner-bar {
-  position: relative;
-  width: 3.5rem;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--border);
-  overflow: hidden;
-}
-.route-runner-bar i {
-  position: absolute;
-  inset: 0;
-  background: var(--accent);
-  transform-origin: left;
-  animation: runner-bar var(--dur-base) var(--ease-snap) 100ms both;
-}
-.route-runner-stamp {
-  width: fit-content;
-  transform-origin: left center;
-  animation: runner-stamp var(--dur-fast) var(--ease-snap) 480ms both;
-}
-@keyframes runner-chip {
-  0% {
-    translate: 0 0.5rem;
-    opacity: 0;
-  }
-  14%,
-  82% {
-    translate: 0 0;
-    opacity: 1;
-  }
-  100% {
-    translate: 0 0.5rem;
-    opacity: 0;
-    visibility: hidden;
-  }
-}
-@keyframes runner-bar {
-  from {
-    scale: 0 1;
-  }
-}
-@keyframes runner-stamp {
-  from {
-    opacity: 0;
-    scale: 1.4;
-  }
-}
-
-::view-transition-group(.morph) {
-  animation-duration: var(--dur-slow);
-  animation-timing-function: var(--ease-snap);
-}
-@keyframes vt-out {
-  to {
-    opacity: 0;
-    translate: 0 -8px;
-  }
-}
-@keyframes vt-in {
-  from {
-    opacity: 0;
-    translate: 0 16px;
-  }
-}
-
-/* No dead areas (docs/superpowers/plans/2026-11-15-no-dead-areas.md): every part arrives, answers or
-   changes shape. Decoration may fade; content text only moves, clips or recolours. All of it is
-   screen-only and collapses under reduced motion through the global rule. */
-
-/* Every button presses in. The pull cord opts out: it is a whole hanging cord, not a control face. */
-@layer base {
-  /* Beats Tailwind's important display:none on [hidden] (same layer, higher specificity). */
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .nav-folder[hidden] {
-      display: block !important;
-      height: 0;
-      visibility: hidden;
-    }
-  }
-  button:not(:disabled, [data-no-press]):active,
-  :is([data-topbar], .drawer) nav a:active {
-    scale: 0.96;
-  }
-}
-
-/* Reading progress: a hairline under the top bar fills as the page scrolls; pages too short to scroll
-   show none. */
-.scroll-progress {
-  display: none;
-}
-@supports (animation-timeline: scroll()) {
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .scroll-progress {
-      display: block;
-      position: fixed;
-      inset: 3.5rem 0 auto;
-      z-index: 40;
-      height: 2px;
-      background: var(--accent);
-      transform-origin: left;
-      scale: 0 1;
-      pointer-events: none;
-      animation: scroll-fill linear both;
-      animation-timeline: scroll(root);
-    }
-  }
-  @media screen and (prefers-reduced-motion: no-preference) and (min-width: 1024px) {
-    .scroll-progress {
-      inset: 3.5rem 0 auto;
-    }
-  }
-}
-@keyframes scroll-fill {
-  from {
-    scale: 0 1;
-  }
-  to {
-    scale: 1 1;
-  }
-}
-
-@media screen and (prefers-reduced-motion: no-preference) {
-  /* The drawer's project folder slides open and shut instead of snapping; its rows cascade in. A
-     closed folder stays laid out at zero height and hidden (out of the accessibility tree and the tab
-     order), so its height can ease both ways. */
-  .nav-folder {
-    overflow: clip;
-    transition:
-      height var(--dur-base) var(--ease-snap),
-      visibility var(--dur-base);
-  }
-  .nav-folder:not([hidden]) > li {
-    animation: rise var(--dur-base) var(--ease-snap) backwards;
-    animation-delay: calc(var(--i, 0) * 40ms);
-  }
-
-  /* The top bar's Menu icon turns into a close X while the drawer is open. */
-  .menu-icon line {
-    transform-box: fill-box;
-    transform-origin: center;
-    transition:
-      translate var(--dur-base) var(--ease-snap),
-      rotate var(--dur-base) var(--ease-snap),
-      scale var(--dur-fast) var(--ease-snap);
-  }
-  [aria-expanded='true'] .menu-icon line:nth-child(1) {
-    translate: 0 6px;
-    rotate: 45deg;
-  }
-  [aria-expanded='true'] .menu-icon line:nth-child(2) {
-    scale: 0 1;
-  }
-  [aria-expanded='true'] .menu-icon line:nth-child(3) {
-    translate: 0 -6px;
-    rotate: -45deg;
-  }
-}
-
-/* Feedback: anything that appears in answer to the visitor (errors, alerts, statuses, results, notes)
-   slides open from its top edge instead of popping in; small marks pop. Clip and translate only. */
-@media screen and (prefers-reduced-motion: no-preference) {
-  .reveal-in,
-  .pop-in {
-    animation: rise var(--dur-base) var(--ease-snap) backwards;
-  }
-  /* The run-checks sheet slides up; results stream in as they arrive; the loading sweep keeps going
-     until they do; the running chip's dot breathes. */
-  :is([data-runner-panel], [data-runner-loading]) {
-    animation: rise var(--dur-base) var(--ease-snap) backwards;
-  }
-  :is([data-runner-panel], [data-runner-loading]) .skeleton::after {
-    animation-iteration-count: infinite;
-  }
-  [data-runner-panel] li[data-check] {
-    animation: rise var(--dur-base) var(--ease-snap) backwards;
-  }
-  /* Bug Hunt: inspect tags pop in, the "No defect here." note rises, holds and sinks away. The note is
-     aria-hidden (a live region announces it), so it may fade. */
-  [data-hunt-inspect] {
-    animation: rise var(--dur-base) var(--ease-snap) backwards;
-  }
-  .hunt-toast {
-    animation: toast-life 2.8s var(--ease-snap) forwards;
-  }
-}
-@keyframes toast-life {
-  0% {
-    opacity: 0;
-    transform: translateY(1rem);
-  }
-  12%,
-  85% {
-    opacity: 1;
-    transform: none;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(0.5rem);
-  }
-}
-
-/* Answers: chips tint and rise under the pointer; a result callout rises in as it scrolls into view
-   while its accent rule draws down; CI badges ease in over their placeholder. */
-@layer components {
-  .chip {
-    transition:
-      translate var(--dur-fast) var(--ease-snap),
-      background-color var(--dur-fast),
-      border-color var(--dur-fast);
-  }
-  @media (hover: hover) {
-    .chip:hover {
-      translate: 0 -2px;
-      background-color: color-mix(in srgb, var(--accent) 14%, var(--surface-2));
-    }
-  }
-}
-@supports (animation-timeline: view()) {
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .result-callout {
-      position: relative;
-      border-left-color: transparent;
-      animation: rise linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 70%;
-    }
-    .result-callout::before {
-      content: '';
-      position: absolute;
-      inset: 0 auto 0 -2px;
-      width: 2px;
-      background: var(--accent);
-      transform-origin: top;
-      animation: draw-y linear both;
-      animation-timeline: view();
-      animation-range: entry 10% cover 40%;
-    }
-  }
-}
-
-/* Quieter pages. Skills: each card's chips pop in and its status turns to a check as the card scrolls
-   in (one timeline per card). Quality: Lighthouse scores roll and their bars fill on the table's one
-   timeline; the latest-run facts stream in. Resume: entries rise in turn on screen, one timeline per
-   list; print is untouched. */
-.score-bar {
-  display: block;
-  position: relative;
-  height: 3px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--border);
-}
-.score-bar::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: var(--pass);
-  transform-origin: left;
-  scale: var(--v, 1) 1;
-}
-@supports (animation-timeline: view()) {
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .skill-card {
-      view-timeline: --card block;
-    }
-    .latest-run {
-      view-timeline: --latest block;
-    }
-    .latest-run > * {
-      animation: rise linear both;
-      animation-timeline: --latest;
-      animation-range: entry 10% cover 35%;
     }
     .resume-list {
       view-timeline: --resume block;
@@ -1266,393 +660,46 @@ html:active-view-transition-type(theme) [data-nav-marker] {
   }
 }
 
-/* Lists that change (part 2). The /projects result count rolls up to each new value. */
-@media screen and (prefers-reduced-motion: no-preference) {
-  .count-roll {
-    animation: rise var(--dur-base) var(--ease-snap) backwards;
-  }
+/* Route change: quick and light, one page at a time. The old page lifts away in 120 ms, then the new
+   one rises into place over 240 ms, so the two never overlap; the top bar never moves. A project's
+   name morphs from its row into the report title (.morph). */
+::view-transition-old(.page-exit) {
+  animation: 120ms var(--ease-snap) both vt-out;
 }
-
-/* Command palette: results cascade in as they appear; the highlight is one marker that glides to the
-   active option. */
-.palette-marker {
-  transition:
-    translate var(--dur-fast) var(--ease-snap),
-    height var(--dur-fast) var(--ease-snap);
+::view-transition-new(.page-enter) {
+  animation: 240ms var(--ease-snap) 110ms both vt-in;
 }
-@media screen and (prefers-reduced-motion: no-preference) {
-  .palette-option {
-    animation: rise var(--dur-base) var(--ease-snap) backwards;
-    animation-delay: calc(var(--i, 0) * 40ms);
-  }
+::view-transition-group(.morph) {
+  animation-duration: var(--dur-base);
+  animation-timing-function: var(--ease-snap);
 }
-
-/* Top bar project menu: it drops open under Projects. */
-@media screen and (prefers-reduced-motion: no-preference) {
-  .topnav-menu:not([hidden]) {
-    animation: rise var(--dur-base) var(--ease-snap) backwards;
-  }
-}
-
-/* Suite run (content/ProjectIndex.tsx, C47): featured projects as suites on a rail. The resting state
-   is the finished run (every dot filled, every status done, every result open), which is what shows
-   without scroll timelines, under reduced motion and in print. With motion, each row runs as it
-   reaches the middle of the screen. Background colour, visibility, clip-path and registered numbers
-   only: nothing here holds a compositor layer on the home page (a Lighthouse route). */
-@property --rail {
-  syntax: '<number>';
-  inherits: false;
-  initial-value: 1;
-}
-@property --done {
-  syntax: '<integer>';
-  inherits: true;
-  initial-value: 0;
-}
-.suite-rail {
-  position: relative;
-}
-.suite-rail::before,
-.suite-rail::after {
-  content: '';
-  position: absolute;
-  top: 1.75rem;
-  bottom: 1.75rem;
-  left: calc(0.875rem - 1px);
-  width: 2px;
-  border-radius: 1px;
-  background: var(--border);
-}
-.suite-rail::after {
-  background: var(--accent);
-  transform-origin: top;
-  scale: 1 var(--rail);
-}
-.suite-dot {
-  position: relative;
-  z-index: 1;
-  width: 0.875rem;
-  height: 0.875rem;
-  border: 2px solid var(--accent);
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 4px var(--bg);
-}
-.suite-status > * {
-  grid-area: 1 / 1;
-}
-.suite-status > :is([data-status-step='queued'], [data-status-step='running']) {
-  visibility: hidden;
-}
-.suite-count::after {
-  counter-reset: done var(--done) total var(--n);
-  content: counter(done) ' of ' counter(total) ' run';
-}
-/* A divider between suites that stops short of the rail, and a panel that sweeps up on hover. */
-.suite-item:not(:last-child) .suite-row::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 2.75rem;
-  height: 1px;
-  background: var(--border);
-}
-@layer components {
-  .suite-row {
-    transition: translate var(--dur-fast) var(--ease-snap);
-  }
-  .suite-row::before {
-    content: '';
-    position: absolute;
-    inset: 0.25rem 0 0.25rem 2.25rem;
-    z-index: -1;
-    border-radius: var(--radius-card);
-    background: var(--secondary);
-    transform-origin: bottom;
-    scale: 1 0;
-    transition: scale var(--dur-fast) var(--ease-snap);
-  }
-  .suite-row:is(:hover, :focus-within)::before {
-    scale: 1 1;
-  }
-  .suite-row:is(:hover, :focus-within) {
-    translate: 0 -2px;
-  }
-}
-@supports (animation-timeline: view()) {
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .suite-run {
-      view-timeline: --suites block;
-    }
-    .suite-item {
-      view-timeline: --suite block;
-    }
-    .suite-dot {
-      animation: suite-dot linear both;
-      animation-timeline: --suite;
-      animation-range: cover 35% cover 50%;
-    }
-    .suite-status > [data-status-step='queued'] {
-      animation: step-queued linear both;
-      animation-timeline: --suite;
-      animation-range: entry 0% cover 50%;
-    }
-    .suite-status > [data-status-step='running'] {
-      animation: step-running linear both;
-      animation-timeline: --suite;
-      animation-range: entry 0% cover 50%;
-    }
-    .suite-status > [data-status-step='done'] {
-      animation: step-done linear both;
-      animation-timeline: --suite;
-      animation-range: entry 0% cover 50%;
-    }
-    .suite-hook {
-      animation: suite-hook linear both;
-      animation-timeline: --suite;
-      animation-range: cover 38% cover 52%;
-    }
-    .suite-rail::after {
-      animation: suite-rail linear both;
-      animation-timeline: --suites;
-      animation-range: cover 30% cover 75%;
-    }
-    .suite-count {
-      animation: suite-count linear both;
-      animation-timeline: --suites;
-      animation-range: cover 30% cover 75%;
-    }
-  }
-}
-@keyframes suite-dot {
-  from {
-    border-color: var(--border);
-    background-color: var(--bg);
-  }
-}
-@keyframes step-queued {
-  0%,
-  59.99% {
-    visibility: visible;
-  }
-  60%,
-  100% {
-    visibility: hidden;
-  }
-}
-@keyframes step-running {
-  0%,
-  59.99% {
-    visibility: hidden;
-  }
-  60%,
-  89.99% {
-    visibility: visible;
-  }
-  90%,
-  100% {
-    visibility: hidden;
-  }
-}
-@keyframes step-done {
-  0%,
-  89.99% {
-    visibility: hidden;
-  }
-  90%,
-  100% {
-    visibility: visible;
-  }
-}
-@keyframes suite-hook {
-  from {
-    clip-path: inset(0 0 100% 0);
-  }
+@keyframes vt-out {
   to {
-    clip-path: inset(0 0 0 0);
+    opacity: 0;
+    translate: 0 -8px;
   }
 }
-@keyframes suite-rail {
+@keyframes vt-in {
   from {
-    --rail: 0;
-  }
-  to {
-    --rail: 1;
-  }
-}
-@keyframes suite-count {
-  from {
-    --done: 0;
-  }
-  to {
-    --done: var(--n);
-  }
-}
-
-/* Tooltips for the minimal status bar's icons (data-tip): above the icon on hover or keyboard focus.
-   Each icon already names itself to screen readers; the tooltip repeats that name for sighted users.
-   It appears by visibility and a short rise, not by fading text. */
-.tip {
-  position: relative;
-}
-.tip::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: calc(100% + 0.375rem);
-  left: 50%;
-  z-index: 50;
-  padding: 0.25rem 0.5rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-chip);
-  background: var(--surface-2);
-  color: var(--text);
-  font: 500 0.6875rem / 1.2 var(--font-mono);
-  white-space: nowrap;
-  pointer-events: none;
-  visibility: hidden;
-  translate: -50% 0.25rem;
-  transition:
-    translate var(--dur-fast) var(--ease-snap),
-    visibility var(--dur-fast);
-}
-.tip:is(:hover, :focus-visible)::after {
-  visibility: visible;
-  translate: -50% 0;
-}
-/* The rightmost icons align their tooltips to the right edge so they never run off screen. */
-[data-statusbar] li:last-child .tip::after {
-  left: auto;
-  right: 0;
-  translate: 0 0.25rem;
-}
-[data-statusbar] li:last-child .tip:is(:hover, :focus-visible)::after {
-  translate: 0 0;
-}
-
-/* Hit area: grows a small link's clickable area to at least 24 px tall (WCAG 2.5.8) without
-   changing how it looks or where it sits, for links in tables, timelines, the masthead and the
-   resume, where padding would shift the layout or the print. Timeline and other drawn links get it
-   too. */
-@layer components {
-  .hit-area,
-  .draw-link {
-    position: relative;
-  }
-  .hit-area::before,
-  .draw-link::before {
-    content: '';
-    position: absolute;
-    inset: -0.5rem -0.25rem;
-  }
-}
-
-/* Inspector (C49): as a card crosses the middle of the screen, a scan line sweeps down it once, then
-   corner brackets lock on around it with a small "inspected" tag, and they stay. One pseudo-element
-   draws all of it from two registered numbers (--scan, where the line is; --lock, how far the brackets
-   have closed), animated by the card's own scroll position. Numbers, gradients and colour only: no
-   compositor transforms, so the cards hold no layers. Nothing shows without scroll timelines, under
-   reduced motion or in print. */
-@property --scan {
-  syntax: '<number>';
-  inherits: false;
-  initial-value: 1;
-}
-@property --lock {
-  syntax: '<number>';
-  inherits: false;
-  initial-value: 1;
-}
-@supports (animation-timeline: view()) {
-  @media screen and (prefers-reduced-motion: no-preference) {
-    :is(.lift, .suite-door, [data-inspect]) {
-      position: relative;
-    }
-    :is(.lift, .suite-door, [data-inspect])::after {
-      --c: var(--accent);
-      content: 'inspected';
-      position: absolute;
-      inset: -6px -6px calc(-6px - 1rem);
-      z-index: 1;
-      display: flex;
-      align-items: flex-end;
-      justify-content: flex-end;
-      padding-right: 2px;
-      font: 500 0.6875rem / 1 var(--font-mono);
-      color: transparent;
-      pointer-events: none;
-      background:
-        linear-gradient(var(--c), var(--c)) 0 calc(var(--scan) * (100% - 1rem)) / 100%
-          calc((1 - var(--lock)) * 1px) no-repeat,
-        linear-gradient(var(--c), var(--c)) left top / calc(var(--lock) * 14px) 2px no-repeat,
-        linear-gradient(var(--c), var(--c)) left top / 2px calc(var(--lock) * 14px) no-repeat,
-        linear-gradient(var(--c), var(--c)) right top / calc(var(--lock) * 14px) 2px no-repeat,
-        linear-gradient(var(--c), var(--c)) right top / 2px calc(var(--lock) * 14px) no-repeat,
-        linear-gradient(var(--c), var(--c)) left 0 bottom 1rem / calc(var(--lock) * 14px) 2px
-          no-repeat,
-        linear-gradient(var(--c), var(--c)) left 0 bottom 1rem / 2px calc(var(--lock) * 14px)
-          no-repeat,
-        linear-gradient(var(--c), var(--c)) right 0 bottom 1rem / calc(var(--lock) * 14px) 2px
-          no-repeat,
-        linear-gradient(var(--c), var(--c)) right 0 bottom 1rem / 2px calc(var(--lock) * 14px)
-          no-repeat;
-      animation: inspect linear both;
-      animation-timeline: view();
-      animation-range: cover 20% cover 48%;
-    }
-  }
-}
-@keyframes inspect {
-  0% {
-    --scan: 0;
-    --lock: 0;
-    color: transparent;
-  }
-  70% {
-    --scan: 1;
-    --lock: 0;
-    color: transparent;
-  }
-  88% {
-    --lock: 1;
-  }
-  92% {
-    color: transparent;
-  }
-  100% {
-    --scan: 1;
-    --lock: 1;
-    color: var(--accent);
-  }
-}
-
-/* Uniform motion (C50): one rhythm for the whole site. Everything that arrives rises 16 px over
-   400 ms on the shared easing, whether it plays on load or as it scrolls in; every card and control
-   that answers the pointer lifts 2 px over 180 ms; page changes take 120 ms out and 240 ms in. The
-   signature pieces (theme flood, project morph, palette grow, suite run, inspector) keep their shape
-   on the same timing. */
-@keyframes rise {
-  from {
+    opacity: 0;
     translate: 0 16px;
   }
 }
-@media screen and (prefers-reduced-motion: no-preference) {
-  .drawer[open] nav > ul > li {
-    animation: rise var(--dur-base) var(--ease-snap) backwards;
-  }
-  .drawer[open] nav > ul > li:nth-child(2) {
-    animation-delay: 40ms;
-  }
-  .drawer[open] nav > ul > li:nth-child(3) {
-    animation-delay: 80ms;
-  }
-  .drawer[open] nav > ul > li:nth-child(4) {
-    animation-delay: 120ms;
-  }
-  .drawer[open] nav > ul > li:nth-child(5) {
-    animation-delay: 160ms;
-  }
-  .drawer[open] nav > ul > li:nth-child(n + 6) {
-    animation-delay: 200ms;
-  }
+
+/* An evidence thumbnail growing into its dialog (lib/morph.ts). */
+::view-transition-group(dialog-morph) {
+  animation-duration: var(--dur-base);
+  animation-timing-function: var(--ease-snap);
+}
+:active-view-transition-type(dialog-morph)::view-transition-old(root),
+:active-view-transition-type(dialog-morph)::view-transition-new(root) {
+  animation-duration: var(--dur-base);
+}
+
+/* Theme flood (lib/theme-switch.ts): the new theme is revealed by a growing circle animated from
+   script, so the default cross-fade is switched off for that transition. */
+:active-view-transition-type(theme)::view-transition-old(root),
+:active-view-transition-type(theme)::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }

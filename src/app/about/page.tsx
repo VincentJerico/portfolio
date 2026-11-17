@@ -1,13 +1,22 @@
 import type { Metadata } from 'next';
-import { pageMetadata } from '@/lib/seo';
-import Link from 'next/link';
+import Image from 'next/image';
 import { CareerPath } from '@/components/content/CareerPath';
-import { QaAreaGrid } from '@/components/content/QaAreaGrid';
 import { Section } from '@/components/content/Section';
-import { TimeMachine } from '@/components/content/TimeMachine';
-import { certifications, education, experience, profile, qaAreas, timeline } from '@/content';
+import { Timeline } from '@/components/content/Timeline';
+import { WorkList } from '@/components/content/WorkList';
+import {
+  certifications,
+  education,
+  experience,
+  metrics,
+  profile,
+  qaAreas,
+  timeline,
+} from '@/content';
 import { projectBySlug, visible } from '@/lib/content';
-import { formatCertDate, formatMonth, formatPeriod } from '@/lib/format';
+import { formatCertDate, formatDay, formatMonth, formatPeriod } from '@/lib/format';
+import { pageMetadata } from '@/lib/seo';
+import { projectItem } from '@/lib/work-items';
 
 export const metadata: Metadata = pageMetadata({
   title: 'About',
@@ -15,20 +24,62 @@ export const metadata: Metadata = pageMetadata({
   path: '/about',
 });
 
+const ROW = 'border-b border-line py-4';
+
 export default function AboutPage() {
   const degree = visible(education)[0];
   const earlier = visible(experience).filter((item) => !item.hasCaseStudies);
   const capstone = degree?.capstoneSlug ? projectBySlug(degree.capstoneSlug) : undefined;
+  const asOf = metrics[0]?.asOf;
 
   return (
     <div className="flex flex-col gap-rhythm">
-      <header className="measure flex flex-col gap-4">
+      <header className="flex flex-col gap-6">
         <p className="label-mono text-ink-muted">About</p>
         <h1>About</h1>
-        {/* The homepage carries the intro and /projects the tagline; /about leads with the background,
-            which neither repeats. */}
-        {profile.background && <p className="text-lg text-ink">{profile.background}</p>}
       </header>
+
+      <div className="grid items-start gap-8 md:grid-cols-[minmax(0,1fr)_14rem] lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="measure flex flex-col gap-4">
+          <p className="text-xl text-ink lg:text-2xl">{profile.intro}</p>
+          {profile.background && <p className="text-ink-muted">{profile.background}</p>}
+        </div>
+        {profile.photo && (
+          <Image
+            src={profile.photo}
+            alt={`Portrait of ${profile.fullName}`}
+            width={510}
+            height={680}
+            sizes="(min-width: 1024px) 18rem, (min-width: 768px) 14rem, 100vw"
+            className="w-full max-w-72 rounded-card"
+          />
+        )}
+      </div>
+
+      {metrics.length > 0 && (
+        <Section
+          id="numbers"
+          title="In numbers"
+          kicker={asOf ? `As of ${formatDay(asOf)}` : undefined}
+        >
+          <ul className="grid border-t border-line sm:grid-cols-2 lg:grid-cols-5">
+            {metrics.map((metric) => (
+              <li key={metric.id} className="flex flex-col gap-1 border-b border-line py-4 pr-6">
+                <p className="text-4xl font-extrabold tracking-tight text-ink [font-variation-settings:'opsz'_96,'wdth'_75]">
+                  {metric.value}
+                </p>
+                <p className="text-sm text-ink">{metric.label}</p>
+                <a
+                  href={metric.source.href}
+                  className="label-mono inline-flex min-h-6 items-center self-start pointer-coarse:min-h-11"
+                >
+                  source<span className="sr-only">: {metric.source.label}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
 
       <Section id="career-path" title="Career path">
         <CareerPath />
@@ -36,7 +87,7 @@ export default function AboutPage() {
 
       {degree && (
         <Section id="education" title="Education">
-          <div className="lift rounded-card border border-line bg-surface p-5">
+          <div className="measure border-t border-line pt-4">
             <h3>{degree.degree}</h3>
             <p className="mt-1 text-ink-muted">{degree.school}</p>
             <p className="label-mono mt-3 text-ink-muted">
@@ -46,16 +97,7 @@ export default function AboutPage() {
             {degree.coursework.length > 0 && (
               <>
                 <p className="label-mono mt-5 text-ink-muted">Relevant coursework</p>
-                <ul className="mt-2 flex flex-wrap gap-1.5">
-                  {degree.coursework.map((course) => (
-                    <li
-                      key={course}
-                      className="rounded-chip bg-surface-2 px-2 py-0.5 text-sm text-ink"
-                    >
-                      {course}
-                    </li>
-                  ))}
-                </ul>
+                <p className="mt-1 text-ink">{degree.coursework.join(' · ')}</p>
               </>
             )}
           </div>
@@ -64,20 +106,25 @@ export default function AboutPage() {
 
       {earlier.length > 0 && (
         <Section id="experience" title="Earlier experience">
-          <ul className="grid gap-4 lg:grid-cols-2">
+          <ul className="border-t border-line">
             {earlier.map((item) => (
-              <li key={item.slug} className="lift rounded-card border border-line bg-surface p-5">
+              <li
+                key={item.slug}
+                className={`${ROW} grid gap-x-8 gap-y-2 md:grid-cols-[14rem_minmax(0,1fr)]`}
+              >
                 <p className="label-mono text-ink-muted">{formatPeriod(item.start, item.end)}</p>
-                <h3 className="mt-2">{item.title}</h3>
-                <p className="mt-1 text-sm text-ink-muted">
-                  {item.company}
-                  {item.location && ` · ${item.location}`}
-                </p>
-                <ul className="mt-3 flex list-disc flex-col gap-1.5 pl-5 text-[0.9375rem] text-ink marker:text-ink-muted">
-                  {item.bullets.map((bullet) => (
-                    <li key={bullet}>{bullet}</li>
-                  ))}
-                </ul>
+                <div className="measure">
+                  <h3>{item.title}</h3>
+                  <p className="mt-1 text-sm text-ink-muted">
+                    {item.company}
+                    {item.location && ` · ${item.location}`}
+                  </p>
+                  <ul className="mt-3 flex list-disc flex-col gap-1.5 pl-5 text-[0.9375rem] text-ink marker:text-ink-muted">
+                    {item.bullets.map((bullet) => (
+                      <li key={bullet}>{bullet}</li>
+                    ))}
+                  </ul>
+                </div>
               </li>
             ))}
           </ul>
@@ -85,11 +132,11 @@ export default function AboutPage() {
       )}
 
       <Section id="certifications" title="Certifications">
-        <ul className="divide-y divide-line rounded-card border border-line bg-surface">
+        <ul className="border-t border-line">
           {certifications.map((cert) => (
             <li
               key={cert.name}
-              className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 px-4 py-3"
+              className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-line py-3"
             >
               <span className="text-ink">
                 {cert.credentialUrl ? <a href={cert.credentialUrl}>{cert.name}</a> : cert.name}
@@ -103,33 +150,38 @@ export default function AboutPage() {
 
       {profile.languages.length > 0 && (
         <Section id="languages" title="Languages">
-          <p className="text-ink">{profile.languages.join(' · ')}</p>
+          <p className="text-xl text-ink">{profile.languages.join(' · ')}</p>
         </Section>
       )}
 
       {capstone && (
-        <Section id="capstone" title="Capstone">
-          <Link
-            href={`/projects/${capstone.slug}`}
-            className="lift block rounded-card border border-line bg-surface p-5 no-underline"
-          >
-            <p className="label-mono text-ink-muted">
-              Capstone{capstone.team && ' (team project)'}
-              {capstone.year && ` · ${capstone.year}`}
-            </p>
-            <p className="mt-2 text-lg font-semibold text-ink">{capstone.name}</p>
-            <p className="mt-1 text-ink-muted">{capstone.summary}</p>
-            <p className="mt-3 font-semibold text-accent">Read the LegataLink report</p>
-          </Link>
+        <Section
+          id="capstone"
+          title="Capstone"
+          kicker={`${capstone.team ? 'Team project' : 'Project'}${capstone.year ? ` · ${capstone.year}` : ''}`}
+        >
+          <WorkList items={[{ ...projectItem(capstone), hook: capstone.summary }]} />
         </Section>
       )}
 
       <Section id="method" title="How I test" kicker="Checklist for every client build">
-        <QaAreaGrid areas={qaAreas} />
+        <ol className="grid border-t border-line sm:grid-cols-2">
+          {qaAreas.map((area, i) => (
+            <li
+              key={area}
+              className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-4 border-b border-line py-3 sm:pr-6"
+            >
+              <span aria-hidden="true" className="label-mono pt-0.5 text-ink-muted">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span className="text-ink">{area}</span>
+            </li>
+          ))}
+        </ol>
       </Section>
 
-      <Section id="timeline" title="Timeline" kicker="Run log, oldest first">
-        <TimeMachine events={visible(timeline)} />
+      <Section id="timeline" title="Timeline" kicker="Oldest first">
+        <Timeline events={visible(timeline)} />
       </Section>
     </div>
   );

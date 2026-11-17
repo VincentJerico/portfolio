@@ -5,26 +5,26 @@ export const metadata: Metadata = { title: 'Page not found' };
 
 export default function NotFound() {
   return (
-    <div className="measure">
+    <div className="flex flex-col gap-rhythm">
       {/* A header, so the page arrives like every other page (globals.css header rise). */}
-      <header>
+      <header className="flex flex-col gap-6">
         <p className="label-mono text-ink-muted">404 · Not found</p>
-        <h1 className="mt-3">Page not found</h1>
-        <p className="mt-4 text-ink-muted">There is nothing at this address.</p>
+        <h1>Page not found</h1>
+        <p className="measure text-lg text-ink-muted">There is nothing at this address.</p>
       </header>
-      <ul className="mt-6 flex flex-wrap gap-3">
+      <ul className="flex flex-wrap gap-3">
         <li>
           <Link
             href="/"
-            className="press inline-flex min-h-11 items-center rounded-chip bg-accent px-4 font-semibold text-bg no-underline hover:brightness-110"
+            className="inline-flex min-h-11 items-center rounded-full bg-ink px-5 font-mono text-[0.8125rem] text-bg no-underline hover:bg-accent"
           >
-            Overview
+            Home
           </Link>
         </li>
         <li>
           <Link
             href="/projects"
-            className="press inline-flex min-h-11 items-center rounded-chip border border-line px-4 font-semibold text-ink no-underline hover:bg-surface-2"
+            className="inline-flex min-h-11 items-center rounded-full border border-line px-5 font-mono text-[0.8125rem] text-ink no-underline hover:border-ink"
           >
             Projects
           </Link>

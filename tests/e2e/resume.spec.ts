@@ -16,8 +16,8 @@ test('resume shows the GPA with its scale note and a PDF download', async ({ pag
 test('print layout drops the site chrome and prints black on white', async ({ page }) => {
   await page.goto('/resume');
   await page.emulateMedia({ media: 'print' });
-  await expect(page.locator('[data-topbar]')).toBeHidden();
-  await expect(page.locator('[data-statusbar]')).toBeHidden();
+  await expect(page.locator('[data-site-header]')).toBeHidden();
+  await expect(page.locator('[data-site-footer]')).toBeHidden();
   await expect(page.getByRole('button', { name: 'Menu', exact: true })).toBeHidden();
   await expect(page.getByRole('link', { name: 'Download PDF' })).toBeHidden();
   const colors = await page.evaluate(() => {

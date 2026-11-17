@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { WorkList } from '@/components/content/WorkList';
 import { visibleNotes } from '@/content/notes';
 import { formatDay } from '@/lib/format';
 import { pageMetadata } from '@/lib/seo';
@@ -18,28 +18,19 @@ export default function NotesPage() {
 
   return (
     <div className="flex flex-col gap-rhythm">
-      <header className="measure">
+      <header className="flex flex-col gap-6">
         <p className="label-mono text-ink-muted">Notes</p>
-        <h1 className="mt-4">Notes</h1>
+        <h1>Notes</h1>
       </header>
-      <ul className="flex flex-col gap-6">
-        {notes.map((note) => (
-          <li
-            key={note.slug}
-            className="lift measure flex flex-col gap-1 rounded-card border border-line bg-surface p-5"
-          >
-            <p className="label-mono text-ink-muted">
-              <time dateTime={note.date}>{formatDay(note.date)}</time>
-            </p>
-            <h2 className="text-xl">
-              <Link href={`/notes/${note.slug}`} className="inline-flex min-h-11 items-center">
-                {note.title}
-              </Link>
-            </h2>
-            <p className="text-ink-muted">{note.summary}</p>
-          </li>
-        ))}
-      </ul>
+      <WorkList
+        headingLevel="h2"
+        items={notes.map((note) => ({
+          href: `/notes/${note.slug}`,
+          name: note.title,
+          meta: formatDay(note.date),
+          hook: note.summary,
+        }))}
+      />
     </div>
   );
 }

@@ -69,19 +69,6 @@ export const Finding = z.object({
   sourceHref: z.url(),
 });
 
-export const PlantedBug = z.object({
-  id: z.string(),
-  route: z.string(),
-  targetId: z.string(),
-  hint: z.string(),
-  title: z.string(),
-  severity: Severity,
-  steps: z.array(z.string()),
-  expected: z.string(),
-  actual: z.string(),
-  wouldBeCaughtBy: z.string(),
-});
-
 export const Image = z.object({
   src: z.string(),
   alt: z.string().min(20),
@@ -211,7 +198,6 @@ export type Profile = z.output<typeof Profile>;
 export type Metric = z.output<typeof Metric>;
 export type Severity = z.output<typeof Severity>;
 export type Finding = z.output<typeof Finding>;
-export type PlantedBug = z.output<typeof PlantedBug>;
 export type Image = z.output<typeof Image>;
 export type ProjectCategory = z.output<typeof ProjectCategory>;
 export type Project = z.output<typeof Project>;

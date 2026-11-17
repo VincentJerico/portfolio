@@ -91,10 +91,7 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
       <ul className="grid gap-4 md:grid-cols-2">
         {images.map((image, i) => (
           <li key={image.src} id={`evidence-${i}`} className="scroll-mt-20">
-            <figure
-              data-inspect
-              className="flex h-full flex-col rounded-card border border-line bg-surface p-2"
-            >
+            <figure className="flex h-full flex-col border-t border-line pt-3">
               <button
                 type="button"
                 onClick={(event) => grow(event.currentTarget, i)}
@@ -128,7 +125,7 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
       <dialog
         ref={dialogRef}
         aria-label={current ? `Evidence: ${current.caption ?? current.alt}` : 'Evidence'}
-        className="m-auto max-h-[92dvh] w-[min(96vw,80rem)] max-w-none rounded-card border border-line bg-surface p-0 text-ink backdrop:bg-[var(--backdrop)]"
+        className="m-auto max-h-[92dvh] w-[min(96vw,80rem)] max-w-none rounded-card border border-line bg-bg p-0 text-ink backdrop:bg-[var(--backdrop)]"
       >
         {current && (
           <figure className="flex flex-col">

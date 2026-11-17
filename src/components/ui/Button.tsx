@@ -3,14 +3,15 @@ import type { ComponentProps, ReactNode } from 'react';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
 
+// C51: pills in the mono voice. Primary is solid ink on paper, secondary an outline, ghost a link.
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-accent text-bg hover:brightness-110',
-  secondary: 'border border-line bg-surface text-ink hover:bg-surface-2',
-  ghost: 'text-accent hover:bg-surface-2',
+  primary: 'bg-ink text-bg hover:bg-accent',
+  secondary: 'border border-line text-ink hover:border-ink',
+  ghost: 'text-accent underline-offset-4 hover:underline',
 };
 
 const BASE =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-chip px-4 text-[0.9375rem] font-semibold no-underline press';
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 font-mono text-[0.8125rem] no-underline';
 
 interface ButtonLinkProps extends Omit<ComponentProps<'a'>, 'href'> {
   href: string;

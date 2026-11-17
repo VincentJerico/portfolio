@@ -17,61 +17,45 @@ test.describe('theme', () => {
     expect(errors).toEqual([]);
   });
 
-  test('follows a dark OS preference', async ({ page }) => {
+  test('follows a dark OS preference on first paint', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
+    await page.addInitScript(() => {
+      document.addEventListener('DOMContentLoaded', () => {
+        document.documentElement.dataset.classAtDcl = document.documentElement.className;
+      });
+    });
     await page.goto('/');
-    await expect(page.locator('html')).toHaveClass(/\bdark\b/);
+    await expect(page.locator('html')).toHaveAttribute('data-class-at-dcl', /\bdark\b/);
   });
 
-  test('the light switch flips the theme, exposes aria-pressed and persists across reload', async ({
+  test('the switch in the top bar flips the theme, exposes aria-pressed and persists', async ({
     page,
   }) => {
-    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.emulateMedia({ colorScheme: 'light' });
     await page.goto('/');
-    // From 1024px up the pull cord is the only theme switch; aria-pressed means the light is on.
-    const cord = page.getByRole('button', { name: 'Light switch' });
-    await expect(cord).toHaveAttribute('aria-pressed', 'false');
-    await cord.click();
-    await expect(page.locator('html')).toHaveClass(/\blight\b/);
-    await expect(cord).toHaveAttribute('aria-pressed', 'true');
+    const toggle = page
+      .locator('[data-site-header]')
+      .getByRole('button', { name: 'Dark theme', exact: true });
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await toggle.click();
+    await expect(page.locator('html')).toHaveClass(/\bdark\b/);
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
     await page.reload();
-    await expect(page.locator('html')).toHaveClass(/\blight\b/);
-    await expect(page.getByRole('button', { name: 'Light switch' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-  });
-
-  test('the top bar and status bar have no theme toggle of their own', async ({ page }) => {
-    await page.goto('/');
-    const bars = page.locator('[data-topbar], [data-statusbar]');
-    await expect(bars.getByRole('button', { name: 'Dark theme' })).toHaveCount(0);
+    await expect(page.locator('html')).toHaveClass(/\bdark\b/);
+    await expect(
+      page.locator('[data-site-header]').getByRole('button', { name: 'Dark theme', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
   });
 });
 
 test.describe('theme without JavaScript', () => {
-  test.use({ javaScriptEnabled: false, colorScheme: 'light' });
+  test.use({ javaScriptEnabled: false, colorScheme: 'dark' });
 
-  test('falls back to the dark tokens', async ({ page }) => {
+  test('falls back to the paper tokens (C51)', async ({ page }) => {
     await page.goto('/');
     const bg = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue('--bg').trim().toLowerCase(),
     );
-    // The dark theme's deep slate (C48), not near-black.
-    expect(bg).toBe('#151c26');
-  });
-});
-
-test.describe('theme switch appearance before hydration', () => {
-  test.use({ javaScriptEnabled: false, colorScheme: 'dark' });
-
-  test('shows the on state when the page renders dark', async ({ page }) => {
-    await page.goto('/');
-    // The drawer's switch is closed (not laid out), so read the knob's offset from its style:
-    // off hugs the left edge, on moves it 1rem right.
-    const shift = await page
-      .locator('#site-drawer [data-switch-knob]')
-      .evaluate((knob) => getComputedStyle(knob).translate);
-    expect(shift).toMatch(/^16px/);
+    expect(bg).toBe('#efe9de');
   });
 });

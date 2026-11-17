@@ -16,7 +16,7 @@ export function SeverityChip({ severity, count }: { severity: Severity; count?: 
   const { tone, Icon } = STYLE[severity];
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-chip border bg-surface px-2 py-0.5 font-mono text-xs font-medium tracking-[0.04em] whitespace-nowrap uppercase ${tone}`}
+      className={`inline-flex items-center gap-1.5 font-mono text-xs font-medium tracking-[0.04em] whitespace-nowrap uppercase ${tone}`}
     >
       <Icon aria-hidden="true" className="size-3.5 shrink-0" />
       {count !== undefined && <span>{count}</span>}

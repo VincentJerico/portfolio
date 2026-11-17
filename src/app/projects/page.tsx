@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
-import { pageMetadata } from '@/lib/seo';
-import { SuiteDoor } from '@/components/content/SuiteDoor';
 import { ProjectFilter } from '@/components/content/ProjectFilter';
+import { WorkRowBody } from '@/components/content/WorkList';
 import { profile } from '@/content';
 import { projectsInOrder } from '@/lib/content';
 import { categoryLabel } from '@/lib/labels';
+import { pageMetadata } from '@/lib/seo';
+import { projectItem } from '@/lib/work-items';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Projects',
@@ -21,22 +22,22 @@ export default function ProjectsPage() {
 
   return (
     <div className="flex flex-col gap-rhythm">
-      <header className="measure">
-        <p className="label-mono text-ink-muted">Test suites · public repos</p>
+      <header>
+        <p className="label-mono text-ink-muted">{projects.length} projects</p>
         <h1 className="mt-4">Projects</h1>
-        <p className="mt-5 text-ink-muted">{profile.tagline}</p>
+        <p className="measure mt-6 text-lg text-ink-muted">{profile.tagline}</p>
       </header>
       <section aria-labelledby="all-projects-heading">
-        <h2 id="all-projects-heading" className="label-mono mb-4 text-ink-muted">
+        <h2 id="all-projects-heading" className="sr-only">
           All projects
         </h2>
         <ProjectFilter
           categories={categories}
-          cards={projects.map((project) => ({
+          cards={projects.map((project, i) => ({
             slug: project.slug,
             category: project.category,
             text: [project.name, project.hook, project.summary, ...project.stack].join(' '),
-            card: <SuiteDoor project={project} />,
+            card: <WorkRowBody item={projectItem(project)} index={i} />,
           }))}
         />
       </section>

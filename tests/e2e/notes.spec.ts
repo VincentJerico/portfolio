@@ -6,7 +6,7 @@ import { visibleNotes } from '../../src/content/notes';
 // The test build (E2E_SELFTEST=1) shows the selftest note; a production build shows no notes at all.
 const [note] = visibleNotes();
 
-test('the notes index lists the selftest note and the sidebar links to Notes', async ({ page }) => {
+test('the notes index lists the selftest note and the footer links to Notes', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/notes');
   await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
@@ -14,9 +14,12 @@ test('the notes index lists the selftest note and the sidebar links to Notes', a
     'href',
     `/notes/${note!.slug}`,
   );
+  // The summary is the row's hook: always in the page, opened on hover (C51).
+  await expect(page.getByText(note!.summary)).toBeAttached();
+  await page.getByRole('link', { name: note!.title }).hover();
   await expect(page.getByText(note!.summary)).toBeVisible();
   await expect(
-    page.getByRole('navigation', { name: 'Site' }).getByRole('link', { name: 'Notes' }),
+    page.locator('[data-site-footer]').getByRole('link', { name: 'Notes', exact: true }),
   ).toBeVisible();
 });
 

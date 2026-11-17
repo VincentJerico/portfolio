@@ -1,5 +1,3 @@
-import { Check } from 'lucide-react';
-
 type StepState = 'done' | 'current' | 'next';
 
 // Spec 7.6, with the present role marked as current (docs/01-PORTFOLIO-DATA.md: "Current role |
@@ -11,47 +9,25 @@ const STEPS: { label: string; state: StepState }[] = [
   { label: 'Cybersecurity / Cloud Engineering', state: 'next' },
 ];
 
-const CARD: Record<StepState, string> = {
-  done: 'border-accent/50 bg-surface',
-  current: 'border-accent bg-secondary shadow-[0_0_0_1px_var(--accent)]',
-  next: 'border-dashed border-line bg-transparent',
-};
-
+/** The career path as a ruled list (C51): done, the current step in the accent, then what is next. */
 export function CareerPath() {
   return (
-    <ol aria-label="Career path" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <ol aria-label="Career path" className="border-t border-line">
       {STEPS.map((step, i) => (
         <li
           key={step.label}
           data-state={step.state}
-          className={`relative flex items-start gap-3 rounded-card border p-4 ${CARD[step.state]}`}
+          className="grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-baseline gap-x-4 border-b border-line py-3"
         >
+          <span aria-hidden="true" className="label-mono text-ink-muted">
+            {String(i + 1).padStart(2, '0')}
+          </span>
           <span
-            aria-hidden="true"
-            className={`grid size-7 shrink-0 place-items-center rounded-full font-mono text-xs ${
-              step.state === 'done'
-                ? 'bg-accent text-bg'
-                : step.state === 'current'
-                  ? 'border-2 border-accent bg-bg'
-                  : 'border border-line text-ink-muted'
-            }`}
+            className={`text-xl font-semibold break-words ${step.state === 'current' ? 'text-accent' : step.state === 'next' ? 'text-ink-muted' : 'text-ink'}`}
           >
-            {step.state === 'done' ? (
-              <Check className="size-4" />
-            ) : step.state === 'current' ? (
-              <span className="size-2.5 rounded-full bg-accent" />
-            ) : (
-              i + 1
-            )}
+            {step.label}
           </span>
-          <span className="flex min-w-0 flex-col gap-1">
-            <span className="font-semibold break-words text-ink">{step.label}</span>
-            <span
-              className={`label-mono ${step.state === 'current' ? 'font-semibold text-ink' : 'text-ink-muted'}`}
-            >
-              {step.state}
-            </span>
-          </span>
+          <span className="label-mono text-ink-muted">{step.state}</span>
         </li>
       ))}
     </ol>

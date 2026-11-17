@@ -1,13 +1,14 @@
 import type { Metadata } from 'next';
-import { pageMetadata } from '@/lib/seo';
-import { CaseStudyCard } from '@/components/content/CaseStudyCard';
 import { Section } from '@/components/content/Section';
+import { WorkList } from '@/components/content/WorkList';
 import { experience } from '@/content';
 import { approvedCaseStudies, visible } from '@/lib/content';
 import { formatPeriod } from '@/lib/format';
+import { pageMetadata } from '@/lib/seo';
+import { caseStudyItem } from '@/lib/work-items';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Client Work',
+  title: 'Client work',
   description: 'Software QA/QC work at BossLabs.AI and anonymised client case studies.',
   path: '/work',
 });
@@ -18,9 +19,9 @@ export default function ClientWorkPage() {
 
   return (
     <div className="flex flex-col gap-rhythm">
-      <header className="measure">
-        <p className="label-mono text-ink-muted">Client work</p>
-        <h1 className="mt-4">Client Work</h1>
+      <header className="flex flex-col gap-6">
+        <p className="label-mono text-ink-muted">Work</p>
+        <h1>Client work</h1>
       </header>
 
       {role && (
@@ -30,7 +31,9 @@ export default function ClientWorkPage() {
           kicker={formatPeriod(role.start, role.end)}
         >
           <div className="measure flex flex-col gap-3">
-            {role.companyDescription && <p className="text-ink">{role.companyDescription}</p>}
+            {role.companyDescription && (
+              <p className="text-lg text-ink">{role.companyDescription}</p>
+            )}
             <ul className="flex list-disc flex-col gap-2 pl-5 text-ink-muted marker:text-ink-muted">
               {role.bullets.map((bullet) => (
                 <li key={bullet}>{bullet}</li>
@@ -41,17 +44,12 @@ export default function ClientWorkPage() {
       )}
 
       {studies.length > 0 && (
-        <Section id="case-studies" title="Case studies">
-          <p className="measure mb-6 rounded-card border border-line bg-surface-2 px-4 py-3 text-sm text-ink-muted">
-            Client names, data and screenshots are withheld.
-          </p>
-          <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {studies.map((study) => (
-              <li key={study.slug}>
-                <CaseStudyCard study={study} />
-              </li>
-            ))}
-          </ul>
+        <Section
+          id="case-studies"
+          title="Case studies"
+          kicker="Client names, data and screenshots are withheld."
+        >
+          <WorkList items={studies.map(caseStudyItem)} />
         </Section>
       )}
     </div>
