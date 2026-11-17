@@ -1,8 +1,8 @@
 {
   "sample": false,
-  "generatedAt": "2026-11-17T03:08:42.101Z",
-  "commit": "0f5a389",
-  "runUrl": "https://github.com/VincentJerico/portfolio/actions/runs/44006867018",
+  "generatedAt": "2026-11-17T04:25:44.314Z",
+  "commit": "b836c9a",
+  "runUrl": "https://github.com/VincentJerico/portfolio/actions/runs/44015924597",
   "overall": "pass",
   "gates": [
     {
@@ -33,7 +33,7 @@
       "gate": "End-to-end, accessibility and security headers",
       "tool": "Playwright, axe-core",
       "result": "pass",
-      "details": "1080 passed, 0 failed, 0 flaky across chromium, mobile-chrome, webkit"
+      "details": "1092 passed, 0 failed, 0 flaky across chromium, mobile-chrome, webkit"
     },
     {
       "gate": "Lighthouse",
@@ -51,91 +51,91 @@
   "routes": {
     "/": {
       "status": "pass",
-      "durationMs": 10109
+      "durationMs": 7307
     },
     "/projects": {
       "status": "pass",
-      "durationMs": 8084
+      "durationMs": 5768
     },
     "/work": {
       "status": "pass",
-      "durationMs": 5995
+      "durationMs": 4281
     },
     "/skills": {
       "status": "pass",
-      "durationMs": 8294
+      "durationMs": 5191
     },
     "/about": {
       "status": "pass",
-      "durationMs": 7389
+      "durationMs": 4857
     },
     "/resume": {
       "status": "pass",
-      "durationMs": 6057
+      "durationMs": 3929
     },
     "/quality": {
       "status": "pass",
-      "durationMs": 8324
+      "durationMs": 4636
     },
     "/notes": {
       "status": "pass",
-      "durationMs": 9574
+      "durationMs": 6144
     },
     "/contact": {
       "status": "pass",
-      "durationMs": 5884
+      "durationMs": 3475
     },
     "/projects/accessibility-testing": {
       "status": "pass",
-      "durationMs": 8241
+      "durationMs": 4783
     },
     "/projects/security-testing": {
       "status": "pass",
-      "durationMs": 7172
+      "durationMs": 4920
     },
     "/projects/performance-testing": {
       "status": "pass",
-      "durationMs": 7155
+      "durationMs": 4723
     },
     "/projects/api-testing-framework": {
       "status": "pass",
-      "durationMs": 6024
+      "durationMs": 3817
     },
     "/projects/playwright-framework-template": {
       "status": "pass",
-      "durationMs": 5685
+      "durationMs": 3801
     },
     "/projects/taskflow-under-test": {
       "status": "pass",
-      "durationMs": 6244
+      "durationMs": 4380
     },
     "/projects/qa-engineering-journey": {
       "status": "pass",
-      "durationMs": 5895
+      "durationMs": 4389
     },
     "/projects/legatalink": {
       "status": "pass",
-      "durationMs": 5890
+      "durationMs": 4392
     },
     "/work/warehouse-operations-platform": {
       "status": "pass",
-      "durationMs": 5275
+      "durationMs": 3818
     },
     "/work/project-accounting-platform": {
       "status": "pass",
-      "durationMs": 5304
+      "durationMs": 3482
     },
     "/work/retail-operations-platform": {
       "status": "pass",
-      "durationMs": 5327
+      "durationMs": 3843
     },
     "/this-page-does-not-exist": {
       "status": "pass",
-      "durationMs": 4975
+      "durationMs": 3894
     },
     "/notes/selftest-pipeline": {
       "status": "pass",
-      "durationMs": 4181
+      "durationMs": 2824
     }
   },
   "lighthouse": [
@@ -176,7 +176,7 @@
     }
   ],
   "e2e": {
-    "passed": 1080,
+    "passed": 1092,
     "failed": 0,
     "flaky": 0,
     "skipped": 0
