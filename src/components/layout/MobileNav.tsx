@@ -35,7 +35,7 @@ interface MobileNavProps {
 export function MobileNav({ fullName, identity, nav, links }: MobileNavProps) {
   const [open, setOpen] = useState(false);
   // The drawer's contents render on first open. Until then they ship only inside <noscript>, which
-  // React never hydrates, so this copy of the navigation costs nothing on page load (the sidebar is
+  // React never hydrates, so this copy of the navigation costs nothing on page load (the top bar is
   // the copy on screen from 1024px up). Without JavaScript the browser shows the <noscript> copy, so
   // the drawer still works.
   const [opened, setOpened] = useState(false);
@@ -149,7 +149,7 @@ export function MobileNav({ fullName, identity, nav, links }: MobileNavProps) {
         id={DRAWER_ID}
         aria-label="Site menu"
         closedby="any"
-        className="drawer m-0 h-dvh max-h-none w-[min(20rem,85vw)] max-w-none overflow-y-auto border-r border-line bg-secondary p-0 text-ink backdrop:bg-black/60 lg:hidden"
+        className="drawer m-0 h-dvh max-h-none w-[min(20rem,85vw)] max-w-none overflow-y-auto border-r border-line bg-secondary p-0 text-ink backdrop:bg-[var(--backdrop)] lg:hidden"
       >
         <div className="flex min-h-full flex-col gap-6 px-5 py-5">
           <div className="flex items-start justify-between gap-3">

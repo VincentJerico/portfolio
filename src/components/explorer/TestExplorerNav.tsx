@@ -20,17 +20,17 @@ interface TestExplorerNavProps {
   rows: readonly ExplorerRow[];
   projects: readonly ExplorerRow[];
   summary: string;
-  /** Distinguishes the sidebar and drawer copies so ids stay unique. */
+  /** Keeps ids unique if more than one copy renders. */
   idPrefix: string;
 }
 
-const STATUS_TEXT: Record<RunStatus, string> = {
+export const STATUS_TEXT: Record<RunStatus, string> = {
   pass: 'passing',
   fail: 'failing',
   'not-run': 'not run',
 };
 
-function StatusDot({ status }: { status: RunStatus }) {
+export function StatusDot({ status }: { status: RunStatus }) {
   const tone =
     status === 'pass'
       ? 'bg-pass'

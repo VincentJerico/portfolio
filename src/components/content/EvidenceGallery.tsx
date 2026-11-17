@@ -125,7 +125,7 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
       <dialog
         ref={dialogRef}
         aria-label={current ? `Evidence: ${current.caption ?? current.alt}` : 'Evidence'}
-        className="m-auto max-h-[92dvh] w-[min(96vw,80rem)] max-w-none rounded-card border border-line bg-surface p-0 text-ink backdrop:bg-black/80"
+        className="m-auto max-h-[92dvh] w-[min(96vw,80rem)] max-w-none rounded-card border border-line bg-surface p-0 text-ink backdrop:bg-[var(--backdrop)]"
       >
         {current && (
           <figure className="flex flex-col">

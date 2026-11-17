@@ -49,7 +49,7 @@ test('reduced motion turns transitions off', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   const duration = await page
-    .locator('aside a[aria-current="page"]')
+    .locator('[data-topbar] a[aria-current="page"]')
     .evaluate((el) => parseFloat(getComputedStyle(el).transitionDuration));
   expect(duration).toBeLessThan(0.02);
 });
@@ -107,7 +107,7 @@ test('page changes cross-fade, in-page filter updates do not (P5)', async ({ pag
   await page.getByRole('button', { name: 'Security', exact: true }).click();
   await expect(page).toHaveURL(/category=security/);
   expect(await page.evaluate(() => (window as unknown as { __vt: number }).__vt)).toBe(0);
-  await page.locator('aside').getByRole('link', { name: 'Skills', exact: true }).click();
+  await page.locator('[data-topbar]').getByRole('link', { name: 'Skills', exact: true }).click();
   await expect(page).toHaveURL(/\/skills$/);
   await expect
     .poll(() => page.evaluate(() => (window as unknown as { __vt: number }).__vt))

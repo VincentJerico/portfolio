@@ -1,6 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useBugHunt } from './BugHuntProvider';
+import { huntHints } from './BugHuntToggle';
 
 /** Banner while hunting (spec 4.4 C), with the completion card at 5 of 5. */
 export function HuntBanner({ email }: { email: string }) {
@@ -26,6 +28,18 @@ export function HuntBanner({ email }: { email: string }) {
           Turn off
         </button>
       </div>
+      {/* On desktop the hints live here: the status bar holds only the switch and the counter. */}
+      {!done && (
+        <ul aria-label="Hints" className="mt-3 hidden flex-col lg:flex">
+          {huntHints(bugs, found).map((hint) => (
+            <li key={hint.route}>
+              <Link href={hint.route} className="inline-flex min-h-11 items-center text-sm">
+                {hint.text}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
       {done && (
         <div className="reveal-in mt-4 border-t border-line pt-4">
           <p className="font-display text-2xl text-ink">

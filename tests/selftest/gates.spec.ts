@@ -31,7 +31,9 @@ test('the in-page runner reports the planted defects as failures', async ({ page
   await page.goto('/selftest');
   await waitForHydration(page);
   // The planted overlay covers the page (that is the bug), so start the run from the keyboard.
-  const trigger = page.locator('aside').getByRole('button', { name: 'Run tests on this page' });
+  const trigger = page
+    .locator('[data-statusbar]')
+    .getByRole('button', { name: 'Run tests on this page' });
   await trigger.focus();
   await page.keyboard.press('Enter');
   const panel = page.getByRole('region', { name: 'Test run' });

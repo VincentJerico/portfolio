@@ -53,13 +53,13 @@ test.describe('arrivals', () => {
 test.describe('answers', () => {
   test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
 
-  test('a reading-progress line runs along the top of the content area', async ({ page }) => {
+  test('a reading-progress line runs under the top bar', async ({ page }) => {
     await page.goto('/projects/accessibility-testing');
     const line = page.locator('[data-scroll-progress]');
     expect(await animationName(line)).toBe('scroll-fill');
     const box = (await line.boundingBox())!;
-    const sidebar = (await page.locator('aside').first().boundingBox())!;
-    expect(box.x).toBeGreaterThanOrEqual(sidebar.x + sidebar.width - 1);
+    const bar = (await page.locator('[data-topbar]').boundingBox())!;
+    expect(box.y).toBeGreaterThanOrEqual(bar.y + bar.height - 1);
   });
 
   test('buttons press in while held', async ({ page }) => {
@@ -80,13 +80,16 @@ test.describe('answers', () => {
     await expect.poll(() => card.evaluate((el) => getComputedStyle(el).translate)).toBe('0px -5px');
   });
 
-  test('the project folder slides shut and its links leave the tab order', async ({ page }) => {
+  test('the Projects menu drops open and its links leave the tab order when shut', async ({
+    page,
+  }) => {
     await page.goto('/');
     await waitForHydration(page);
     const nav = page.getByRole('navigation', { name: 'Site' });
     const folder = nav.getByRole('button', { name: 'Project specs' });
     await folder.click();
-    const list = page.locator('aside .nav-folder');
+    const list = page.locator('[data-topbar] .topnav-menu');
+    expect(await animationName(list)).toBe('reveal-in');
     await expect(list.getByRole('link').first()).toBeVisible();
     await folder.click();
     await expect(list.getByRole('link').first()).toBeHidden();
@@ -214,7 +217,7 @@ test.describe('lists that change', () => {
     });
     await page.goto('/');
     await waitForHydration(page);
-    const search = page.locator('aside').getByRole('button', { name: /Search/ });
+    const search = page.locator('[data-topbar]').getByRole('button', { name: /Search/ });
     await search.click();
     const dialog = page.getByRole('dialog', { name: 'Search' });
     await expect(dialog).toBeVisible();

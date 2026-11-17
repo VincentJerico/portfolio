@@ -39,7 +39,7 @@ test('arrow keys move the active option', async ({ page }) => {
 
 test('no results is announced and Esc returns focus to the opener', async ({ page }) => {
   await page.goto('/about');
-  const opener = page.locator('aside').getByRole('button', { name: /^Search/ });
+  const opener = page.locator('[data-topbar]').getByRole('button', { name: /^Search/ });
   await opener.click();
   const input = page.getByRole('combobox', { name: 'Search the site' });
   await input.fill('zzzzzz');

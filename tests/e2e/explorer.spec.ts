@@ -14,7 +14,7 @@ const statusText = {
 
 test.use({ viewport: { width: 1280, height: 900 } });
 
-test('sidebar is a nav of nested lists whose link names equal the page names', async ({ page }) => {
+test('the top bar is a nav whose link names equal the page names', async ({ page }) => {
   await page.goto('/');
   const nav = page.getByRole('navigation', { name: 'Site' });
   await expect(nav.locator(':scope > ul > li')).toHaveCount(navItems().length);
@@ -23,7 +23,7 @@ test('sidebar is a nav of nested lists whose link names equal the page names', a
   }
 });
 
-test('Projects folder expands to one spec per project', async ({ page }) => {
+test('the Projects menu lists one spec per project', async ({ page }) => {
   await page.goto('/');
   const nav = page.getByRole('navigation', { name: 'Site' });
   const folder = nav.getByRole('button', { name: 'Project specs' });
@@ -35,21 +35,21 @@ test('Projects folder expands to one spec per project', async ({ page }) => {
   }
 });
 
-test('sidebar statuses come from the committed report, never a pass it did not earn', async ({
+test('status bar statuses come from the committed report, never a pass it did not earn', async ({
   page,
 }) => {
   await page.goto('/');
-  const sidebar = page.locator('aside');
-  await expect(sidebar).toContainText(statusText.summary);
-  await expect(sidebar).not.toContainText(statusText.never);
-  await expect(sidebar.getByRole('link', { name: /Site checks/ })).toContainText(statusText.chip);
+  const bar = page.locator('[data-statusbar]');
+  await expect(bar).toContainText(statusText.summary);
+  await expect(bar).not.toContainText(statusText.never);
+  await expect(bar.getByRole('link', { name: /Site checks/ })).toContainText(statusText.chip);
 });
 
 test('coverage counts the pages this visitor has opened', async ({ page }) => {
   await page.goto('/');
-  const line = page.locator('aside').getByText(/You've covered/);
+  const line = page.locator('[data-statusbar]').getByText(/You've covered/);
   await expect(line).toHaveText(`You've covered 1 of ${navItems().length} pages`);
-  await page.locator('aside').getByRole('link', { name: 'About', exact: true }).click();
+  await page.locator('[data-topbar]').getByRole('link', { name: 'About', exact: true }).click();
   await expect(page).toHaveURL(/\/about$/);
   await expect(line).toHaveText(`You've covered 2 of ${navItems().length} pages`);
 });
@@ -63,6 +63,6 @@ test('coverage still works for the visit when localStorage throws', async ({ pag
     });
   });
   await page.goto('/');
-  await page.locator('aside').getByRole('link', { name: 'Skills', exact: true }).click();
-  await expect(page.locator('aside').getByText(/You've covered 2 of/)).toBeVisible();
+  await page.locator('[data-topbar]').getByRole('link', { name: 'Skills', exact: true }).click();
+  await expect(page.locator('[data-statusbar]').getByText(/You've covered 2 of/)).toBeVisible();
 });

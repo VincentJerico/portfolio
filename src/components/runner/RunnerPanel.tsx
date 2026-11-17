@@ -33,9 +33,12 @@ export function RunnerPanel({ path, onClose }: { path: string; onClose: () => vo
     const previousPadding = root.style.scrollPaddingBottom;
     const previousBodyPadding = document.body.style.paddingBottom;
     const resize = new ResizeObserver(() => {
-      root.style.scrollPaddingBottom = `${panel.offsetHeight + 16}px`;
+      // From the sheet's top edge to the bottom of the screen: on desktop the sheet sits above the
+      // status bar, so its own height alone would leave that bar's height uncovered.
+      const covered = Math.round(window.innerHeight - panel.getBoundingClientRect().top);
+      root.style.scrollPaddingBottom = `${covered + 16}px`;
       // Room to scroll the last elements of the page above the sheet.
-      document.body.style.paddingBottom = `${panel.offsetHeight}px`;
+      document.body.style.paddingBottom = `${covered}px`;
     });
     resize.observe(panel);
     document.addEventListener('keydown', onKeyDown);
@@ -85,7 +88,7 @@ export function RunnerPanel({ path, onClose }: { path: string; onClose: () => vo
       ref={panelRef}
       data-runner-panel
       aria-label="Test run"
-      className="fixed inset-x-0 bottom-0 z-40 m-0 mx-auto max-h-[75dvh] w-[min(100vw,44rem)] max-w-none overflow-hidden rounded-t-card border border-b-0 border-line bg-surface p-0 text-ink shadow-2xl"
+      className="fixed inset-x-0 bottom-0 z-40 m-0 lg:bottom-11 mx-auto max-h-[75dvh] w-[min(100vw,44rem)] max-w-none overflow-hidden rounded-t-card border border-b-0 border-line bg-surface p-0 text-ink shadow-2xl"
     >
       <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-2">
         <p className="font-mono text-xs text-ink-muted">

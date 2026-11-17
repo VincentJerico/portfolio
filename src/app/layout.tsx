@@ -14,7 +14,8 @@ import { PullCord } from '@/components/layout/PullCord';
 import { RouteRunner } from '@/components/layout/RouteRunner';
 import { RouteTransition } from '@/components/layout/RouteTransition';
 import { ShellLinks } from '@/components/layout/ShellLinks';
-import { Sidebar } from '@/components/layout/Sidebar';
+import { StatusBar } from '@/components/layout/StatusBar';
+import { TopBar } from '@/components/layout/TopBar';
 import { SkipLink } from '@/components/layout/SkipLink';
 import { CommandPaletteRoot } from '@/components/palette/CommandPaletteRoot';
 import { SearchButton } from '@/components/palette/SearchButton';
@@ -80,15 +81,16 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
                 </>
               }
             />
-            <Sidebar />
+            <TopBar />
             <PullCord />
-            <main id="main" tabIndex={-1} className="focus:outline-none lg:pl-[280px]">
+            <main id="main" tabIndex={-1} className="focus:outline-none lg:pt-14 lg:pb-11">
               <div className="mx-auto w-full max-w-[1100px] px-4 py-10 sm:px-6 lg:px-12 lg:py-16">
                 <HuntBanner email={profile.email} />
                 <RouteTransition>{children}</RouteTransition>
                 <NextSpec order={order} reportsWithNext={reportsWithNext} />
               </div>
             </main>
+            <StatusBar />
             <CommandPaletteRoot items={paletteItems()} />
             <RunnerHost />
             <RouteRunner
