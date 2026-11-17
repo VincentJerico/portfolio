@@ -83,6 +83,7 @@ export function RunSummaryPanel({
   return (
     <section
       aria-labelledby="run-summary-heading"
+      data-inspect
       className="rounded-card border border-line bg-surface shadow-card"
     >
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3">

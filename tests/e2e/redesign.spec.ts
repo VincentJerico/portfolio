@@ -167,14 +167,20 @@ test.describe('no colour flashes', () => {
     page,
   }) => {
     await page.goto('/');
-    const sweeps = await page.evaluate(
-      () =>
-        [...document.querySelectorAll('main *')].filter((el) => {
+    // No card highlight that plays by itself on load (the light-blue flash Vincent disliked). The
+    // inspector (C49) also draws with a gradient, but only as the visitor scrolls: its animation is
+    // tied to the card's scroll position, never to time.
+    const sweeps = await page.evaluate(() =>
+      [...document.querySelectorAll('main *')]
+        .filter((el) => {
           const after = getComputedStyle(el, '::after');
-          return after.content !== 'none' && after.backgroundImage.includes('gradient');
-        }).length,
+          if (after.content === 'none' || !after.backgroundImage.includes('gradient')) return false;
+          const scrollDriven = after.animationName !== 'none' && after.animationTimeline !== 'auto';
+          return !scrollDriven;
+        })
+        .map((el) => el.tagName + '.' + String(el.className).slice(0, 30)),
     );
-    expect(sweeps).toBe(0);
+    expect(sweeps).toEqual([]);
     const rules = await page.evaluate(() =>
       [...document.styleSheets]
         .flatMap((sheet) => {

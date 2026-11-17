@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { Inspectable } from '@/components/bughunt/Inspectable';
 import { DecodeLabel } from '@/components/ui/DecodeLabel';
 
@@ -45,7 +45,14 @@ export function Section({ id, title, kicker, action, children, className = '' }:
                   />
                 </svg>
               </span>
-              {title}
+              {/* Each word brightens from the muted text colour to full ink as the heading scrolls in. */}
+              <span className="light-words">
+                {title.split(' ').map((word, i) => (
+                  <span key={i} className="light-word" style={{ '--w': i } as CSSProperties}>
+                    {i > 0 ? ` ${word}` : word}
+                  </span>
+                ))}
+              </span>
             </h2>
           </Inspectable>
         </div>

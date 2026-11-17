@@ -1,18 +1,21 @@
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Bricolage_Grotesque, IBM_Plex_Mono } from 'next/font/google';
 
-// Decision C39: Geist for everything people read and Geist Mono for everything the test runner says.
-// Both are variable (weight 100 to 900) and built for legibility at small sizes, which the dense
-// runner labels need (Vincent picked them over a pixel mono that read poorly at 11 px).
-export const geist = Geist({
+// Decision C49 (Vincent's pick, "Workshop"): Bricolage Grotesque for everything people read and IBM
+// Plex Mono for everything the test runner says. Bricolage is variable in weight and optical size, so
+// large titles take its tighter display cuts while body text stays even; Plex Mono holds up at the
+// 11 to 12 px the runner labels use.
+export const bricolage = Bricolage_Grotesque({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-geist',
+  axes: ['opsz'],
+  variable: '--font-bricolage',
 });
 
-export const geistMono = Geist_Mono({
+export const plexMono = IBM_Plex_Mono({
   subsets: ['latin'],
+  weight: ['400', '500', '600'],
   display: 'swap',
-  variable: '--font-geist-mono',
+  variable: '--font-plex-mono',
 });
 
-export const fontVariables = [geist.variable, geistMono.variable].join(' ');
+export const fontVariables = [bricolage.variable, plexMono.variable].join(' ');
