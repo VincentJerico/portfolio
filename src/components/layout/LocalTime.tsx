@@ -13,9 +13,12 @@ const TICK_MS = 30_000;
 export function LocalTime({
   utcOffsetMinutes,
   place,
+  compact = false,
 }: {
   utcOffsetMinutes: number;
   place: string;
+  /** Just the time, with the place in its tooltip (the minimal status bar). */
+  compact?: boolean;
 }) {
   const [time, setTime] = useState('');
 
@@ -37,6 +40,19 @@ export function LocalTime({
     };
   }, [utcOffsetMinutes]);
 
+  if (compact) {
+    return (
+      <p
+        data-local-time
+        data-tip={`Local time · ${place}`}
+        className="tip flex min-h-11 items-center px-2 font-mono text-[0.6875rem] text-ink-muted"
+      >
+        <span className="sr-only">Local time </span>
+        <span className="inline-block min-w-[7ch] text-ink tabular-nums">{time}</span>
+        <span className="sr-only"> · {place}</span>
+      </p>
+    );
+  }
   return (
     <p data-local-time className="font-mono text-[0.6875rem] text-ink-muted">
       Local time <span className="inline-block min-w-[7ch] text-ink tabular-nums">{time}</span> ·{' '}

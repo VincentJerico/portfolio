@@ -24,28 +24,11 @@ interface TestExplorerNavProps {
   idPrefix: string;
 }
 
-export const STATUS_TEXT: Record<RunStatus, string> = {
-  pass: 'passing',
-  fail: 'failing',
-  'not-run': 'not run',
-};
-
-export function StatusDot({ status }: { status: RunStatus }) {
-  const tone =
-    status === 'pass'
-      ? 'bg-pass'
-      : status === 'fail'
-        ? 'bg-fail'
-        : 'border border-ink-muted bg-transparent';
-  return <span aria-hidden="true" className={`size-2 shrink-0 rounded-full ${tone}`} />;
-}
-
 function Row({
   row,
   active,
   visited,
   child = false,
-  showSpec = !child,
   marker,
 }: {
   row: ExplorerRow;
@@ -57,15 +40,10 @@ function Row({
    * the same name on every page, so on navigation it glides from the old row to the new one.
    */
   marker?: string;
-  /** The spec file name; dropped where the row also carries a folder toggle and room runs out. */
-  showSpec?: boolean;
 }) {
   return (
     <>
-      <span className="sr-only">
-        {STATUS_TEXT[row.status]}
-        {visited && ', visited'}
-      </span>
+      {visited && <span className="sr-only">visited</span>}
       <Link
         href={row.href}
         aria-current={active ? 'page' : undefined}
@@ -81,18 +59,16 @@ function Row({
             style={{ viewTransitionName: marker }}
           />
         )}
-        <StatusDot status={row.status} />
         <span className="min-w-0 truncate text-ink-muted group-hover:text-ink group-aria-[current=page]:font-semibold group-aria-[current=page]:text-ink">
           {row.label}
         </span>
-        <span
-          aria-hidden="true"
-          className="ml-auto flex shrink-0 items-center gap-1.5 font-mono text-[0.6875rem] tracking-tight text-ink-muted"
-        >
-          {visited && <Check data-visited-check className="size-3 text-accent" />}
-          {showSpec && <span className="hidden xl:inline">{row.spec}</span>}
-          {row.duration && <span>{row.duration}</span>}
-        </span>
+        {visited && (
+          <Check
+            aria-hidden="true"
+            data-visited-check
+            className="ml-auto size-3 shrink-0 text-accent"
+          />
+        )}
       </Link>
     </>
   );
@@ -129,7 +105,6 @@ export function TestExplorerNav({ rows, projects, summary, idPrefix }: TestExplo
                     row={row}
                     active={isActive(pathname, row.href)}
                     visited={isVisited(row.href)}
-                    showSpec={!isFolder}
                     marker={
                       isActive(pathname, row.href) &&
                       !(isFolder && projects.some((project) => project.href === pathname))

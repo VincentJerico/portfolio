@@ -2012,3 +2012,43 @@ html:active-view-transition-type(theme) [data-nav-marker] {
     --done: var(--n);
   }
 }
+
+/* Tooltips for the minimal status bar's icons (data-tip): above the icon on hover or keyboard focus.
+   Each icon already names itself to screen readers; the tooltip repeats that name for sighted users.
+   It appears by visibility and a short rise, not by fading text. */
+.tip {
+  position: relative;
+}
+.tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 0.375rem);
+  left: 50%;
+  z-index: 50;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-chip);
+  background: var(--surface-2);
+  color: var(--text);
+  font: 500 0.6875rem / 1.2 var(--font-mono);
+  white-space: nowrap;
+  pointer-events: none;
+  visibility: hidden;
+  translate: -50% 0.25rem;
+  transition:
+    translate var(--dur-fast) var(--ease-snap),
+    visibility var(--dur-fast);
+}
+.tip:is(:hover, :focus-visible)::after {
+  visibility: visible;
+  translate: -50% 0;
+}
+/* The rightmost icons align their tooltips to the right edge so they never run off screen. */
+[data-statusbar] li:last-child .tip::after {
+  left: auto;
+  right: 0;
+  translate: 0 0.25rem;
+}
+[data-statusbar] li:last-child .tip:is(:hover, :focus-visible)::after {
+  translate: 0 0;
+}
