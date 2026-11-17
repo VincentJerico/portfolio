@@ -23,7 +23,7 @@ const PAGES = [
 function smallTargets(page: Page) {
   return page.evaluate(() => {
     const out: string[] = [];
-    const scope = 'main, [data-topbar], [data-statusbar], body > header';
+    const scope = 'main, [data-site-header], [data-site-footer]';
     for (const el of document.querySelectorAll<HTMLElement>(`:is(${scope}) :is(a[href], button)`)) {
       const rect = el.getBoundingClientRect();
       if (!rect.width || !rect.height || el.closest('[aria-hidden="true"], .sr-only')) continue;
@@ -71,22 +71,14 @@ for (const [label, viewport] of [
   });
 }
 
-test('each testing area on the overview opens the projects filtered to it', async ({ page }) => {
-  await page.goto('/');
-  const strip = page.getByRole('region', { name: 'At a glance' });
-  const areas = testedAreaLinks();
-  for (const area of areas) {
-    await expect(strip.getByRole('link', { name: area.label, exact: true })).toHaveAttribute(
-      'href',
-      area.href,
+test('each testing area opens the projects filtered to it', async ({ page }) => {
+  for (const area of testedAreaLinks()) {
+    await page.goto(area.href);
+    await expect(page.getByRole('button', { name: area.label, exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true',
     );
   }
-  await strip.getByRole('link', { name: areas[0]!.label, exact: true }).click();
-  await expect(page).toHaveURL(new RegExp(`/projects\\?category=`));
-  await expect(page.getByRole('button', { name: areas[0]!.label, exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
 });
 
 test('every project on the resume links to its report', async ({ page }) => {

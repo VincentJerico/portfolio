@@ -28,11 +28,16 @@ test.describe('audit fixes', () => {
     }
   });
 
-  test('/about does not repeat the homepage intro or the projects tagline', async ({ page }) => {
+  // C51: the home page is the poster, so the intro moved to /about; nothing says it twice.
+  test('the intro is on /about only, and the projects tagline on /projects only', async ({
+    page,
+  }) => {
     await page.goto('/about');
     const main = page.locator('main');
-    await expect(main).not.toContainText(profile.intro);
+    await expect(main).toContainText(profile.intro);
     await expect(main).not.toContainText(profile.tagline);
+    await page.goto('/');
+    await expect(page.locator('main')).not.toContainText(profile.intro);
     await page.goto('/projects');
     await expect(page.locator('main')).toContainText(profile.tagline);
   });

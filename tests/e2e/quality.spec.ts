@@ -30,5 +30,4 @@ test('/quality explains every gate and its self-test, and never fakes a result',
   }
   await expect(main).toContainText("a gate that can't fail isn't a gate");
   await expect(main).toContainText('legatalink.free.nf');
-  await expect(main.getByRole('button', { name: 'Run tests on this page' })).toBeVisible();
 });

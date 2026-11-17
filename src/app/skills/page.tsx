@@ -1,15 +1,8 @@
 import type { Metadata } from 'next';
-import { pageMetadata } from '@/lib/seo';
-import { Check } from 'lucide-react';
 import Link from 'next/link';
-import type { CSSProperties } from 'react';
 import type { SkillGroup } from '@/content/schema';
 import { skills } from '@/content';
-import { Inspectable } from '@/components/bughunt/Inspectable';
-import { githubSlug } from '@/lib/slug';
-
-// HUNT-01 (Bug Hunt only): a typo in a heading.
-const PLANTED_HEADINGS: Record<string, string> = { Accessibility: 'Accessibilty' };
+import { pageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Skills',
@@ -17,60 +10,41 @@ export const metadata: Metadata = pageMetadata({
   path: '/skills',
 });
 
-function GroupCard({ group }: { group: SkillGroup }) {
+const LINK = 'hit-area text-sm';
+
+/** One skill group as a ruled row (C51): the group, its tools, then the work that proves them. */
+function GroupRow({ group }: { group: SkillGroup }) {
   return (
-    <li className="skill-card lift flex flex-col gap-3 rounded-card border border-line bg-surface p-5">
-      <div className="flex items-start justify-between gap-3">
-        <Inspectable
-          id={`skills-${githubSlug(group.group)}-heading`}
-          label={`${group.group} heading`}
-          planted={PLANTED_HEADINGS[group.group] && <h3>{PLANTED_HEADINGS[group.group]}</h3>}
+    <li className="skill-group grid gap-x-8 gap-y-3 border-b border-line py-5 md:grid-cols-[14rem_minmax(0,1fr)]">
+      <h3>{group.group}</h3>
+      <div className="flex flex-col gap-3">
+        <ul
+          className={`flex flex-wrap gap-x-4 gap-y-1 ${group.learning ? 'text-ink-muted' : 'text-ink'}`}
         >
-          <h3>{group.group}</h3>
-        </Inspectable>
-        {/* Turns to a check as the card scrolls in, like the section headings' status dots. */}
-        <span
-          aria-hidden="true"
-          className="skill-check grid size-6 shrink-0 place-items-center rounded-full border border-pass/60 text-pass"
-        >
-          <Check className="size-3.5" />
-        </span>
-      </div>
-      <ul className="flex flex-wrap gap-1.5">
-        {group.skills.map((skill, i) => (
-          <li
-            key={skill}
-            style={{ '--i': i } as CSSProperties}
-            className={`chip rounded-chip px-2 py-0.5 text-sm ${
-              group.learning
-                ? 'border border-dashed border-accent/60 text-ink-muted'
-                : 'bg-surface-2 text-ink'
-            }`}
-          >
-            {skill}
-          </li>
-        ))}
-      </ul>
-      <div className="mt-auto border-t border-line pt-3">
-        <p className="label-mono text-ink-muted">Evidence</p>
-        <ul className="mt-1 flex flex-wrap gap-x-4">
-          {group.evidence.map((item) => (
-            <li key={item.label}>
-              {item.href.startsWith('/') ? (
-                <Link
-                  href={item.href}
-                  className="inline-flex min-h-11 min-w-11 items-center text-sm"
-                >
-                  {item.label}
-                </Link>
-              ) : (
-                <a href={item.href} className="inline-flex min-h-11 min-w-11 items-center text-sm">
-                  {item.label}
-                </a>
-              )}
+          {group.skills.map((skill) => (
+            <li key={skill} className="chip">
+              {skill}
             </li>
           ))}
         </ul>
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+          <p className="label-mono text-ink-muted">Evidence</p>
+          <ul className="flex flex-wrap gap-x-4 gap-y-2">
+            {group.evidence.map((item) => (
+              <li key={item.label}>
+                {item.href.startsWith('/') ? (
+                  <Link href={item.href} className={LINK}>
+                    {item.label}
+                  </Link>
+                ) : (
+                  <a href={item.href} className={LINK}>
+                    {item.label}
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </li>
   );
@@ -82,10 +56,10 @@ export default function SkillsPage() {
 
   return (
     <div className="flex flex-col gap-rhythm">
-      <header className="measure">
-        <p className="label-mono text-ink-muted">Skills matrix</p>
-        <h1 className="mt-4">Skills</h1>
-        <p className="mt-5 text-ink-muted">
+      <header className="flex flex-col gap-6">
+        <p className="label-mono text-ink-muted">Skills</p>
+        <h1>Skills</h1>
+        <p className="measure text-lg text-ink-muted">
           Only tools actually used in the repos, client work or listed on the CV.
         </p>
       </header>
@@ -93,9 +67,9 @@ export default function SkillsPage() {
         <h2 id="proven-heading" className="mb-6">
           Skills with evidence
         </h2>
-        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="border-t border-line">
           {proven.map((group) => (
-            <GroupCard key={group.group} group={group} />
+            <GroupRow key={group.group} group={group} />
           ))}
         </ul>
       </section>
@@ -104,9 +78,9 @@ export default function SkillsPage() {
           <h2 id="learning-heading" className="mb-6">
             Learning
           </h2>
-          <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <ul className="border-t border-line">
             {learning.map((group) => (
-              <GroupCard key={group.group} group={group} />
+              <GroupRow key={group.group} group={group} />
             ))}
           </ul>
         </section>

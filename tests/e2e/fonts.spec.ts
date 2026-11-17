@@ -1,7 +1,7 @@
 import { expect, test } from '../helpers/test';
 
 test.describe('fonts', () => {
-  test('text uses Bricolage Grotesque and runner labels use IBM Plex Mono, both loaded', async ({
+  test('text uses Bricolage Grotesque and labels use IBM Plex Mono, both loaded', async ({
     page,
   }) => {
     await page.goto('/');
@@ -15,7 +15,7 @@ test.describe('fonts', () => {
         return { family: style.fontFamily, size: style.fontSize };
       });
     expect(label.family).toMatch(/IBM Plex Mono/i);
-    expect(label.size).toBe('12px');
+    expect(label.size).toBe('13px'); // C51: small mono labels are 13 px
     const loaded = await page.evaluate(async () => {
       await document.fonts.ready;
       return [...document.fonts]

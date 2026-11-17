@@ -74,15 +74,4 @@ test.describe('layout', () => {
     });
     expect(width).toBe('0px');
   });
-
-  test('the portrait card holds all its fixture data when flipped', async ({ page }) => {
-    await page.goto('/');
-    await waitForHydration(page);
-    await page.getByRole('button', { name: 'Flip card' }).click();
-    for (const width of WIDTHS) {
-      await page.setViewportSize({ width, height: 900 });
-      // Polled: the flip and any resize reflow must finish before the card is measured.
-      await expect.poll(() => page.evaluate(escapes), { message: `at ${width} px` }).toEqual([]);
-    }
-  });
 });

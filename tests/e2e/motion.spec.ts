@@ -1,23 +1,16 @@
 import { expect, test, type Locator } from '../helpers/test';
 import { waitForHydration } from '../helpers/hydration';
 
-// "No dead areas" (docs/superpowers/plans/2026-11-15-no-dead-areas.md): every part arrives, answers or
-// changes shape, and holds still under reduced motion.
+// C50's one rhythm, kept by the minimal reset (C51): everything that arrives rises 16 px over 400 ms,
+// list rows answer the pointer, and nothing moves under reduced motion.
 
 const animationName = (locator: Locator) =>
   locator.evaluate((el) => getComputedStyle(el).animationName);
 
 test.describe('arrivals', () => {
-  test('the home hero text rises in, and the dot field behind it keeps its own motion', async ({
-    page,
-  }) => {
+  test('the poster rises in on the home page', async ({ page }) => {
     await page.goto('/');
-    const headline = page.locator('[data-hero-text] > p').first();
-    expect(await animationName(headline)).toBe('rise');
-    const fieldChildren = await page
-      .locator('[data-spotlight] > *')
-      .evaluateAll((els) => els.map((el) => getComputedStyle(el).animationName));
-    expect(fieldChildren).not.toContain('rise');
+    expect(await animationName(page.locator('[data-poster] > .poster-line'))).toBe('rise');
   });
 
   test('the 404 page arrives like every other page', async ({ page }) => {
@@ -25,9 +18,7 @@ test.describe('arrivals', () => {
     expect(await animationName(page.locator('main header > h1'))).toBe('rise');
   });
 
-  test('sections on a quieter page rise in with the shared rise as they scroll in', async ({
-    page,
-  }) => {
+  test('sections rise in with the shared rise as they scroll in', async ({ page }) => {
     await page.goto('/skills');
     expect(await animationName(page.locator('main section').first())).toBe('rise');
   });
@@ -50,67 +41,24 @@ test.describe('arrivals', () => {
 test.describe('answers', () => {
   test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
 
-  test('a reading-progress line runs under the top bar', async ({ page }) => {
-    await page.goto('/projects/accessibility-testing');
-    const line = page.locator('[data-scroll-progress]');
-    expect(await animationName(line)).toBe('scroll-fill');
-    const box = (await line.boundingBox())!;
-    const bar = (await page.locator('[data-topbar]').boundingBox())!;
-    expect(box.y).toBeGreaterThanOrEqual(bar.y + bar.height - 1);
-  });
-
   test('buttons press in while held', async ({ page }) => {
     await page.goto('/');
     await waitForHydration(page);
-    const search = page.getByRole('button', { name: /Search/ }).first();
-    await search.hover();
+    const toggle = page.locator('[data-site-header]').getByRole('button', { name: 'Dark theme' });
+    await toggle.hover();
     await page.mouse.down();
-    await expect.poll(() => search.evaluate((el) => getComputedStyle(el).scale)).toBe('0.96');
+    await expect.poll(() => toggle.evaluate((el) => getComputedStyle(el).scale)).toBe('0.96');
     await page.mouse.up();
-    await page.keyboard.press('Escape');
   });
 
-  test('cards on the quieter pages lift under the pointer', async ({ page }) => {
-    await page.goto('/skills');
-    const card = page.locator('.skill-card').first();
-    await card.hover();
-    await expect.poll(() => card.evaluate((el) => getComputedStyle(el).translate)).toBe('0px -2px');
-  });
-
-  test('the Projects menu drops open and its links leave the tab order when shut', async ({
-    page,
-  }) => {
-    await page.goto('/');
-    await waitForHydration(page);
-    const nav = page.getByRole('navigation', { name: 'Site' });
-    const folder = nav.getByRole('button', { name: 'Project specs' });
-    await folder.click();
-    const list = page.locator('[data-topbar] .topnav-menu');
-    expect(await animationName(list)).toBe('rise');
-    await expect(list.getByRole('link').first()).toBeVisible();
-    await folder.click();
-    await expect(list.getByRole('link').first()).toBeHidden();
-    await expect(list).toHaveAttribute('hidden', '');
-  });
-
-  test('a case study card morphs into its page title', async ({ page }) => {
+  test('a case study row morphs into its page title', async ({ page }) => {
     await page.goto('/work');
-    const link = page.getByRole('link', { name: /Read the case study/ }).first();
+    const link = page.locator('.work-row-link').first();
     await expect(link).toHaveAttribute('data-morph');
   });
 });
 
 test.describe('changes of shape', () => {
-  test('the Menu icon folds into a close X while the drawer is open', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 800 });
-    await page.goto('/');
-    await waitForHydration(page);
-    const menu = page.getByRole('button', { name: 'Menu' });
-    await menu.click();
-    const top = menu.locator('.menu-icon line').first();
-    await expect.poll(() => top.evaluate((el) => getComputedStyle(el).rotate)).toBe('45deg');
-  });
-
   test('form errors rise in under their fields', async ({ page }) => {
     await page.goto('/contact');
     await waitForHydration(page);
@@ -123,7 +71,7 @@ test.describe('changes of shape', () => {
 
   // Clipboard permissions can be granted in Chromium only.
   test(
-    'a copy button pops a check, reports it, then resets',
+    'a copy button shows a check, reports it, then resets',
     { tag: '@chromium-only' },
     async ({ page, context }) => {
       await context.grantPermissions(['clipboard-read', 'clipboard-write']);
@@ -137,19 +85,16 @@ test.describe('changes of shape', () => {
     },
   );
 
-  test('the run-checks sheet slides up and its results stream in', async ({ page }) => {
-    await page.goto('/quality');
+  test('the phone menu links arrive in turn', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto('/');
     await waitForHydration(page);
     await page
-      .getByRole('button', { name: /Run tests on this page/ })
-      .first()
+      .locator('[data-site-header]')
+      .getByRole('button', { name: 'Menu', exact: true })
       .click();
-    const panel = page.locator('[data-runner-panel]');
-    await expect(panel).toBeVisible();
-    expect(await animationName(panel)).toBe('rise');
-    const row = panel.locator('li[data-check]').first();
-    await expect(row).toBeVisible({ timeout: 15000 });
-    expect(await animationName(row)).toBe('rise');
+    const item = page.getByRole('dialog', { name: 'Site menu' }).locator('nav > ul > li').nth(1);
+    expect(await animationName(item)).toBe('rise');
   });
 });
 
@@ -158,9 +103,9 @@ test.describe('reduced motion', () => {
 
   test('none of it moves', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/skills');
-    expect(await animationName(page.locator('.skill-card .chip').first())).toBe('none');
-    await expect(page.locator('[data-scroll-progress]')).toBeHidden();
+    await page.goto('/');
+    expect(await animationName(page.locator('[data-poster] > .poster-line'))).toBe('none');
+    expect(await animationName(page.locator('.work-row').first())).toBe('none');
     await page.goto('/resume');
     expect(await animationName(page.locator('.resume-list > li').first())).toBe('none');
   });
@@ -169,12 +114,12 @@ test.describe('reduced motion', () => {
 test.describe('lists that change', () => {
   test.use({ viewport: { width: 1280, height: 900 }, isMobile: false, hasTouch: false });
 
-  test('filtering moves the cards that stay, lifts away the ones that go, and raises the count', async ({
+  test('filtering moves the rows that stay, lifts away the ones that go, and raises the count', async ({
     page,
   }) => {
     await page.goto('/projects');
     await waitForHydration(page);
-    // Record every card animation the filter starts (they are short, so read them as they begin).
+    // Record every row animation the filter starts (they are short, so read them as they begin).
     await page.evaluate(() => {
       const w = window as unknown as { __moves: string[] };
       w.__moves = [];
@@ -188,7 +133,7 @@ test.describe('lists that change', () => {
       };
     });
     await page.getByRole('button', { name: 'Security', exact: true }).click();
-    await expect(page.locator('main article:not([inert] *)')).toHaveCount(1);
+    await expect(page.locator('main li[data-slug]:not([inert] *)')).toHaveCount(1);
     const moves = await page.evaluate(() => (window as unknown as { __moves: string[] }).__moves);
     expect(moves).toContain('ghost');
     const roll = page.getByRole('status').filter({ hasText: 'Showing' }).locator('.count-roll');
@@ -197,82 +142,15 @@ test.describe('lists that change', () => {
     await expect
       .poll(() => page.evaluate(() => (window as unknown as { __moves: string[] }).__moves))
       .toEqual(expect.arrayContaining(['enter', 'move']));
-    // The removed cards' copies leave once they have shrunk away.
+    // The removed rows' copies leave once they have lifted away.
     await expect(page.locator('[inert] > li')).toHaveCount(0);
-  });
-
-  test('the palette shrinks back into the Search button it grew from', async ({ page }) => {
-    await page.addInitScript(() => {
-      const w = window as unknown as { __vt: string[][] };
-      w.__vt = [];
-      const start = document.startViewTransition?.bind(document);
-      if (!start) return;
-      document.startViewTransition = ((arg: unknown) => {
-        w.__vt.push([...((arg as { types?: string[] })?.types ?? [])]);
-        return start(arg as never);
-      }) as typeof document.startViewTransition;
-    });
-    await page.goto('/');
-    await waitForHydration(page);
-    const search = page.locator('[data-topbar]').getByRole('button', { name: /Search/ });
-    await search.click();
-    const dialog = page.getByRole('dialog', { name: 'Search' });
-    await expect(dialog).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(dialog).toHaveCount(0);
-    const types = await page.evaluate(() => (window as unknown as { __vt: string[][] }).__vt);
-    expect(types.filter((t) => t.includes('dialog-morph'))).toHaveLength(2);
-    await expect(search).toBeFocused();
-  });
-
-  test('palette results cascade in and the highlight glides between them', async ({ page }) => {
-    await page.goto('/');
-    await waitForHydration(page);
-    await page.keyboard.press('ControlOrMeta+k');
-    const option = page.getByRole('option').first();
-    await expect(option).toBeVisible();
-    expect(await animationName(option)).toBe('rise');
-    const marker = page.locator('.palette-marker');
-    const before = await marker.evaluate((el) => el.style.translate);
-    await page.keyboard.press('ArrowDown');
-    await expect.poll(() => marker.evaluate((el) => el.style.translate)).not.toBe(before);
-  });
-});
-
-test.describe('inspector on scroll', () => {
-  test.use({ viewport: { width: 1280, height: 860 }, isMobile: false, hasTouch: false });
-
-  const after = (locator: Locator) =>
-    locator.evaluate((el) => {
-      const style = getComputedStyle(el, '::after');
-      return { lock: style.getPropertyValue('--lock').trim(), content: style.content };
-    });
-
-  test('a card is inspected as it crosses the middle of the screen, and stays inspected', async ({
-    page,
-  }) => {
-    await page.goto('/skills');
-    const card = page.locator('.skill-card').last();
-    expect((await after(card)).lock).toBe('0'); // not reached yet
-    await card.evaluate((el) => {
-      const top = el.getBoundingClientRect().top + scrollY;
-      scrollTo(0, top - innerHeight * 0.3);
-    });
-    await expect.poll(async () => (await after(card)).lock).toBe('1');
-    expect((await after(card)).content).toContain('inspected');
-  });
-
-  test('under reduced motion the inspector draws nothing', async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/skills');
-    expect((await after(page.locator('.skill-card').first())).content).toBe('none');
   });
 });
 
 test.describe('one rhythm', () => {
   test.use({ viewport: { width: 1280, height: 860 }, isMobile: false, hasTouch: false });
 
-  test('arrivals share one rise and one timing; cards share one hover', async ({ page }) => {
+  test('arrivals share one rise and one timing; rows share one hover', async ({ page }) => {
     await page.goto('/about');
     const header = await page
       .locator('main header > *')
@@ -286,8 +164,11 @@ test.describe('one rhythm', () => {
       .locator('main section')
       .evaluateAll((els) => els.map((el) => getComputedStyle(el).animationName));
     expect(new Set(sections)).toEqual(new Set(['rise']));
-    const card = page.locator('.lift').first();
-    await card.hover();
-    await expect.poll(() => card.evaluate((el) => getComputedStyle(el).translate)).toBe('0px -2px');
+    await page.goto('/');
+    const row = page.locator('.work-row').first();
+    await row.getByRole('link').hover();
+    await expect
+      .poll(() => row.locator('.work-row-name').evaluate((el) => getComputedStyle(el).translate))
+      .toBe('12px');
   });
 });

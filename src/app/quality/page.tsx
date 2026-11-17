@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { DataTable } from '@/components/content/DataTable';
 import { Section } from '@/components/content/Section';
-import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
 import { StatusChip } from '@/components/ui/StatusChip';
 import type { CSSProperties } from 'react';
 import { formatDay } from '@/lib/format';
@@ -76,22 +75,19 @@ export default function QualityPage() {
 
   return (
     <div className="flex flex-col gap-rhythm">
-      <header className="measure flex flex-col gap-4">
-        <p className="label-mono text-ink-muted">quality.spec</p>
+      <header className="flex flex-col gap-6">
+        <p className="label-mono text-ink-muted">How this site is tested</p>
         <h1>Quality</h1>
-        <p className="text-ink-muted">
+        <p className="measure text-lg text-ink-muted">
           This site is tested like the software I test for clients. Every push runs the gates below,
           and each gate has a self-test, because a gate that can&apos;t fail isn&apos;t a gate.
         </p>
-        <div>
-          <RunSuiteButton />
-        </div>
       </header>
 
       <Section id="latest-run" title="Latest run">
         {real ? (
           <div className="flex flex-col gap-6">
-            <dl className="latest-run grid gap-x-8 gap-y-3 rounded-card border border-line bg-surface p-5 sm:grid-cols-[8rem_1fr]">
+            <dl className="grid gap-x-8 gap-y-3 border-t border-line pt-4 sm:grid-cols-[8rem_1fr]">
               <dt className="label-mono pt-0.5 text-ink-muted">Result</dt>
               <dd>
                 <StatusChip status={report.overall} />
@@ -140,7 +136,7 @@ export default function QualityPage() {
             )}
           </div>
         ) : (
-          <div className="flex flex-wrap items-center gap-3 rounded-card border border-line bg-surface p-5">
+          <div className="flex flex-wrap items-center gap-3 border-t border-line pt-4">
             <StatusChip status="not-run" label="Not run yet" />
             <p className="text-ink-muted">
               Results appear here after the first run of the full pipeline on the main branch.
@@ -155,18 +151,20 @@ export default function QualityPage() {
       </Section>
 
       <Section id="gates" title="The gates and how each proves itself">
-        <ul className="grid gap-4 md:grid-cols-2">
+        <ul className="border-t border-line">
           {GATES.map((gate) => (
             <li
               key={gate.name}
-              className="lift flex flex-col gap-2 rounded-card border border-line bg-surface p-5"
+              className="grid gap-x-8 gap-y-2 border-b border-line py-4 md:grid-cols-[14rem_minmax(0,1fr)]"
             >
               <h3>{gate.name}</h3>
-              <p className="text-[0.9375rem] text-ink">{gate.what}</p>
-              <p className="text-sm text-ink-muted">
-                <span className="label-mono text-ink-muted">Self-test · </span>
-                {gate.selfTest}
-              </p>
+              <div className="measure flex flex-col gap-2">
+                <p className="text-[0.9375rem] text-ink">{gate.what}</p>
+                <p className="text-sm text-ink-muted">
+                  <span className="label-mono text-ink-muted">Self-test · </span>
+                  {gate.selfTest}
+                </p>
+              </div>
             </li>
           ))}
         </ul>
