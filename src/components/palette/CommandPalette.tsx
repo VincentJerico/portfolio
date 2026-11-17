@@ -128,7 +128,7 @@ export function CommandPalette({
     <dialog
       ref={dialogRef}
       aria-label="Search"
-      className="mx-auto mt-[12vh] w-[min(94vw,36rem)] max-w-none rounded-card border border-line bg-surface p-0 text-ink backdrop:bg-black/70"
+      className="mx-auto mt-[12vh] w-[min(94vw,36rem)] max-w-none rounded-card border border-line bg-surface p-0 text-ink backdrop:bg-[var(--backdrop)]"
     >
       <div className="border-b border-line p-3">
         {/* A visible label, never a placeholder alone (spec 12.3 guard F-6). */}

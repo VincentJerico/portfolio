@@ -122,13 +122,14 @@
 }
 
 @layer base {
-  /* Keep focused elements clear of the sticky 56px mobile top bar (SC 2.4.11). */
+  /* Keep focused elements clear of the 56px top bar (sticky on mobile, fixed on desktop) and, on
+     desktop, of the 44px status bar along the bottom (SC 2.4.11). */
   html {
     scroll-padding-top: 4.5rem;
   }
   @media (min-width: 1024px) {
     html {
-      scroll-padding-top: 1.5rem;
+      scroll-padding-bottom: 3.5rem;
     }
   }
 }
@@ -360,101 +361,6 @@
   }
 }
 
-/* Pinned horizontal reel (content/ProjectIndex.tsx). Default: the vertical index. With scroll
-   timelines, room and motion, the section pins and scrolling drives the suites sideways as cards,
-   with a pass bar filling below. */
-.reel-progress {
-  display: none;
-}
-@supports (animation-timeline: view()) {
-  @media screen and (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
-    .reel {
-      height: 240vh;
-      view-timeline: --reel block;
-    }
-    .reel-sticky {
-      position: sticky;
-      top: 12vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 1.5rem;
-      height: 70vh;
-      overflow: clip;
-      container-type: inline-size;
-    }
-    .reel-track {
-      display: flex;
-      gap: 1.25rem;
-      width: max-content;
-      border-top: 0;
-      animation: reel-x linear both;
-      animation-timeline: --reel;
-      animation-range: contain 0% contain 100%;
-    }
-    /* Every card is the same size: the track stretches its items to the tallest card, and each card
-       fills its item. Content is top-aligned, with two lines kept for the name, so the suite number,
-       name, category and result start at the same height in every card. */
-    .reel-track > li {
-      display: flex;
-      width: 22rem;
-      flex-shrink: 0;
-    }
-    .reel-track > li > * {
-      display: flex;
-      flex: 1;
-    }
-    .reel-track .index-row {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-      gap: 0.75rem;
-      min-height: 17rem;
-      padding: 1.5rem;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-card);
-      background: var(--surface);
-    }
-    .reel-track .index-row::before {
-      border-radius: inherit;
-    }
-    .reel-track .index-name {
-      min-height: 2lh;
-    }
-    .reel-track .index-hook {
-      grid-template-rows: 1fr;
-    }
-    .reel-track .index-row:is(:hover, :focus-within) .index-name {
-      translate: 0 0;
-    }
-    .reel-progress {
-      display: block;
-      position: relative;
-      height: 2px;
-      background: var(--border);
-    }
-    .reel-progress i {
-      position: absolute;
-      inset: 0;
-      background: var(--pass);
-      transform-origin: left;
-      animation: reel-progress linear both;
-      animation-timeline: --reel;
-      animation-range: contain 0% contain 100%;
-    }
-  }
-}
-@keyframes reel-x {
-  to {
-    translate: calc(-100% + 100cqw) 0;
-  }
-}
-@keyframes reel-progress {
-  from {
-    scale: 0 1;
-  }
-}
-
 /* Career path: a soft ring pulses out from the current step's marker. The ring scales and fades, so
    the compositor runs it; an animated box-shadow repainted on the main thread every frame, forever,
    and pushed /about's blocking time over budget. */
@@ -517,8 +423,8 @@
   opacity: 1;
 }
 
-/* Load sequence: on every full page load the sidebar rows cascade in from the left and a run bar
-   sweeps across the top. The sidebar persists across client navigations, so it plays once per load;
+/* Load sequence: on every full page load the top bar's links cascade in and a run bar sweeps across
+   the top. The top bar persists across client navigations, so it plays once per load;
    the drawer's rows replay it each time the drawer opens.
    Load animations fill backwards, not both: once finished they let go of their elements, so nothing
    keeps a compositing layer after the entrance. */
@@ -539,43 +445,43 @@
       load-run 900ms var(--ease-snap) backwards,
       load-done 1ms linear 1150ms forwards;
   }
-  :is(aside, .drawer[open]) nav > ul > li {
+  :is([data-topbar], .drawer[open]) nav > ul > li {
     animation: nav-in 520ms var(--ease-snap) backwards;
   }
-  :is(aside, .drawer[open]) nav > ul > li:nth-child(1) {
+  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(1) {
     animation-delay: 185ms;
   }
-  :is(aside, .drawer[open]) nav > ul > li:nth-child(2) {
+  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(2) {
     animation-delay: 230ms;
   }
-  :is(aside, .drawer[open]) nav > ul > li:nth-child(3) {
+  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(3) {
     animation-delay: 275ms;
   }
-  :is(aside, .drawer[open]) nav > ul > li:nth-child(4) {
+  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(4) {
     animation-delay: 320ms;
   }
-  :is(aside, .drawer[open]) nav > ul > li:nth-child(5) {
+  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(5) {
     animation-delay: 365ms;
   }
-  :is(aside, .drawer[open]) nav > ul > li:nth-child(6) {
+  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(6) {
     animation-delay: 410ms;
   }
-  :is(aside, .drawer[open]) nav > ul > li:nth-child(7) {
+  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(7) {
     animation-delay: 455ms;
   }
-  :is(aside, .drawer[open]) nav > ul > li:nth-child(8) {
+  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(8) {
     animation-delay: 500ms;
   }
-  :is(aside, .drawer[open]) nav > ul > li:nth-child(9) {
+  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(9) {
     animation-delay: 545ms;
   }
-  :is(aside, .drawer[open]) nav > ul > li:nth-child(10) {
+  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(10) {
     animation-delay: 590ms;
   }
-  :is(aside, .drawer[open]) nav > ul > li:nth-child(11) {
+  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(11) {
     animation-delay: 635ms;
   }
-  :is(aside, .drawer[open]) nav > ul > li:nth-child(12) {
+  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(12) {
     animation-delay: 680ms;
   }
 }
@@ -766,11 +672,6 @@
   margin-block: calc(var(--spacing-rhythm) * -0.5);
   pointer-events: none;
 }
-@media (min-width: 1024px) {
-  .report-dock {
-    top: 0;
-  }
-}
 .report-dock-bar {
   display: flex;
   align-items: center;
@@ -782,7 +683,7 @@
   border-radius: 0 0 var(--radius-card) var(--radius-card);
   /* Opaque: at any transparency the report's large headline reads through the bar. */
   background: var(--surface);
-  box-shadow: 0 12px 24px -16px rgb(0 0 0 / 0.5);
+  box-shadow: 0 12px 24px -16px var(--backdrop);
   visibility: hidden;
 }
 @supports (animation-timeline: view()) {
@@ -987,8 +888,8 @@
   display: none;
 }
 @media screen and (prefers-reduced-motion: no-preference) {
-  /* Like the page-change runner, the boot covers the content area and leaves the navigation
-     (sidebar on desktop, top bar on mobile) on screen. */
+  /* Like the page-change runner, the boot covers the content area and leaves the top bar (and on
+     desktop the status bar) on screen. */
   html[data-boot] [data-boot-overlay] {
     display: block;
     position: fixed;
@@ -999,7 +900,7 @@
   }
   @media (min-width: 1024px) {
     html[data-boot] [data-boot-overlay] {
-      inset: 0 0 0 280px;
+      inset: 3.5rem 0 2.75rem;
     }
   }
   /* The shutter: two halves of the page colour part along the hairline. */
@@ -1268,49 +1169,6 @@
   .suite-door:is(:hover, :focus-within) .door-extra {
     pointer-events: auto;
   }
-  /* Project index: a panel sweeps up behind the row, the name slides over and the result opens. */
-  .index-row::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: var(--secondary);
-    transform-origin: bottom;
-    scale: 1 0;
-    transition: scale var(--dur-base) var(--ease-snap);
-  }
-  .index-name {
-    transition: translate var(--dur-base) var(--ease-snap);
-  }
-  .index-hook {
-    grid-template-rows: 0fr;
-    transition: grid-template-rows var(--dur-base) var(--ease-snap);
-  }
-  .index-row:is(:hover, :focus-within)::before {
-    scale: 1 1;
-  }
-  .index-row:is(:hover, :focus-within) .index-name {
-    translate: 0.75rem 0;
-  }
-  .index-row:is(:hover, :focus-within) .index-hook {
-    grid-template-rows: 1fr;
-  }
-  .index-row:is(:hover, :focus-within) [data-index-hook] {
-    padding-top: 0.375rem;
-  }
-  @media (hover: none) {
-    .index-hook {
-      grid-template-rows: 1fr;
-    }
-    [data-index-hook] {
-      padding-top: 0.375rem;
-    }
-  }
-  @media print {
-    .index-hook {
-      grid-template-rows: 1fr;
-    }
-  }
 
   /* Drawn underline: a faint line at rest keeps the link recognisable; on hover or focus an accent
      line draws over it from the left. */
@@ -1448,19 +1306,20 @@
     var(--dur-base) ease-out var(--dur-fast) both vt-fade-in,
     var(--dur-slow) var(--ease-snap) both vt-rise;
 }
-/* The sidebar's active marker glides from row to row on navigation. A named element is drawn above
+/* The active page's marker (the top bar's underline, the drawer's row) glides to the new page on
+   navigation. A named element is drawn above
    the page snapshot, so the marker is blended rather than painted over the rows: in the dark theme
    it lightens (light labels stay light), in the light theme it darkens (dark labels stay dark). */
-::view-transition-group(nav-active-sidebar),
+::view-transition-group(nav-active-topbar),
 ::view-transition-group(nav-active-drawer) {
   animation-duration: var(--dur-slow);
   animation-timing-function: var(--ease-snap);
 }
-html.dark::view-transition-group(nav-active-sidebar),
+html.dark::view-transition-group(nav-active-topbar),
 html.dark::view-transition-group(nav-active-drawer) {
   mix-blend-mode: lighten;
 }
-html.light::view-transition-group(nav-active-sidebar),
+html.light::view-transition-group(nav-active-topbar),
 html.light::view-transition-group(nav-active-drawer) {
   mix-blend-mode: darken;
 }
@@ -1491,7 +1350,7 @@ html:active-view-transition-type(theme) [data-nav-marker] {
 /* Test-runner page change (layout/RouteRunner.tsx): the panel joins the navigation's view transition
    and slides up over the old page; once the new page is in, its line fills, the route's CI result
    stamps, and it lifts away. */
-/* Covers the content area only: the sidebar (desktop) and top bar (mobile) stay on screen, since
+/* Covers the content area only: the top bar (and on desktop the status bar) stay on screen, since
    they persist across page changes. */
 .route-runner {
   position: fixed;
@@ -1509,7 +1368,7 @@ html:active-view-transition-type(theme) [data-nav-marker] {
 }
 @media (min-width: 1024px) {
   .route-runner {
-    inset: 0 0 0 280px;
+    inset: 3.5rem 0 2.75rem;
   }
 }
 .route-runner-bar {
@@ -1601,13 +1460,13 @@ html:active-view-transition-type(theme) [data-nav-marker] {
     }
   }
   button:not(:disabled, [data-no-press]):active,
-  :is(aside, .drawer) nav a:active {
+  :is([data-topbar], .drawer) nav a:active {
     scale: 0.96;
   }
 }
 
-/* Reading progress: a hairline at the top of the content area fills as the page scrolls. It sits
-   beside the sidebar on desktop and under the top bar on mobile; pages too short to scroll show none. */
+/* Reading progress: a hairline under the top bar fills as the page scrolls; pages too short to scroll
+   show none. */
 .scroll-progress {
   display: none;
 }
@@ -1629,7 +1488,7 @@ html:active-view-transition-type(theme) [data-nav-marker] {
   }
   @media screen and (prefers-reduced-motion: no-preference) and (min-width: 1024px) {
     .scroll-progress {
-      inset: 0 0 auto 280px;
+      inset: 3.5rem 0 auto;
     }
   }
 }
@@ -1643,7 +1502,7 @@ html:active-view-transition-type(theme) [data-nav-marker] {
 }
 
 @media screen and (prefers-reduced-motion: no-preference) {
-  /* The sidebar's project folder slides open and shut instead of snapping; its rows cascade in. A
+  /* The drawer's project folder slides open and shut instead of snapping; its rows cascade in. A
      closed folder stays laid out at zero height and hidden (out of the accessibility tree and the tab
      order), so its height can ease both ways. */
   .nav-folder {
@@ -1945,5 +1804,211 @@ html:active-view-transition-type(theme) [data-nav-marker] {
   .palette-option {
     animation: reveal-in 260ms var(--ease-snap) backwards;
     animation-delay: calc(var(--i, 0) * 25ms);
+  }
+}
+
+/* Top bar project menu: it drops open under Projects. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .topnav-menu:not([hidden]) {
+    animation: reveal-in var(--dur-base) var(--ease-snap) backwards;
+  }
+  .topnav-menu:not([hidden]) > li {
+    animation: nav-in 360ms var(--ease-snap) backwards;
+  }
+}
+
+/* Suite run (content/ProjectIndex.tsx, C47): featured projects as suites on a rail. The resting state
+   is the finished run (every dot filled, every status done, every result open), which is what shows
+   without scroll timelines, under reduced motion and in print. With motion, each row runs as it
+   reaches the middle of the screen. Background colour, visibility, clip-path and registered numbers
+   only: nothing here holds a compositor layer on the home page (a Lighthouse route). */
+@property --rail {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --done {
+  syntax: '<integer>';
+  inherits: true;
+  initial-value: 0;
+}
+.suite-rail {
+  position: relative;
+}
+.suite-rail::before,
+.suite-rail::after {
+  content: '';
+  position: absolute;
+  top: 1.75rem;
+  bottom: 1.75rem;
+  left: calc(0.875rem - 1px);
+  width: 2px;
+  border-radius: 1px;
+  background: var(--border);
+}
+.suite-rail::after {
+  background: var(--accent);
+  transform-origin: top;
+  scale: 1 var(--rail);
+}
+.suite-dot {
+  position: relative;
+  z-index: 1;
+  width: 0.875rem;
+  height: 0.875rem;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--bg);
+}
+.suite-status > * {
+  grid-area: 1 / 1;
+}
+.suite-status > :is([data-status-step='queued'], [data-status-step='running']) {
+  visibility: hidden;
+}
+.suite-count::after {
+  counter-reset: done var(--done) total var(--n);
+  content: counter(done) ' of ' counter(total) ' run';
+}
+/* A divider between suites that stops short of the rail, and a panel that sweeps up on hover. */
+.suite-item:not(:last-child) .suite-row::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 2.75rem;
+  height: 1px;
+  background: var(--border);
+}
+@layer components {
+  .suite-row::before {
+    content: '';
+    position: absolute;
+    inset: 0.25rem 0 0.25rem 2.25rem;
+    z-index: -1;
+    border-radius: var(--radius-card);
+    background: var(--secondary);
+    transform-origin: bottom;
+    scale: 1 0;
+    transition: scale var(--dur-base) var(--ease-snap);
+  }
+  .suite-name {
+    transition: translate var(--dur-base) var(--ease-snap);
+  }
+  .suite-row:is(:hover, :focus-within)::before {
+    scale: 1 1;
+  }
+  .suite-row:is(:hover, :focus-within) .suite-name {
+    translate: 0.5rem 0;
+  }
+}
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .suite-run {
+      view-timeline: --suites block;
+    }
+    .suite-item {
+      view-timeline: --suite block;
+    }
+    .suite-dot {
+      animation: suite-dot linear both;
+      animation-timeline: --suite;
+      animation-range: cover 35% cover 50%;
+    }
+    .suite-status > [data-status-step='queued'] {
+      animation: step-queued linear both;
+      animation-timeline: --suite;
+      animation-range: entry 0% cover 50%;
+    }
+    .suite-status > [data-status-step='running'] {
+      animation: step-running linear both;
+      animation-timeline: --suite;
+      animation-range: entry 0% cover 50%;
+    }
+    .suite-status > [data-status-step='done'] {
+      animation: step-done linear both;
+      animation-timeline: --suite;
+      animation-range: entry 0% cover 50%;
+    }
+    .suite-hook {
+      animation: suite-hook linear both;
+      animation-timeline: --suite;
+      animation-range: cover 38% cover 52%;
+    }
+    .suite-rail::after {
+      animation: suite-rail linear both;
+      animation-timeline: --suites;
+      animation-range: cover 30% cover 75%;
+    }
+    .suite-count {
+      animation: suite-count linear both;
+      animation-timeline: --suites;
+      animation-range: cover 30% cover 75%;
+    }
+  }
+}
+@keyframes suite-dot {
+  from {
+    border-color: var(--border);
+    background-color: var(--bg);
+  }
+}
+@keyframes step-queued {
+  0%,
+  59.99% {
+    visibility: visible;
+  }
+  60%,
+  100% {
+    visibility: hidden;
+  }
+}
+@keyframes step-running {
+  0%,
+  59.99% {
+    visibility: hidden;
+  }
+  60%,
+  89.99% {
+    visibility: visible;
+  }
+  90%,
+  100% {
+    visibility: hidden;
+  }
+}
+@keyframes step-done {
+  0%,
+  89.99% {
+    visibility: hidden;
+  }
+  90%,
+  100% {
+    visibility: visible;
+  }
+}
+@keyframes suite-hook {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes suite-rail {
+  from {
+    --rail: 0;
+  }
+  to {
+    --rail: 1;
+  }
+}
+@keyframes suite-count {
+  from {
+    --done: 0;
+  }
+  to {
+    --done: var(--n);
   }
 }

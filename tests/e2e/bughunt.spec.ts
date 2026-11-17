@@ -29,7 +29,7 @@ test('?bughunt=1 turns it on with a counter', async ({ page }) => {
   await expect(banner(page)).toContainText(
     'Bug Hunt mode: 5 bugs are planted on this site. Find them.',
   );
-  await expect(page.locator('aside')).toContainText('Bugs found 0/5');
+  await expect(page.locator('[data-statusbar]')).toContainText('Bugs found 0/5');
 });
 
 test('a clean element reports no defect', async ({ page }) => {
@@ -53,7 +53,7 @@ test('all five bugs can be found by keyboard, then the completion card shows', a
     await expect(ticket).toBeHidden();
   }
   await expect(banner(page)).toContainText('5 of 5 found.');
-  await expect(page.locator('aside')).toContainText('Bugs found 5/5');
+  await expect(page.locator('[data-statusbar]')).toContainText('Bugs found 5/5');
 });
 
 test('turning it off restores every true value immediately', async ({ page }) => {

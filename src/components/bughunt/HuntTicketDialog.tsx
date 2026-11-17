@@ -29,7 +29,7 @@ export default function HuntTicketDialog({ bug, onClose }: { bug: Bug; onClose: 
       ref={dialogRef}
       data-print-hide
       aria-label={`${bug.id}: ${bug.title}`}
-      className="m-auto w-[min(94vw,36rem)] max-w-none rounded-card border border-line bg-surface p-0 text-ink backdrop:bg-black/70"
+      className="m-auto w-[min(94vw,36rem)] max-w-none rounded-card border border-line bg-surface p-0 text-ink backdrop:bg-[var(--backdrop)]"
     >
       <div className="flex flex-col">
         <div className="flex items-start justify-between gap-3 border-b border-line px-5 py-3">

@@ -7,7 +7,8 @@ function channels(hex: string): [number, number, number] {
   return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255) as [number, number, number];
 }
 
-function relativeLuminance(hex: string): number {
+/** WCAG relative luminance of a hex colour, from 0 (black) to 1 (white). */
+export function relativeLuminance(hex: string): number {
   const [r, g, b] = channels(hex).map((c) =>
     c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4,
   ) as [number, number, number];

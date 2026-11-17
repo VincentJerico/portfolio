@@ -42,9 +42,10 @@ test.describe('theme', () => {
     );
   });
 
-  test('the sidebar has no theme toggle of its own', async ({ page }) => {
+  test('the top bar and status bar have no theme toggle of their own', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('aside').getByRole('button', { name: 'Dark theme' })).toHaveCount(0);
+    const bars = page.locator('[data-topbar], [data-statusbar]');
+    await expect(bars.getByRole('button', { name: 'Dark theme' })).toHaveCount(0);
   });
 });
 
@@ -56,7 +57,8 @@ test.describe('theme without JavaScript', () => {
     const bg = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue('--bg').trim().toLowerCase(),
     );
-    expect(bg).toBe('#0b0f14');
+    // The dark theme's deep slate (C48), not near-black.
+    expect(bg).toBe('#151c26');
   });
 });
 

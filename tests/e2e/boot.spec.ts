@@ -58,12 +58,12 @@ test.describe('first-visit boot shutter', () => {
     await expect(overlay).toBeHidden({ timeout: 3000 });
   });
 
-  test('covers the content area and leaves the sidebar on screen', async ({ page }) => {
+  test('covers the content area and leaves the top bar on screen', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/');
     const overlay = page.locator('[data-boot-overlay]');
     const box = (await overlay.boundingBox())!;
-    const sidebar = (await page.locator('aside').first().boundingBox())!;
-    expect(box.x).toBeGreaterThanOrEqual(sidebar.x + sidebar.width - 1);
+    const bar = (await page.locator('[data-topbar]').boundingBox())!;
+    expect(box.y).toBeGreaterThanOrEqual(bar.y + bar.height - 1);
   });
 });

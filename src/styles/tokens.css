@@ -1,39 +1,44 @@
 /* Design tokens (spec 4.1, amended by the 2026-11-07 design pass). Dark "control panel" is the default for
    no-JS visitors and crawlers; next-themes adds .light or .dark to <html>.
-   Colour split 70/20/10: neutrals (bg, surface, surface-2) / secondary (sidebar, top bar, run summary band)
+   Colour split 70/20/10: neutrals (bg, surface, surface-2) / secondary (top bar, status bar, run summary band)
    / accent (links, primary actions, focus). pass, warn and fail mark status only.
-   tests/unit/tokens.test.ts enforces AA contrast for every pair and bans pure black and white. */
+   tests/unit/tokens.test.ts enforces AA contrast for every pair and bans pure black and white.
+   Nothing reads as white or black either (C48): dark is a deep slate, light a tinted paper, and the text
+   is an off-white or a deep navy. */
 
 :root {
   color-scheme: dark;
-  --bg: #0b0f14;
-  --surface: #10161f;
-  --surface-2: #16202c;
-  --secondary: #121d30;
-  --border: #243246;
-  --text: #e6edf3;
-  --text-muted: #9aa4af;
+  --bg: #151c26;
+  --surface: #1b2430;
+  --surface-2: #222d3b;
+  --secondary: #1b263a;
+  --border: #33435a;
+  --text: #e1e8ef;
+  --text-muted: #a7b1bd;
   --accent: #58a6ff;
   --pass: #3fb950;
   --warn: #d29922;
-  --fail: #f85149;
+  --fail: #fb6a62;
   --focus-ring: #58a6ff;
   --shadow: none;
+  /* Dialog backdrops: a dim of the page's own slate, never plain black. */
+  --backdrop: rgb(10 15 24 / 0.62);
 }
 
 .light {
   color-scheme: light;
-  --bg: #f2f6fc;
-  --surface: #fafcff;
-  --surface-2: #e7eef9;
-  --secondary: #dce6f8;
-  --border: #c8d4ea;
-  --text: #0d1a30;
-  --text-muted: #435270;
+  --bg: #e7edf6;
+  --surface: #f0f4fa;
+  --surface-2: #dde5f1;
+  --secondary: #d2ddef;
+  --border: #b9c7dd;
+  --text: #16243c;
+  --text-muted: #3f4d68;
   --accent: #0a56d0;
   --pass: #0b6b2e;
   --warn: #7f5300;
   --fail: #bb1b2c;
   --focus-ring: #0a56d0;
-  --shadow: 0 1px 2px rgb(13 26 48 / 0.07), 0 1px 1px rgb(13 26 48 / 0.04);
+  --shadow: 0 1px 2px rgb(22 36 60 / 0.08), 0 1px 1px rgb(22 36 60 / 0.05);
+  --backdrop: rgb(22 36 60 / 0.45);
 }

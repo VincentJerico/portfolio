@@ -166,7 +166,10 @@ test.describe('one runner per page', () => {
     page,
   }) => {
     await page.goto('/');
-    await page.locator('aside').getByRole('button', { name: 'Run tests on this page' }).click();
+    await page
+      .locator('[data-statusbar]')
+      .getByRole('button', { name: 'Run tests on this page' })
+      .click();
     await page.locator('main').getByRole('button', { name: 'Run tests on this page' }).click();
     await expect(page.getByRole('region', { name: 'Test run' })).toHaveCount(1);
     const panel = page.getByRole('region', { name: 'Test run' });
@@ -176,21 +179,27 @@ test.describe('one runner per page', () => {
 
   test('the panel closes when the visitor navigates away', async ({ page }) => {
     await page.goto('/');
-    await page.locator('aside').getByRole('button', { name: 'Run tests on this page' }).click();
+    await page
+      .locator('[data-statusbar]')
+      .getByRole('button', { name: 'Run tests on this page' })
+      .click();
     await expect(page.getByRole('region', { name: 'Test run' }).getByRole('status')).toHaveText(
       SUMMARY,
       { timeout: 20_000 },
     );
-    await page.locator('aside').getByRole('link', { name: 'Skills', exact: true }).click();
+    await page.locator('[data-topbar]').getByRole('link', { name: 'Skills', exact: true }).click();
     await expect(page).toHaveURL(/\/skills$/);
     await expect(page.getByRole('region', { name: 'Test run' })).toHaveCount(0);
   });
 
   test('performance is not measured after an in-app navigation', async ({ page }) => {
     await page.goto('/');
-    await page.locator('aside').getByRole('link', { name: 'Skills', exact: true }).click();
+    await page.locator('[data-topbar]').getByRole('link', { name: 'Skills', exact: true }).click();
     await expect(page).toHaveURL(/\/skills$/);
-    await page.locator('aside').getByRole('button', { name: 'Run tests on this page' }).click();
+    await page
+      .locator('[data-statusbar]')
+      .getByRole('button', { name: 'Run tests on this page' })
+      .click();
     const perf = page
       .getByRole('region', { name: 'Test run' })
       .locator('[data-check="Performance"]');
@@ -200,7 +209,10 @@ test.describe('one runner per page', () => {
 
   test('no focused element hides entirely under the open panel', async ({ page }) => {
     await page.goto('/projects/accessibility-testing');
-    await page.locator('aside').getByRole('button', { name: 'Run tests on this page' }).click();
+    await page
+      .locator('[data-statusbar]')
+      .getByRole('button', { name: 'Run tests on this page' })
+      .click();
     const panel = page.getByRole('region', { name: 'Test run' });
     await expect(panel.getByRole('status')).toHaveText(SUMMARY, { timeout: 20_000 });
     const hidden: string[] = [];
@@ -220,7 +232,10 @@ test.describe('one runner per page', () => {
       await new Promise((resolve) => setTimeout(resolve, 600));
       await route.continue();
     });
-    await page.locator('aside').getByRole('button', { name: 'Run tests on this page' }).click();
+    await page
+      .locator('[data-statusbar]')
+      .getByRole('button', { name: 'Run tests on this page' })
+      .click();
     await page.evaluate(() => {
       const dialog = document.createElement('dialog');
       dialog.textContent = 'interrupting dialog';

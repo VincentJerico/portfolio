@@ -10,8 +10,8 @@ interface MastheadProps {
 
 /**
  * A spec-sheet strip above the hero: an at-a-glance summary of where Vincent is, what his suites cover
- * and their CI coverage. Each fact also appears in fuller form further down (the sidebar, the flip
- * card, the Run summary); the strip is the summary, not new information.
+ * and their CI coverage. Each fact also appears in fuller form further down (the status bar, the
+ * flip card, the Run summary); the strip is the summary, not new information.
  */
 export function Masthead({ location, testedAreas, ci }: MastheadProps) {
   const rows: [string, React.ReactNode][] = [

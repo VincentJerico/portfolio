@@ -26,7 +26,7 @@ export function PullCord() {
   return (
     <div
       data-print-hide
-      className="pointer-events-none fixed -top-12 right-1 z-30 hidden flex-col items-center lg:flex"
+      className="pointer-events-none fixed -top-12 right-1 z-40 hidden flex-col items-center lg:flex"
     >
       <button
         type="button"

@@ -42,7 +42,7 @@ test.describe('theme flood', () => {
     await waitForHydration(page);
     // Read the marker's name from inside a theme transition, while it is active.
     const name = await page.evaluate(async () => {
-      const marker = document.querySelector<HTMLElement>('aside [data-nav-marker]')!;
+      const marker = document.querySelector<HTMLElement>('[data-topbar] [data-nav-marker]')!;
       let during = '';
       const transition = document.startViewTransition({
         update: () => {
@@ -54,9 +54,9 @@ test.describe('theme flood', () => {
       return during;
     });
     expect(name).toBe('none');
-    await expect(page.locator('aside [data-nav-marker]')).toHaveCSS(
+    await expect(page.locator('[data-topbar] [data-nav-marker]')).toHaveCSS(
       'view-transition-name',
-      'nav-active-sidebar',
+      'nav-active-topbar',
     );
   });
 
@@ -71,26 +71,32 @@ test.describe('theme flood', () => {
   });
 });
 
-test.describe('sidebar marker', () => {
+test.describe('top bar marker', () => {
   test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
 
-  test('one named marker sits in the active row, so it glides between pages', async ({ page }) => {
+  test('one named underline sits under the active page, so it glides between pages', async ({
+    page,
+  }) => {
     await page.goto('/about');
-    const markers = page.locator('aside [data-nav-marker]');
+    const markers = page.locator('[data-topbar] [data-nav-marker]');
     await expect(markers).toHaveCount(1);
-    await expect(page.locator('aside a[aria-current="page"] [data-nav-marker]')).toHaveCount(1);
-    await expect(markers).toHaveCSS('view-transition-name', 'nav-active-sidebar');
-    await page.locator('aside a[href="/skills"]').click();
+    await expect(
+      page.locator('[data-topbar] a[aria-current="page"] [data-nav-marker]'),
+    ).toHaveCount(1);
+    await expect(markers).toHaveCSS('view-transition-name', 'nav-active-topbar');
+    await page.locator('[data-topbar] a[href="/skills"]').click();
     await expect(page).toHaveURL(/\/skills$/);
-    await expect(page.locator('aside a[aria-current="page"] [data-nav-marker]')).toHaveCount(1);
+    await expect(
+      page.locator('[data-topbar] a[aria-current="page"] [data-nav-marker]'),
+    ).toHaveCount(1);
   });
 
-  test('on a report page only the project row holds the marker, never two', async ({ page }) => {
+  test('on a report page the underline marks Projects, never two pages', async ({ page }) => {
     await page.goto('/projects/accessibility-testing');
-    await expect(page.locator('aside [data-nav-marker]')).toHaveCount(1);
-    await expect(
-      page.locator('aside a[href="/projects/accessibility-testing"] [data-nav-marker]'),
-    ).toHaveCount(1);
+    await expect(page.locator('[data-topbar] [data-nav-marker]')).toHaveCount(1);
+    await expect(page.locator('[data-topbar] a[href="/projects"] [data-nav-marker]')).toHaveCount(
+      1,
+    );
   });
 });
 
@@ -161,7 +167,7 @@ test.describe('controls grow into their dialogs', () => {
     await recordTransitions(page);
     await page.goto('/');
     await waitForHydration(page);
-    await page.locator('aside').getByRole('button', { name: 'Search' }).click();
+    await page.locator('[data-topbar]').getByRole('button', { name: 'Search' }).click();
     await expect(page.getByRole('dialog', { name: 'Search' })).toBeVisible();
     await expect(page.getByLabel('Search the site')).toBeFocused();
     expect((await transitions(page)).some((types) => types.includes('dialog-morph'))).toBe(true);
@@ -304,33 +310,64 @@ test.describe('spotlight and tilt cards', () => {
   });
 });
 
-test.describe('pinned horizontal reel', () => {
+test.describe('suite run', () => {
   test.use({ viewport: { width: 1440, height: 900 }, isMobile: false, hasTouch: false });
 
-  test('featured projects pin and scroll sideways as the page scrolls', async ({ page }) => {
+  const visibility = (locator: ReturnType<Page['locator']>) =>
+    locator.evaluate((el) => getComputedStyle(el).visibility);
+
+  test('featured projects run down a rail: queued, then done as each reaches the middle', async ({
+    page,
+  }) => {
     await page.goto('/');
     const section = page.getByRole('region', { name: 'Featured projects' });
     const rows = section.getByRole('listitem');
     const first = (await rows.nth(0).boundingBox())!;
     const second = (await rows.nth(1).boundingBox())!;
-    expect(Math.abs(first.y - second.y)).toBeLessThan(2); // side by side, a horizontal track
-    const track = section.locator('.reel-track');
-    const before = await track.evaluate((el) => el.getBoundingClientRect().left);
-    await section.scrollIntoViewIfNeeded();
-    await page.mouse.move(900, 450);
-    await page.mouse.wheel(0, 900);
+    expect(second.y).toBeGreaterThan(first.y + first.height - 2); // stacked, never sideways
+    const last = rows.last();
+    expect(await visibility(last.locator('[data-status-step="queued"]'))).toBe('visible');
+    expect(await visibility(last.locator('[data-status-step="done"]'))).toBe('hidden');
+    await last.evaluate((el) => el.scrollIntoView({ block: 'start' }));
+    await expect.poll(() => visibility(last.locator('[data-status-step="done"]'))).toBe('visible');
+    expect(await visibility(last.locator('[data-status-step="queued"]'))).toBe('hidden');
+    // The counter reaches every suite once the run has passed.
+    const total = await rows.count();
+    await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
     await expect
-      .poll(() => track.evaluate((el) => el.getBoundingClientRect().left))
-      .toBeLessThan(before - 100);
+      .poll(() =>
+        section
+          .locator('.suite-count')
+          .evaluate((el) => getComputedStyle(el).getPropertyValue('--done')),
+      )
+      .toBe(String(total));
   });
 
-  test('phones keep the vertical list', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
+  test('under reduced motion every suite shows done with its result open', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
-    const rows = page.getByRole('region', { name: 'Featured projects' }).getByRole('listitem');
-    const first = (await rows.nth(0).boundingBox())!;
-    const second = (await rows.nth(1).boundingBox())!;
-    expect(second.y).toBeGreaterThan(first.y + first.height - 2);
+    const section = page.getByRole('region', { name: 'Featured projects' });
+    const done = await section
+      .locator('[data-status-step="done"]')
+      .evaluateAll((els) => els.map((el) => getComputedStyle(el).visibility));
+    expect(new Set(done)).toEqual(new Set(['visible']));
+    const clips = await section
+      .locator('[data-index-hook]')
+      .evaluateAll((els) => els.map((el) => getComputedStyle(el).clipPath));
+    expect(new Set(clips)).toEqual(new Set(['none']));
+  });
+
+  test('nothing on the overview scrolls sideways, on desktop or a phone', async ({ page }) => {
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
+      await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        ),
+      ).toBeLessThanOrEqual(0);
+    }
   });
 });
 
@@ -340,16 +377,16 @@ test.describe('test-runner page change', () => {
   test('changing page runs the next page as a spec, then clears', async ({ page }) => {
     await page.goto('/');
     await waitForHydration(page);
-    await page.locator('aside a[href="/skills"]').click();
+    await page.locator('[data-topbar] a[href="/skills"]').click();
     await expect(page).toHaveURL(/\/skills$/);
     const runner = page.locator('[data-route-runner]');
     await expect(runner).toContainText('skills.spec');
     await expect(runner).toContainText(/PASS|FAIL|NOT RUN/);
     await expect(runner).toHaveAttribute('aria-hidden', 'true');
     await expect(runner).toHaveCSS('pointer-events', 'none');
-    // It covers the content area only; the sidebar stays on screen beside it.
-    const sidebar = (await page.locator('aside').first().boundingBox())!;
-    expect((await runner.boundingBox())!.x).toBeGreaterThanOrEqual(sidebar.x + sidebar.width - 1);
+    // It covers the content area only; the top bar stays on screen above it.
+    const bar = (await page.locator('[data-topbar]').boundingBox())!;
+    expect((await runner.boundingBox())!.y).toBeGreaterThanOrEqual(bar.y + bar.height - 1);
     await expect(runner).toHaveCount(0, { timeout: 2500 });
   });
 
@@ -368,7 +405,7 @@ test.describe('test-runner page change', () => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
     await waitForHydration(page);
-    await page.locator('aside a[href="/skills"]').click();
+    await page.locator('[data-topbar] a[href="/skills"]').click();
     await expect(page).toHaveURL(/\/skills$/);
     await expect(page.locator('[data-route-runner]')).toHaveCount(0);
   });
@@ -377,9 +414,12 @@ test.describe('test-runner page change', () => {
 test.describe('load sequence', () => {
   test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
 
-  test('sidebar rows cascade in and a run bar sweeps across the top on load', async ({ page }) => {
+  test('top bar links cascade in and a run bar sweeps across the top on load', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('aside nav li').first()).toHaveCSS('animation-name', 'nav-in');
+    await expect(page.locator('[data-topbar] nav li').first()).toHaveCSS(
+      'animation-name',
+      'nav-in',
+    );
     const bar = page.locator('[data-load-bar]');
     await expect(bar).toHaveAttribute('aria-hidden', 'true');
     await expect(bar).toHaveCSS('pointer-events', 'none');
@@ -389,33 +429,7 @@ test.describe('load sequence', () => {
   test('under reduced motion nothing cascades and no bar runs', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
-    await expect(page.locator('aside nav li').first()).toHaveCSS('animation-name', 'none');
+    await expect(page.locator('[data-topbar] nav li').first()).toHaveCSS('animation-name', 'none');
     await expect(page.locator('[data-load-bar]')).toBeHidden();
-  });
-});
-
-test.describe('reel card sizes', () => {
-  test.use({ viewport: { width: 1440, height: 900 }, isMobile: false, hasTouch: false });
-
-  test('every reel card is the same size, with its content starting at the same height', async ({
-    page,
-  }) => {
-    await page.goto('/');
-    const cards = page.locator('.reel-track .index-row');
-    const boxes = await cards.evaluateAll((els) =>
-      els.map((el) => {
-        const box = el.getBoundingClientRect();
-        const hook = el.querySelector('[data-index-hook]')!.getBoundingClientRect();
-        return { width: box.width, height: box.height, hookOffset: hook.top - box.top };
-      }),
-    );
-    expect(boxes.length).toBeGreaterThan(1);
-    for (const box of boxes) {
-      expect(Math.abs(box.height - boxes[0]!.height)).toBeLessThan(1);
-      expect(Math.abs(box.width - boxes[0]!.width)).toBeLessThan(1);
-    }
-    // Top-aligned: hooks start at the same height in every card, under the category.
-    const offsets = boxes.map((box) => Math.round(box.hookOffset));
-    expect(Math.max(...offsets) - Math.min(...offsets)).toBeLessThanOrEqual(1);
   });
 });
