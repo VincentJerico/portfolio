@@ -109,6 +109,10 @@ test.describe('phone menu', () => {
     const dialog = page.getByRole('dialog', { name: 'Site menu' });
     await expect(dialog).toBeVisible();
     await expect(menu).toHaveAttribute('aria-expanded', 'true');
+    // Focus moves into the menu and Tab wraps inside it.
+    await expect(dialog.getByRole('button', { name: 'Close menu' })).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(dialog.locator(':focus')).toHaveCount(1);
     for (const item of primaryNavItems()) {
       await expect(dialog.getByRole('link', { name: item.label, exact: true })).toBeVisible();
     }

@@ -189,7 +189,7 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
               autoComplete="off"
               spellCheck={false}
               enterKeyHint="search"
-              className="block min-h-11 w-full border-0 border-b border-line bg-transparent px-0 py-2 text-lg text-ink hover:border-ink-muted focus-visible:border-accent focus-visible:outline-none"
+              className="block min-h-11 w-full border-0 border-b border-ink-muted bg-transparent px-0 py-2 text-lg text-ink hover:border-ink focus-visible:border-accent"
             />
             <p id="project-search-hint" className="text-sm text-ink-muted">
               By name, tool or result, like Playwright or OWASP.

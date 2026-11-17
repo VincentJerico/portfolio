@@ -29,6 +29,11 @@ test('severity links in a report summary are touch sized', async ({ page }) => {
   );
 });
 
+test('the footer links are touch sized', async ({ page }) => {
+  await page.goto('/');
+  await expectTouchSized(page.locator('[data-site-footer]').getByRole('link'), 'footer link');
+});
+
 test('the top bar controls are touch sized', async ({ page }) => {
   await page.goto('/');
   await expectTouchSized(page.locator('[data-site-header]').getByRole('button'), 'top bar button');

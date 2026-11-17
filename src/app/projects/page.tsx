@@ -23,7 +23,7 @@ export default function ProjectsPage() {
   return (
     <div className="flex flex-col gap-rhythm">
       <header>
-        <p className="label-mono text-ink-muted">Public repos · {projects.length} projects</p>
+        <p className="label-mono text-ink-muted">{projects.length} projects</p>
         <h1 className="mt-4">Projects</h1>
         <p className="measure mt-6 text-lg text-ink-muted">{profile.tagline}</p>
       </header>

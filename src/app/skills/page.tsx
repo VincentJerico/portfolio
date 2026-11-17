@@ -22,9 +22,7 @@ function GroupRow({ group }: { group: SkillGroup }) {
           className={`flex flex-wrap gap-x-4 gap-y-1 ${group.learning ? 'text-ink-muted' : 'text-ink'}`}
         >
           {group.skills.map((skill) => (
-            <li key={skill} className="chip">
-              {skill}
-            </li>
+            <li key={skill}>{skill}</li>
           ))}
         </ul>
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">

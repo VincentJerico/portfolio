@@ -168,7 +168,9 @@ test.describe('one rhythm', () => {
     const row = page.locator('.work-row').first();
     await row.getByRole('link').hover();
     await expect
-      .poll(() => row.locator('.work-row-name').evaluate((el) => getComputedStyle(el).translate))
+      .poll(() =>
+        row.locator('.work-row-link > span').evaluate((el) => getComputedStyle(el).translate),
+      )
       .toBe('12px');
   });
 });

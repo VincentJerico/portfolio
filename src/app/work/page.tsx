@@ -8,7 +8,7 @@ import { pageMetadata } from '@/lib/seo';
 import { caseStudyItem } from '@/lib/work-items';
 
 export const metadata: Metadata = pageMetadata({
-  title: 'Client Work',
+  title: 'Client work',
   description: 'Software QA/QC work at BossLabs.AI and anonymised client case studies.',
   path: '/work',
 });

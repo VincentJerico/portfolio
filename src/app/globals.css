@@ -173,6 +173,9 @@
   .poster-hero {
     position: relative;
     container-type: inline-size;
+    /* Until the condensed face arrives (or if it never does) the fallback is wider; it is clipped
+       here rather than pushing the page sideways. */
+    overflow-x: clip;
   }
   .poster {
     font-family: var(--font-display);
@@ -331,7 +334,6 @@
     line-height: 1.05;
     letter-spacing: -0.02em;
     overflow-wrap: anywhere;
-    transition: translate var(--dur-fast) var(--ease-snap);
   }
   .work-row-link {
     color: var(--text);
@@ -341,6 +343,12 @@
     content: '';
     position: absolute;
     inset: 0;
+  }
+  /* The nudge moves the name's text, never an ancestor of the link: a transform on one would become
+     the overlay's containing block and shrink the clickable area to the name. */
+  .work-row-link > span {
+    display: inline-block;
+    transition: translate var(--dur-fast) var(--ease-snap);
   }
   .work-row-hook {
     grid-column: 2 / -1;
@@ -370,7 +378,7 @@
       grid-template-rows: 1fr;
     }
   }
-  .work-row:is(:hover, :focus-within) :is(.work-row-name, .work-row-hook) {
+  .work-row:is(:hover, :focus-within) :is(.work-row-link > span, .work-row-hook) {
     translate: 0.75rem 0;
   }
   .work-row:is(:hover, :focus-within) .work-row-link {

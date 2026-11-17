@@ -51,9 +51,8 @@ export default function HomePage() {
       />
 
       <header data-poster className="poster-hero">
-        <h1 id="hero-heading" className="poster">
-          <span>{first}</span>
-          <span>{second}</span>
+        <h1 className="poster">
+          <span>{first}</span> <span>{second}</span>
           {surname && <span className="sr-only"> {surname}</span>}
         </h1>
         <p className="poster-line">{profile.headline}</p>

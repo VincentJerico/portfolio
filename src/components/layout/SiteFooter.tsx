@@ -4,7 +4,8 @@ import { MANILA_UTC_OFFSET_MINUTES } from '@/lib/clock';
 import { footerNavItems } from '@/lib/nav-items';
 import { LocalTime } from './LocalTime';
 
-const LINK = 'inline-flex min-h-6 items-center text-ink no-underline hover:text-accent';
+const LINK =
+  'inline-flex min-h-6 items-center text-ink no-underline hover:text-accent pointer-coarse:min-h-11';
 
 /** The footer on every page (C51): who this is, the pages that left the top bar, and how to reach Vincent. */
 export function SiteFooter() {

@@ -15,6 +15,20 @@ test.describe('poster', () => {
     await expect(page.locator('h1')).toHaveCount(1);
     await expect(page.locator('h1')).toHaveAccessibleName(profile.fullName);
     await expect(page.locator('[data-poster]')).toContainText(profile.headline);
+    // Crawlers and copy read the text itself, so the words must not run together.
+    const text = await page.locator('h1').evaluate((el) => el.textContent!.replace(/\s+/g, ' '));
+    expect(text.trim()).toBe(profile.fullName);
+  });
+
+  test('never scrolls sideways, even before the poster font arrives', async ({ page }) => {
+    await page.route(/\.woff2?(\?|$)/, (route) => route.abort());
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto('/');
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ),
+    ).toBeLessThanOrEqual(0);
   });
 
   for (const width of [320, 768, 1280, 1920]) {
@@ -107,6 +121,17 @@ test.describe('projects', () => {
         .toBe(accent);
       await page.mouse.move(0, 0);
       await expect.poll(height).toBeLessThan(1);
+    });
+
+    test('clicking anywhere on a hovered row opens its report', async ({ page }) => {
+      await page.goto('/');
+      const row = projectsRegion(page).getByRole('listitem').first();
+      const href = (await row.getByRole('link').getAttribute('href'))!;
+      await row.getByRole('link').hover();
+      // The row number sits under the link's overlay; once hovered it must still be covered.
+      const box = (await row.locator('.work-row-num').boundingBox())!;
+      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+      await expect(page).toHaveURL(new RegExp(`${href}$`));
     });
 
     test('keyboard focus opens a row the same way', async ({ page, browserName }) => {

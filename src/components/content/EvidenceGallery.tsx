@@ -91,7 +91,7 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
       <ul className="grid gap-4 md:grid-cols-2">
         {images.map((image, i) => (
           <li key={image.src} id={`evidence-${i}`} className="scroll-mt-20">
-            <figure data-inspect className="flex h-full flex-col border-t border-line pt-3">
+            <figure className="flex h-full flex-col border-t border-line pt-3">
               <button
                 type="button"
                 onClick={(event) => grow(event.currentTarget, i)}

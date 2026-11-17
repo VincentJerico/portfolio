@@ -26,6 +26,34 @@ test.describe('projects index', () => {
     await expect(page).toHaveURL(/\/projects$/);
   });
 
+  test('the header counts the projects without calling them all public repos', async ({ page }) => {
+    await page.goto('/projects');
+    const header = page.locator('main header');
+    await expect(header).toContainText(`${all.length} projects`);
+    await expect(header).not.toContainText('Public repos');
+  });
+
+  test('the search field has a boundary that stands out from the page', async ({ page }) => {
+    await page.goto('/projects');
+    const ratio = await page.getByRole('searchbox', { name: 'Search projects' }).evaluate((el) => {
+      const lum = (rgb: string) => {
+        const [r, g, b] = rgb
+          .match(/\d+/g)!
+          .slice(0, 3)
+          .map((v) => {
+            const c = Number(v) / 255;
+            return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+          });
+        return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+      };
+      const edge = lum(getComputedStyle(el).borderBottomColor);
+      const bg = lum(getComputedStyle(document.body).backgroundColor);
+      return (Math.max(edge, bg) + 0.05) / (Math.min(edge, bg) + 0.05);
+    });
+    // WCAG 1.4.11: a control's only visible boundary needs 3:1 against what is around it.
+    expect(ratio).toBeGreaterThanOrEqual(3);
+  });
+
   test('typing searches name, tools and results, and combines with the category', async ({
     page,
   }) => {
