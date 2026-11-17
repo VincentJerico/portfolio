@@ -17,11 +17,10 @@ const STAMP: Record<RunStatus, string> = { pass: 'PASS', fail: 'FAIL', 'not-run'
 let lastClickMorph = false;
 
 /**
- * Changing page runs the next page as a spec: a panel slides up showing the page's spec file and a
- * progress line, stamps the route's real CI result from the quality report, then lifts away onto the
- * new page (globals.css). It joins the navigation's view transition, so it covers the change itself.
- * Project morph links (`data-morph`) keep their morph instead. Decorative, pointer-transparent, and
- * never shown under reduced motion.
+ * Changing page runs the next page as a spec: a small chip in the corner shows the page's spec file
+ * and a filling line, stamps the route's real CI result from the quality report, then slides away
+ * about a second later (globals.css). It never covers the page. Project morph links (`data-morph`)
+ * keep their morph instead. Decorative, pointer-transparent, and never shown under reduced motion.
  */
 export function RouteRunner({ specs }: { specs: RunnerSpec[] }) {
   const pathname = usePathname();
@@ -59,11 +58,11 @@ export function RouteRunner({ specs }: { specs: RunnerSpec[] }) {
     }
   }
 
-  // Removes the panel once its lift has finished. animationend is the usual signal; the timer covers
+  // Removes the chip once it has slid away. animationend is the usual signal; the timer covers
   // browsers that skip it (WebKit did in CI).
   useEffect(() => {
     if (!run) return;
-    const id = window.setTimeout(() => setRun(null), 1500);
+    const id = window.setTimeout(() => setRun(null), 1300);
     return () => window.clearTimeout(id);
   }, [run]);
 
@@ -76,10 +75,10 @@ export function RouteRunner({ specs }: { specs: RunnerSpec[] }) {
       data-print-hide
       className="route-runner"
       onAnimationEnd={(event) => {
-        if (event.animationName === 'runner-lift') setRun(null);
+        if (event.animationName === 'runner-chip') setRun(null);
       }}
     >
-      <p className="font-mono text-sm text-ink-muted">
+      <p className="font-mono text-xs text-ink-muted">
         <span className="text-accent">$</span> <span className="text-ink">{run.spec.spec}</span> ·
         running
       </p>
@@ -87,7 +86,7 @@ export function RouteRunner({ specs }: { specs: RunnerSpec[] }) {
         <i />
       </div>
       <p
-        className={`route-runner-stamp font-mono text-sm font-semibold ${run.spec.status === 'pass' ? 'text-pass' : run.spec.status === 'fail' ? 'text-fail' : 'text-ink-muted'}`}
+        className={`route-runner-stamp font-mono text-xs font-semibold ${run.spec.status === 'pass' ? 'text-pass' : run.spec.status === 'fail' ? 'text-fail' : 'text-ink-muted'}`}
       >
         {STAMP[run.spec.status]}
       </p>

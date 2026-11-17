@@ -390,6 +390,42 @@ test.describe('test-runner page change', () => {
     await expect(runner).toHaveCount(0, { timeout: 2500 });
   });
 
+  test('the runner chip never covers the new page, and the page change is short with no blur', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    await waitForHydration(page);
+    await page.locator('[data-topbar] a[href="/skills"]').click();
+    const runner = page.locator('[data-route-runner]');
+    await expect(runner).toBeVisible();
+    const overlaps = await page.evaluate(() => {
+      const chip = document.querySelector('[data-route-runner]')!.getBoundingClientRect();
+      const title = document.querySelector('main h1')!.getBoundingClientRect();
+      return (
+        chip.left < title.right &&
+        title.left < chip.right &&
+        chip.top < title.bottom &&
+        title.top < chip.bottom
+      );
+    });
+    expect(overlaps).toBe(false);
+    const rules = await page.evaluate(() =>
+      [...document.styleSheets]
+        .flatMap((sheet) => {
+          try {
+            return [...sheet.cssRules].map((rule) => rule.cssText);
+          } catch {
+            return [];
+          }
+        })
+        .filter((text) => /page-enter|page-exit|vt-in|vt-out/.test(text))
+        .join('\n'),
+    );
+    expect(rules).not.toMatch(/blur/);
+    const durations = [...rules.matchAll(/(\d+)ms/g)].map((m) => Number(m[1]));
+    expect(Math.max(...durations)).toBeLessThanOrEqual(400);
+  });
+
   test('a project morph navigation keeps the morph and shows no runner', async ({ page }) => {
     await page.goto('/projects');
     await waitForHydration(page);
