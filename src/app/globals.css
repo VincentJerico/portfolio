@@ -15,9 +15,9 @@
   --color-fail: var(--fail);
   --color-focus: var(--focus-ring);
 
-  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  --font-display: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
 
   --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
 
@@ -1088,7 +1088,7 @@
     font-family: var(--font-display);
     font-weight: 800;
     /* Sized to its column, not the viewport, so all four digits (and the extrusion) always fit:
-       Geist's four digits plus the shadow run about 2.7em wide. */
+       Four digits plus the shadow run about 2.7em wide. */
     font-size: min(8.5rem, 36cqi);
     line-height: 0.9;
     letter-spacing: -0.04em;
@@ -2067,5 +2067,123 @@ html:active-view-transition-type(theme) [data-nav-marker] {
     content: '';
     position: absolute;
     inset: -0.5rem -0.25rem;
+  }
+}
+
+/* Inspector (C49): as a card crosses the middle of the screen, a scan line sweeps down it once, then
+   corner brackets lock on around it with a small "inspected" tag, and they stay. One pseudo-element
+   draws all of it from two registered numbers (--scan, where the line is; --lock, how far the brackets
+   have closed), animated by the card's own scroll position. Numbers, gradients and colour only: no
+   compositor transforms, so the cards hold no layers. Nothing shows without scroll timelines, under
+   reduced motion or in print. */
+@property --scan {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --lock {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    :is(.lift, .suite-door, [data-inspect]) {
+      position: relative;
+    }
+    :is(.lift, .suite-door, [data-inspect])::after {
+      --c: var(--accent);
+      content: 'inspected';
+      position: absolute;
+      inset: -6px -6px calc(-6px - 1rem);
+      z-index: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding-right: 2px;
+      font: 500 0.6875rem / 1 var(--font-mono);
+      color: transparent;
+      pointer-events: none;
+      background:
+        linear-gradient(var(--c), var(--c)) 0 calc(var(--scan) * (100% - 1rem)) / 100%
+          calc((1 - var(--lock)) * 1px) no-repeat,
+        linear-gradient(var(--c), var(--c)) left top / calc(var(--lock) * 14px) 2px no-repeat,
+        linear-gradient(var(--c), var(--c)) left top / 2px calc(var(--lock) * 14px) no-repeat,
+        linear-gradient(var(--c), var(--c)) right top / calc(var(--lock) * 14px) 2px no-repeat,
+        linear-gradient(var(--c), var(--c)) right top / 2px calc(var(--lock) * 14px) no-repeat,
+        linear-gradient(var(--c), var(--c)) left 0 bottom 1rem / calc(var(--lock) * 14px) 2px
+          no-repeat,
+        linear-gradient(var(--c), var(--c)) left 0 bottom 1rem / 2px calc(var(--lock) * 14px)
+          no-repeat,
+        linear-gradient(var(--c), var(--c)) right 0 bottom 1rem / calc(var(--lock) * 14px) 2px
+          no-repeat,
+        linear-gradient(var(--c), var(--c)) right 0 bottom 1rem / 2px calc(var(--lock) * 14px)
+          no-repeat;
+      animation: inspect linear both;
+      animation-timeline: view();
+      animation-range: cover 20% cover 48%;
+    }
+  }
+}
+@keyframes inspect {
+  0% {
+    --scan: 0;
+    --lock: 0;
+    color: transparent;
+  }
+  70% {
+    --scan: 1;
+    --lock: 0;
+    color: transparent;
+  }
+  88% {
+    --lock: 1;
+  }
+  92% {
+    color: transparent;
+  }
+  100% {
+    --scan: 1;
+    --lock: 1;
+    color: var(--accent);
+  }
+}
+
+/* Section headings light up word by word as they scroll in, from the muted text colour (which already
+   passes AA) to full ink. One shared timeline per heading. */
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .light-words {
+      view-timeline: --heading block;
+    }
+    .light-word {
+      animation: light-word linear both;
+      animation-timeline: --heading;
+      animation-range: entry calc(30% + var(--w, 0) * 8%) cover calc(28% + var(--w, 0) * 6%);
+    }
+  }
+}
+@keyframes light-word {
+  from {
+    color: var(--text-muted);
+  }
+  to {
+    color: var(--text);
+  }
+}
+
+/* Depth: the hero's dot field drifts at a slower speed than the page as it scrolls away. */
+@supports (animation-timeline: scroll()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .spotlight-dots {
+      animation: dots-drift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
+    }
+  }
+}
+@keyframes dots-drift {
+  to {
+    translate: 0 30vh;
   }
 }

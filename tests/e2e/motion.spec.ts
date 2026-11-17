@@ -241,3 +241,55 @@ test.describe('lists that change', () => {
     await expect.poll(() => marker.evaluate((el) => el.style.translate)).not.toBe(before);
   });
 });
+
+test.describe('inspector on scroll', () => {
+  test.use({ viewport: { width: 1280, height: 860 }, isMobile: false, hasTouch: false });
+
+  const after = (locator: Locator) =>
+    locator.evaluate((el) => {
+      const style = getComputedStyle(el, '::after');
+      return { lock: style.getPropertyValue('--lock').trim(), content: style.content };
+    });
+
+  test('a card is inspected as it crosses the middle of the screen, and stays inspected', async ({
+    page,
+  }) => {
+    await page.goto('/skills');
+    const card = page.locator('.skill-card').last();
+    expect((await after(card)).lock).toBe('0'); // not reached yet
+    await card.evaluate((el) => {
+      const top = el.getBoundingClientRect().top + scrollY;
+      scrollTo(0, top - innerHeight * 0.3);
+    });
+    await expect.poll(async () => (await after(card)).lock).toBe('1');
+    expect((await after(card)).content).toContain('inspected');
+  });
+
+  test('section headings end in full ink once scrolled past', async ({ page }) => {
+    await page.goto('/');
+    const words = page.getByRole('heading', { name: 'Featured projects' }).locator('.light-word');
+    await expect(words).toHaveCount(2);
+    await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
+    const ink = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue('--text').trim(),
+    );
+    const colors = await words.evaluateAll((els) => els.map((el) => getComputedStyle(el).color));
+    const probe = await page.evaluate((value) => {
+      const el = document.createElement('span');
+      el.style.color = value;
+      document.body.append(el);
+      const rgb = getComputedStyle(el).color;
+      el.remove();
+      return rgb;
+    }, ink);
+    expect(new Set(colors)).toEqual(new Set([probe]));
+  });
+
+  test('under reduced motion nothing is drawn and headings are full ink', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/skills');
+    expect((await after(page.locator('.skill-card').first())).content).toBe('none');
+    await page.goto('/');
+    expect(await animationName(page.locator('.light-word').first())).toBe('none');
+  });
+});

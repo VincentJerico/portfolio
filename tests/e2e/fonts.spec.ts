@@ -1,10 +1,12 @@
 import { expect, test } from '../helpers/test';
 
 test.describe('fonts', () => {
-  test('text uses Geist and runner labels use Geist Mono, both loaded', async ({ page }) => {
+  test('text uses Bricolage Grotesque and runner labels use IBM Plex Mono, both loaded', async ({
+    page,
+  }) => {
     await page.goto('/');
     const h1 = await page.locator('h1').evaluate((el) => getComputedStyle(el).fontFamily);
-    expect(h1).toMatch(/^"?Geist\b/i);
+    expect(h1).toMatch(/^"?Bricolage Grotesque\b/i);
     const label = await page
       .locator('.label-mono')
       .first()
@@ -12,7 +14,7 @@ test.describe('fonts', () => {
         const style = getComputedStyle(el);
         return { family: style.fontFamily, size: style.fontSize };
       });
-    expect(label.family).toMatch(/Geist Mono/i);
+    expect(label.family).toMatch(/IBM Plex Mono/i);
     expect(label.size).toBe('12px');
     const loaded = await page.evaluate(async () => {
       await document.fonts.ready;
@@ -21,8 +23,8 @@ test.describe('fonts', () => {
         .map((font) => font.family)
         .join('|');
     });
-    expect(loaded).toMatch(/Geist Mono/i);
-    expect(loaded).toMatch(/(^|\|)"?Geist"?(\||$)/i);
+    expect(loaded).toMatch(/IBM Plex Mono/i);
+    expect(loaded).toMatch(/(^|\|)"?Bricolage Grotesque"?(\||$)/i);
   });
 
   test('no mono text on the page is set below 11 px', async ({ page }) => {
