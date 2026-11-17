@@ -17,7 +17,10 @@ interface ProjectFilterProps {
 }
 
 const ALL = 'all';
+// The site's shared motion (C50): the --ease-snap curve, 400 ms to arrive or move, 180 ms to leave.
 const EASE = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+const ARRIVE = 400;
+const LEAVE = 180;
 
 interface Snapshot {
   /** Position relative to the list, so scrolling between filters never skews a move. */
@@ -31,7 +34,8 @@ interface Snapshot {
 /**
  * Animates the result list when it changes, without a view transition (one swallowed clicks and
  * focus on this page, so the input and chips must stay live): cards that stay glide from their old
- * place, new cards rise in, and removed cards leave a copy behind that shrinks away. Transforms on
+ * place, new cards rise in with the site's shared rise, and removed cards leave a copy behind that
+ * lifts away. Transforms on
  * cards and opacity on the aria-hidden copies only. Off under reduced motion.
  */
 function useResultMotion(
@@ -71,23 +75,17 @@ function useResultMotion(
           const dy = then.y - now.y;
           if (dx || dy) {
             now.node.animate([{ translate: `${dx}px ${dy}px` }, { translate: '0 0' }], {
-              duration: 420,
+              duration: ARRIVE,
               easing: EASE,
             });
           }
         } else {
-          now.node.animate(
-            [
-              { translate: '0 1.5rem', scale: 0.94 },
-              { translate: '0 0', scale: 1 },
-            ],
-            {
-              duration: 380,
-              easing: EASE,
-              delay: Math.min(entered++, 6) * 40,
-              fill: 'backwards',
-            },
-          );
+          now.node.animate([{ translate: '0 16px' }, { translate: '0 0' }], {
+            duration: ARRIVE,
+            easing: EASE,
+            delay: Math.min(entered++, 6) * 40,
+            fill: 'backwards',
+          });
         }
       }
       for (const [slug, then] of before) {
@@ -108,10 +106,10 @@ function useResultMotion(
         ghost
           .animate(
             [
-              { scale: 1, opacity: 1 },
-              { scale: 0.9, opacity: 0 },
+              { translate: '0 0', opacity: 1 },
+              { translate: '0 -8px', opacity: 0 },
             ],
-            { duration: 260, easing: 'ease-in', fill: 'forwards' },
+            { duration: LEAVE, easing: EASE, fill: 'forwards' },
           )
           .finished.catch(() => {})
           .finally(() => ghost.remove());

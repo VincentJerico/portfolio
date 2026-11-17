@@ -8,7 +8,6 @@ import { Masthead } from '@/components/content/Masthead';
 import { PortraitCard } from '@/components/content/PortraitCard';
 import { ProjectIndex } from '@/components/content/ProjectIndex';
 import { QaAreaGrid } from '@/components/content/QaAreaGrid';
-import { SplitTitle } from '@/components/content/SplitTitle';
 import { Section } from '@/components/content/Section';
 import { SkillChips } from '@/components/content/SkillChips';
 import { Timeline } from '@/components/content/Timeline';
@@ -70,7 +69,7 @@ export default function OverviewPage() {
       >
         <HeroSpotlight />
         <div data-hero-text className="measure min-w-0">
-          <SplitTitle id="hero-heading" text={profile.fullName} />
+          <h1 id="hero-heading">{profile.fullName}</h1>
           <p className="mt-5 text-xl font-semibold text-ink lg:text-2xl">{profile.headline}</p>
           <p className="mt-4 text-lg text-ink">{introLead}</p>
           {introRest && <p className="mt-2 text-ink-muted">{introRest}</p>}
@@ -130,7 +129,7 @@ export default function OverviewPage() {
         title="Run summary"
         kicker={`${metrics.length} checks${asOf ? ` · as of ${formatDay(asOf)}` : ''}`}
       >
-        <ul className="odo-scope grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
+        <ul className="grid gap-px overflow-hidden rounded-card border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
           {metrics.map((metric) => (
             <li key={metric.id}>
               <MetricTile metric={metric} />

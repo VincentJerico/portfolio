@@ -34,7 +34,7 @@ export function switchTheme(next: Theme, setTheme: (theme: Theme) => void, from?
       document.documentElement.animate(
         { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
         {
-          duration: 650,
+          duration: 400,
           easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
           pseudoElement: '::view-transition-new(root)',
         },

@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import type { Metric } from '@/content/schema';
-import { DecodeLabel } from '@/components/ui/DecodeLabel';
 
 interface MastheadProps {
   location: string;
@@ -51,9 +50,7 @@ export function Masthead({ location, testedAreas, ci }: MastheadProps) {
       <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)_minmax(0,1fr)]">
         {rows.map(([label, value]) => (
           <div key={label} className="min-w-0">
-            <dt className="text-ink-muted">
-              <DecodeLabel text={label} />
-            </dt>
+            <dt className="text-ink-muted">{label}</dt>
             <dd className="mt-1 text-ink">{value}</dd>
           </div>
         ))}

@@ -5,10 +5,7 @@ import { StatusChip } from '@/components/ui/StatusChip';
 
 export function CaseStudyCard({ study }: { study: CaseStudy }) {
   return (
-    <article
-      data-tilt
-      className="tilt lift group flex h-full flex-col rounded-card border border-line bg-surface p-5 shadow-card"
-    >
+    <article className="lift group flex h-full flex-col rounded-card border border-line bg-surface p-5 shadow-card">
       <p className="label-mono text-ink-muted">{study.industry}</p>
       <ViewTransition name={`case-title-${study.slug}`} share="morph" default="none">
         <h3 className="mt-3">{study.title}</h3>

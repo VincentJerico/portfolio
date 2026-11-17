@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { DataTable } from '@/components/content/DataTable';
 import { Section } from '@/components/content/Section';
 import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
-import { Odometer } from '@/components/ui/Odometer';
 import { StatusChip } from '@/components/ui/StatusChip';
 import type { CSSProperties } from 'react';
 import { formatDay } from '@/lib/format';
@@ -57,11 +56,11 @@ const GATES: { name: string; what: string; selfTest: string }[] = [
   },
 ];
 
-/** A 0 to 100 Lighthouse score: rolls on the odometer, with a bar that fills to the score. */
+/** A 0 to 100 Lighthouse score with a bar filled to the score. */
 function Score({ value }: { value: number }) {
   return (
     <span className="inline-flex min-w-[3.5rem] flex-col gap-1">
-      <Odometer value={String(value)} />
+      <span>{value}</span>
       <span
         aria-hidden="true"
         className="score-bar"
@@ -114,8 +113,7 @@ export default function QualityPage() {
               rows={report.gates.map((g) => [g.gate, g.tool, g.result.toUpperCase(), g.details])}
             />
             {report.lighthouse.length > 0 && (
-              // One shared scroll timeline: the scores roll and their bars fill as the table scrolls in.
-              <div className="odo-scope">
+              <div>
                 <DataTable
                   caption="Lighthouse (mobile, median of 5 runs)"
                   columns={['Route', 'Performance', 'Accessibility', 'Best practices', 'SEO']}
