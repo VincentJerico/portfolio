@@ -11,8 +11,7 @@ const WIDTHS = [320, 768, 1024, 1280];
  */
 function escapes() {
   const shown = (el: Element) => {
-    // Odometer columns clip their content on purpose; their boxes must still fit.
-    if (el.closest('.sr-only, [hidden], [inert], dialog:not([open]), .odo-col')) return false;
+    if (el.closest('.sr-only, [hidden], [inert], dialog:not([open])')) return false;
     const closed = el.closest('details:not([open])');
     if (closed && closed !== el && !el.closest('summary')) return false;
     const style = getComputedStyle(el);

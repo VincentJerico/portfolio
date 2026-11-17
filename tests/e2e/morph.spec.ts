@@ -226,45 +226,6 @@ test.describe('docked report title', () => {
   });
 });
 
-test.describe('odometer metrics', () => {
-  test('each metric value rolls on a digit odometer but reads as plain text', async ({ page }) => {
-    await page.goto('/');
-    const summary = page.getByRole('region', { name: 'Run summary' });
-    const tree = await summary.ariaSnapshot();
-    const { metrics } = await import('../../src/content');
-    for (const metric of metrics) {
-      expect(tree, metric.id).toContain(metric.value);
-    }
-    const first = summary.locator('[data-odometer]').first();
-    await expect(first).toHaveAttribute('aria-hidden', 'true');
-    // Every digit column rests on its real digit.
-    const ok = await summary.locator('[data-odometer]').evaluateAll((els) =>
-      els.every((el) => {
-        const value = el.getAttribute('data-value')!;
-        const digits = [...value].filter((c) => /\d/.test(c));
-        const cols = [...el.querySelectorAll<HTMLElement>('.odo-col')];
-        return (
-          cols.length === digits.length &&
-          cols.every((col, i) => col.style.getPropertyValue('--d') === digits[i])
-        );
-      }),
-    );
-    expect(ok).toBe(true);
-  });
-});
-
-test.describe('split-letter title', () => {
-  test('the hero name assembles letter by letter but is announced whole', async ({ page }) => {
-    const { profile } = await import('../../src/content');
-    await page.goto('/');
-    const h1 = page.getByRole('heading', { level: 1 });
-    await expect(h1).toHaveAccessibleName(profile.fullName);
-    const letters = h1.locator('[data-split] .split-ch');
-    await expect(letters).toHaveCount(profile.fullName.replace(/\s/g, '').length);
-    await expect(h1.locator('[data-split]')).toHaveAttribute('aria-hidden', 'true');
-  });
-});
-
 test.describe('coverage grid spotlight', () => {
   test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
 
@@ -281,32 +242,6 @@ test.describe('coverage grid spotlight', () => {
     await expect
       .poll(() => grid.evaluate((el) => getComputedStyle(el).getPropertyValue('--mx').trim()))
       .not.toBe('');
-  });
-});
-
-test.describe('spotlight and tilt cards', () => {
-  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
-
-  test('a card tilts toward the cursor with a light that follows, and settles on leave', async ({
-    page,
-  }) => {
-    await page.goto('/work');
-    await waitForHydration(page);
-    const card = page.locator('[data-tilt]').first();
-    await card.scrollIntoViewIfNeeded();
-    const box = (await card.boundingBox())!;
-    // The listener installs when the browser is idle (a 1.2 s fallback in WebKit); keep moving, as a
-    // visitor would, until the card responds.
-    await expect
-      .poll(async () => {
-        await page.mouse.move(box.x + box.width * 0.85, box.y + box.height * 0.2);
-        await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.25);
-        return card.evaluate((el) => getComputedStyle(el).transform);
-      })
-      .not.toBe('none');
-    await expect.poll(() => card.evaluate((el) => el.style.getPropertyValue('--tx'))).toMatch(/%$/);
-    await page.mouse.move(5, 5);
-    await expect.poll(() => card.evaluate((el) => el.style.transform)).toBe('');
   });
 });
 
@@ -444,28 +379,5 @@ test.describe('test-runner page change', () => {
     await page.locator('[data-topbar] a[href="/skills"]').click();
     await expect(page).toHaveURL(/\/skills$/);
     await expect(page.locator('[data-route-runner]')).toHaveCount(0);
-  });
-});
-
-test.describe('load sequence', () => {
-  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
-
-  test('top bar links cascade in and a run bar sweeps across the top on load', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('[data-topbar] nav li').first()).toHaveCSS(
-      'animation-name',
-      'nav-in',
-    );
-    const bar = page.locator('[data-load-bar]');
-    await expect(bar).toHaveAttribute('aria-hidden', 'true');
-    await expect(bar).toHaveCSS('pointer-events', 'none');
-    await expect(bar).toBeHidden({ timeout: 3000 });
-  });
-
-  test('under reduced motion nothing cascades and no bar runs', async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/');
-    await expect(page.locator('[data-topbar] nav li').first()).toHaveCSS('animation-name', 'none');
-    await expect(page.locator('[data-load-bar]')).toBeHidden();
   });
 });

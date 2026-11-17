@@ -7,7 +7,6 @@ import { HuntBanner } from '@/components/bughunt/HuntBanner';
 import { NextSpec } from '@/components/content/NextSpec';
 import { SiteChecksChip } from '@/components/explorer/SiteChecksChip';
 import { TestExplorerNav } from '@/components/explorer/TestExplorerNav';
-import { Boot, BOOT_SCRIPT } from '@/components/layout/Boot';
 import { IdentityBlock } from '@/components/layout/IdentityBlock';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { PullCord } from '@/components/layout/PullCord';
@@ -19,8 +18,6 @@ import { TopBar } from '@/components/layout/TopBar';
 import { SkipLink } from '@/components/layout/SkipLink';
 import { CommandPaletteRoot } from '@/components/palette/CommandPaletteRoot';
 import { SearchButton } from '@/components/palette/SearchButton';
-import { DecodeHost } from '@/components/ui/DecodeHost';
-import { TiltHost } from '@/components/ui/TiltHost';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { RunnerHost } from '@/components/runner/RunnerHost';
 import { RunSuiteButton } from '@/components/runner/RunSuiteButton';
@@ -47,13 +44,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   const { order, reportsWithNext } = siteReadingOrder();
   return (
     <html lang="en" className={fontVariables} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: BOOT_SCRIPT }} />
-      </head>
       <body>
-        <Boot />
-        {/* A pass-green run bar sweeps across the top on every full page load (globals.css). */}
-        <div data-load-bar aria-hidden="true" className="load-bar" data-print-hide />
         <div data-scroll-progress aria-hidden="true" className="scroll-progress" data-print-hide />
         <ThemeProvider>
           <BugHuntProvider>
@@ -100,8 +91,6 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
                 status,
               }))}
             />
-            <DecodeHost />
-            <TiltHost />
           </BugHuntProvider>
           {/* Cookieless analytics, only on Vercel builds: elsewhere their first-party scripts 404. */}
           {process.env.VERCEL === '1' && (

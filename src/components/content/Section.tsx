@@ -1,6 +1,5 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Inspectable } from '@/components/bughunt/Inspectable';
-import { DecodeLabel } from '@/components/ui/DecodeLabel';
 
 interface SectionProps {
   id: string;
@@ -19,11 +18,7 @@ export function Section({ id, title, kicker, action, children, className = '' }:
     <section id={id} aria-labelledby={headingId} className={`scroll-mt-20 ${className}`}>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
         <div>
-          {kicker && (
-            <p className="label-mono mb-2 text-ink-muted">
-              <DecodeLabel text={kicker} />
-            </p>
-          )}
+          {kicker && <p className="label-mono mb-2 text-ink-muted">{kicker}</p>}
           <Inspectable id={`section-${id}`} label={`${title} heading`}>
             <h2 id={headingId} className="flex items-center gap-3">
               {/* Decorative: the dot morphs from a pending ring into a filled check as the section
@@ -45,14 +40,7 @@ export function Section({ id, title, kicker, action, children, className = '' }:
                   />
                 </svg>
               </span>
-              {/* Each word brightens from the muted text colour to full ink as the heading scrolls in. */}
-              <span className="light-words">
-                {title.split(' ').map((word, i) => (
-                  <span key={i} className="light-word" style={{ '--w': i } as CSSProperties}>
-                    {i > 0 ? ` ${word}` : word}
-                  </span>
-                ))}
-              </span>
+              {title}
             </h2>
           </Inspectable>
         </div>

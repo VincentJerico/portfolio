@@ -49,8 +49,8 @@
 
   :root {
     --dur-fast: 180ms;
-    --dur-base: 320ms;
-    --dur-slow: 560ms;
+    --dur-base: 400ms;
+    --dur-slow: 400ms;
   }
 
   /* Fluid between the spec's mobile and desktop sizes (4.1): 40/64, 24/30, 18/20 px from 375 to 1440 px. */
@@ -138,13 +138,13 @@
   .drawer {
     translate: 0 0;
     transition:
-      translate 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
-      overlay 220ms allow-discrete,
-      display 220ms allow-discrete;
+      translate var(--dur-base) var(--ease-snap),
+      overlay var(--dur-base) allow-discrete,
+      display var(--dur-base) allow-discrete;
   }
   .drawer:not([open]) {
     translate: -100% 0;
-    transition-duration: 160ms;
+    transition-duration: var(--dur-fast);
   }
   @starting-style {
     .drawer[open] {
@@ -252,17 +252,15 @@
   /* Cards: lift and pick up the accent on hover, keep the accent border while a child has focus. */
   .lift {
     transition:
-      translate var(--dur-base) var(--ease-snap),
-      box-shadow var(--dur-base) var(--ease-snap),
-      border-color var(--dur-base) var(--ease-snap);
+      translate var(--dur-fast) var(--ease-snap),
+      border-color var(--dur-fast) var(--ease-snap);
   }
   .lift:focus-within {
     border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
   }
   @media (hover: hover) {
     .lift:hover {
-      translate: 0 -5px;
-      box-shadow: 0 14px 30px -16px color-mix(in srgb, var(--accent) 55%, transparent);
+      translate: 0 -2px;
       border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
     }
   }
@@ -361,147 +359,6 @@
   }
 }
 
-/* Career path: a soft ring pulses out from the current step's marker. The ring scales and fades, so
-   the compositor runs it; an animated box-shadow repainted on the main thread every frame, forever,
-   and pushed /about's blocking time over budget. */
-.career-current {
-  position: relative;
-}
-@media screen and (prefers-reduced-motion: no-preference) {
-  .career-current::after {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    border-radius: 50%;
-    border: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
-    pointer-events: none;
-    animation: career-pulse 2.4s var(--ease-snap) infinite;
-  }
-}
-@keyframes career-pulse {
-  from {
-    scale: 1;
-    opacity: 1;
-  }
-  to {
-    scale: 1.6;
-    opacity: 0;
-  }
-}
-
-/* Spotlight and tilt cards (ui/TiltHost.tsx): the card tilts toward the cursor and a soft light
-   follows the pointer; it eases back when the pointer leaves. */
-.tilt {
-  position: relative;
-  isolation: isolate;
-  transition:
-    transform var(--dur-base) var(--ease-snap),
-    translate var(--dur-base) var(--ease-snap),
-    box-shadow var(--dur-base) var(--ease-snap),
-    border-color var(--dur-base) var(--ease-snap);
-  will-change: transform;
-}
-.tilt[data-tilting] {
-  transition-duration: 90ms, var(--dur-base), var(--dur-base), var(--dur-base);
-}
-.tilt::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  pointer-events: none;
-  background: radial-gradient(
-    420px circle at var(--tx, 50%) var(--ty, 50%),
-    color-mix(in srgb, var(--accent) 14%, transparent),
-    transparent 45%
-  );
-  opacity: 0;
-  transition: opacity var(--dur-base);
-}
-.tilt[data-tilting]::before {
-  opacity: 1;
-}
-
-/* Load sequence: on every full page load the top bar's links cascade in and a run bar sweeps across
-   the top. The top bar persists across client navigations, so it plays once per load;
-   the drawer's rows replay it each time the drawer opens.
-   Load animations fill backwards, not both: once finished they let go of their elements, so nothing
-   keeps a compositing layer after the entrance. */
-.load-bar {
-  display: none;
-}
-@media screen and (prefers-reduced-motion: no-preference) {
-  .load-bar {
-    display: block;
-    position: fixed;
-    inset: 0 0 auto;
-    z-index: 70;
-    height: 2px;
-    background: var(--pass);
-    transform-origin: left;
-    pointer-events: none;
-    animation:
-      load-run 900ms var(--ease-snap) backwards,
-      load-done 1ms linear 1150ms forwards;
-  }
-  :is([data-topbar], .drawer[open]) nav > ul > li {
-    animation: nav-in 520ms var(--ease-snap) backwards;
-  }
-  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(1) {
-    animation-delay: 185ms;
-  }
-  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(2) {
-    animation-delay: 230ms;
-  }
-  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(3) {
-    animation-delay: 275ms;
-  }
-  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(4) {
-    animation-delay: 320ms;
-  }
-  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(5) {
-    animation-delay: 365ms;
-  }
-  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(6) {
-    animation-delay: 410ms;
-  }
-  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(7) {
-    animation-delay: 455ms;
-  }
-  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(8) {
-    animation-delay: 500ms;
-  }
-  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(9) {
-    animation-delay: 545ms;
-  }
-  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(10) {
-    animation-delay: 590ms;
-  }
-  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(11) {
-    animation-delay: 635ms;
-  }
-  :is([data-topbar], .drawer[open]) nav > ul > li:nth-child(12) {
-    animation-delay: 680ms;
-  }
-}
-@keyframes load-run {
-  from {
-    scale: 0 1;
-  }
-}
-@keyframes load-done {
-  from,
-  to {
-    visibility: hidden;
-  }
-}
-@keyframes nav-in {
-  from {
-    translate: -1rem 0;
-  }
-}
-
 /* Hero spotlight (content/HeroSpotlight.tsx): a quiet dot field; around the cursor the dots turn
    pass-green and a scan ring pulses. The lit layer is the same dots, masked to a circle. */
 .spotlight {
@@ -574,91 +431,6 @@
   to {
     scale: 1.1;
     opacity: 0;
-  }
-}
-
-/* Split-letter hero title (content/SplitTitle.tsx): letters rise out of their line in turn; each
-   jumps and tints as the cursor passes. The rise uses translate and the jump uses transform, so the
-   two never fight. */
-.split-w {
-  display: inline-block;
-  overflow: clip;
-  overflow-clip-margin: 0.2em;
-  vertical-align: top;
-  padding-bottom: 0.06em;
-}
-.split-ch {
-  display: inline-block;
-  transition:
-    transform var(--dur-fast) var(--ease-snap),
-    color var(--dur-fast);
-}
-.split-ch:hover {
-  transform: translateY(-12%);
-  color: var(--accent);
-}
-@media screen and (prefers-reduced-motion: no-preference) {
-  .split-ch {
-    animation: split-rise 760ms var(--ease-snap) backwards;
-    animation-delay: calc(var(--i) * 28ms);
-  }
-}
-@keyframes split-rise {
-  from {
-    translate: 0 110%;
-    rotate: 8deg;
-  }
-}
-
-/* Odometer (ui/Odometer.tsx): each digit column is one strip of 0 to 9 resting on its digit; on
-   scroll-in it rolls up from 0. All columns share the run summary grid's one view timeline. */
-.odo-word {
-  display: inline-flex;
-  white-space: nowrap;
-  /* Every digit column is as wide as the widest digit, so figures must share one width or a 1 shows
-     a gap after it. */
-  font-variant-numeric: tabular-nums;
-  line-height: 1.2;
-  vertical-align: top;
-}
-.odo-col {
-  display: inline-block;
-  height: 1.2em;
-  overflow: hidden;
-}
-/* The roll animates a number, not translate: a scroll-linked translate is composited, so every column
-   held its own layer from the first frame and the extra layers cost blocking time on load. */
-@property --odo-t {
-  syntax: '<number>';
-  inherits: false;
-  initial-value: 1;
-}
-.odo-strip {
-  display: block;
-  translate: 0 calc(var(--d) * var(--odo-t) * -1.2em);
-}
-.odo-strip::before {
-  content: '0\A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9';
-  white-space: pre;
-}
-.odo-scope {
-  view-timeline: --odo block;
-}
-@supports (animation-timeline: view()) {
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .odo-strip {
-      animation: odo-roll linear both;
-      animation-timeline: --odo;
-      animation-range: entry calc(30% + var(--i) * 5%) cover calc(45% + var(--i) * 5%);
-    }
-  }
-}
-@keyframes odo-roll {
-  from {
-    --odo-t: 0;
-  }
-  to {
-    --odo-t: 1;
   }
 }
 
@@ -743,11 +515,6 @@
     }
   }
 }
-@keyframes stream-in {
-  from {
-    translate: -3rem 0;
-  }
-}
 @keyframes draw-x {
   from {
     scale: 0 1;
@@ -796,13 +563,11 @@
       display var(--dur-base) allow-discrete;
   }
   dialog:not(.drawer):not([open]) {
-    scale: 0.9;
-    translate: 0 1.5rem;
+    translate: 0 16px;
   }
   @starting-style {
     dialog[open]:not(.drawer) {
-      scale: 0.9;
-      translate: 0 1.5rem;
+      translate: 0 16px;
     }
   }
   dialog::backdrop {
@@ -836,25 +601,19 @@
   }
 
   /* Page headers, and the home hero's text column (data-hero-text), rise in once, line by line, on
-     load: short and close, so a page change settles in about half a second. Transform only: no opacity (the title paints at
-     once, so LCP is unaffected and axe never scans faded text) and no filter, whose per-frame repaint
-     during load pushed blocking time over budget. */
-  main :is(header, [data-hero-text]) > :not([data-morph-title], .split-title) {
-    animation: header-rise 480ms var(--ease-snap) backwards;
-  }
-  /* The page title rises out of its own line: it moves up while its clip opens from the top, so it
-     looks masked by the line it sits on. Clip, not opacity, so the title still counts as painted. */
-  main :is(header, [data-hero-text]) > h1:not([data-morph-title], .split-title) {
-    animation: line-rise 480ms var(--ease-snap) backwards;
+     load, with the shared rise. Transform only: no opacity (the title paints at once, so LCP is
+     unaffected and axe never scans faded text) and no filter. */
+  main :is(header, [data-hero-text]) > :not([data-morph-title]) {
+    animation: rise var(--dur-base) var(--ease-snap) backwards;
   }
   main :is(header, [data-hero-text]) > :nth-child(2) {
-    animation-delay: 50ms;
+    animation-delay: 40ms;
   }
   main :is(header, [data-hero-text]) > :nth-child(3) {
-    animation-delay: 100ms;
+    animation-delay: 80ms;
   }
   main :is(header, [data-hero-text]) > :nth-child(n + 4) {
-    animation-delay: 150ms;
+    animation-delay: 120ms;
   }
 
   /* Thumbnails lean in on hover. */
@@ -867,172 +626,22 @@
     transition: scale var(--dur-base) var(--ease-snap);
   }
 }
-@keyframes line-rise {
-  from {
-    translate: 0 100%;
-    clip-path: inset(-0.25em -1em 100% -1em);
-  }
-  to {
-    clip-path: inset(-0.25em -1em -0.3em -1em);
-  }
-}
-@keyframes header-rise {
-  from {
-    translate: 0 1.25rem;
-  }
-}
-
-/* First-visit boot (Boot.tsx): counters run to 100%, a hairline splits the screen, the overlay lifts.
-   It shows only while the head script has set <html data-boot>. */
-[data-boot-overlay] {
-  display: none;
-}
-@media screen and (prefers-reduced-motion: no-preference) {
-  /* Like the page-change runner, the boot covers the content area and leaves the top bar (and on
-     desktop the status bar) on screen. */
-  html[data-boot] [data-boot-overlay] {
-    display: block;
-    position: fixed;
-    inset: 3.5rem 0 0;
-    z-index: 60;
-    pointer-events: none;
-    animation: boot-gone 1ms linear 1500ms forwards;
-  }
-  @media (min-width: 1024px) {
-    html[data-boot] [data-boot-overlay] {
-      inset: 3.5rem 0 2.75rem;
-    }
-  }
-  /* The shutter: two halves of the page colour part along the hairline. */
-  .boot-half {
-    position: absolute;
-    inset-inline: 0;
-    height: 50%;
-    background: var(--bg);
-  }
-  .boot-half-top {
-    top: 0;
-    animation: boot-open-up 560ms cubic-bezier(0.7, 0, 0.2, 1) 920ms both;
-  }
-  .boot-half-bottom {
-    bottom: 0;
-    animation: boot-open-down 560ms cubic-bezier(0.7, 0, 0.2, 1) 920ms both;
-  }
-  /* The counters and hairline clear just as the shutter opens. */
-  .boot-count,
-  .boot-line {
-    z-index: 1;
-  }
-  .boot-count {
-    animation: boot-clear 1ms linear 900ms forwards;
-  }
-  .boot-count {
-    position: absolute;
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    color: var(--text-muted);
-    /* Eleven discrete content steps: animating a registered integer through counter() restyled
-       on every frame and showed up as long tasks on slow CI runners. */
-  }
-  .boot-count::after {
-    content: '000%';
-    animation: boot-count 800ms linear both;
-  }
-  .boot-line {
-    position: absolute;
-    inset-inline: 0;
-    top: 50%;
-    height: 1px;
-    background: var(--text);
-    scale: 0 1;
-    animation:
-      boot-split 600ms var(--ease-snap) 250ms both,
-      boot-clear 1ms linear 940ms forwards;
-  }
-}
-@keyframes boot-count {
-  0% {
-    content: '000%';
-  }
-  10% {
-    content: '010%';
-  }
-  20% {
-    content: '020%';
-  }
-  30% {
-    content: '030%';
-  }
-  40% {
-    content: '040%';
-  }
-  50% {
-    content: '050%';
-  }
-  60% {
-    content: '060%';
-  }
-  70% {
-    content: '070%';
-  }
-  80% {
-    content: '080%';
-  }
-  90% {
-    content: '090%';
-  }
-  100% {
-    content: '100%';
-  }
-}
-@keyframes boot-split {
-  to {
-    scale: 1 1;
-  }
-}
-@keyframes boot-clear {
-  from,
-  to {
-    visibility: hidden;
-  }
-}
-@keyframes boot-open-up {
-  to {
-    translate: 0 -100%;
-  }
-}
-@keyframes boot-open-down {
-  to {
-    translate: 0 100%;
-  }
-}
-@keyframes boot-gone {
-  from,
-  to {
-    visibility: hidden;
-  }
-}
 
 /* On scroll: sections rise into place, timeline entries and table rows stream in. Transform only,
    never opacity, so text contrast never drops; final state without support or under reduced motion. */
 @supports (animation-timeline: view()) {
   @media screen and (prefers-reduced-motion: no-preference) {
     main section:not([aria-labelledby='hero-heading']) {
-      animation: section-rise linear both;
+      animation: rise linear both;
       animation-timeline: view();
       animation-range: cover 0px cover 380px;
     }
     /* Scoped, not every li: one scroll timeline per list item cost measurable blocking time. */
     main :is(.timeline-track > li, tbody > tr) {
-      animation: stream-in linear both;
+      animation: rise linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 100%;
     }
-  }
-}
-@keyframes section-rise {
-  from {
-    translate: 0 5rem;
   }
 }
 
@@ -1223,13 +832,9 @@
       animation-range: entry calc(30% + var(--i) * 3%) cover calc(42% + var(--i) * 3%);
     }
     .tm-year {
-      animation: year-roll linear both;
+      animation: rise linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 90%;
-    }
-    .time-machine::before {
-      animation: dust-drift linear both;
-      animation-timeline: view();
     }
   }
 }
@@ -1282,26 +887,13 @@
     translate: 0 0.2rem;
   }
 }
-@keyframes year-roll {
-  from {
-    translate: 0 85%;
-  }
-}
-@keyframes dust-drift {
-  from {
-    translate: 0 60px;
-  }
-  to {
-    translate: 0 -60px;
-  }
-}
 
 /* Route change: quick and light, one page at a time. The old page lifts away in 120 ms, then the new
    one rises into place over 240 ms, so the two never overlap into a double image; the top bar and
    status bar never move. No blur: a filter on a whole-page snapshot is costly to draw and stuttered
    on phones. A project's name morphs from its card into the report title (.morph). */
 ::view-transition-old(.page-exit) {
-  animation: 120ms ease-in both vt-out;
+  animation: 120ms var(--ease-snap) both vt-out;
 }
 ::view-transition-new(.page-enter) {
   animation: 240ms var(--ease-snap) 110ms both vt-in;
@@ -1331,12 +923,12 @@ html:active-view-transition-type(theme) [data-nav-marker] {
 
 /* A control growing into its dialog (lib/morph.ts): a slower, springier move than the default. */
 ::view-transition-group(dialog-morph) {
-  animation-duration: 420ms;
+  animation-duration: var(--dur-base);
   animation-timing-function: var(--ease-snap);
 }
 :active-view-transition-type(dialog-morph)::view-transition-old(root),
 :active-view-transition-type(dialog-morph)::view-transition-new(root) {
-  animation-duration: 420ms;
+  animation-duration: var(--dur-base);
 }
 
 /* Theme flood (lib/theme-switch.ts): the new theme is revealed by a growing circle animated from
@@ -1386,12 +978,12 @@ html:active-view-transition-type(theme) [data-nav-marker] {
   inset: 0;
   background: var(--accent);
   transform-origin: left;
-  animation: runner-bar 420ms var(--ease-snap) 100ms both;
+  animation: runner-bar var(--dur-base) var(--ease-snap) 100ms both;
 }
 .route-runner-stamp {
   width: fit-content;
   transform-origin: left center;
-  animation: runner-stamp 200ms ease 480ms both;
+  animation: runner-stamp var(--dur-fast) var(--ease-snap) 480ms both;
 }
 @keyframes runner-chip {
   0% {
@@ -1425,9 +1017,6 @@ html:active-view-transition-type(theme) [data-nav-marker] {
   animation-duration: var(--dur-slow);
   animation-timing-function: var(--ease-snap);
 }
-::view-transition-image-pair(.morph) {
-  animation-name: vt-via-blur;
-}
 @keyframes vt-out {
   to {
     opacity: 0;
@@ -1438,11 +1027,6 @@ html:active-view-transition-type(theme) [data-nav-marker] {
   from {
     opacity: 0;
     translate: 0 16px;
-  }
-}
-@keyframes vt-via-blur {
-  30% {
-    filter: blur(3px);
   }
 }
 
@@ -1513,13 +1097,8 @@ html:active-view-transition-type(theme) [data-nav-marker] {
       visibility var(--dur-base);
   }
   .nav-folder:not([hidden]) > li {
-    animation: nav-in 420ms var(--ease-snap) backwards;
-    animation-delay: calc(var(--i, 0) * 35ms);
-  }
-
-  /* A page's visited check pops in. */
-  [data-visited-check] {
-    animation: check-pop 420ms var(--ease-snap) backwards;
+    animation: rise var(--dur-base) var(--ease-snap) backwards;
+    animation-delay: calc(var(--i, 0) * 40ms);
   }
 
   /* The top bar's Menu icon turns into a close X while the drawer is open. */
@@ -1543,91 +1122,32 @@ html:active-view-transition-type(theme) [data-nav-marker] {
     rotate: -45deg;
   }
 }
-@keyframes check-pop {
-  from {
-    scale: 0;
-    rotate: -30deg;
-  }
-  70% {
-    scale: 1.2;
-  }
-}
 
 /* Feedback: anything that appears in answer to the visitor (errors, alerts, statuses, results, notes)
    slides open from its top edge instead of popping in; small marks pop. Clip and translate only. */
 @media screen and (prefers-reduced-motion: no-preference) {
-  .reveal-in {
-    animation: reveal-in var(--dur-base) var(--ease-snap) backwards;
-  }
+  .reveal-in,
   .pop-in {
-    animation: pop-in var(--dur-base) var(--ease-snap) backwards;
-  }
-  /* After a failed send, the fields still in error shake once. */
-  form[data-status='invalid'] [aria-invalid='true'] {
-    animation: field-shake 380ms var(--ease-snap);
+    animation: rise var(--dur-base) var(--ease-snap) backwards;
   }
   /* The run-checks sheet slides up; results stream in as they arrive; the loading sweep keeps going
      until they do; the running chip's dot breathes. */
   :is([data-runner-panel], [data-runner-loading]) {
-    animation: sheet-up 360ms var(--ease-snap) backwards;
+    animation: rise var(--dur-base) var(--ease-snap) backwards;
   }
   :is([data-runner-panel], [data-runner-loading]) .skeleton::after {
     animation-iteration-count: infinite;
   }
   [data-runner-panel] li[data-check] {
-    animation: reveal-in var(--dur-base) var(--ease-snap) backwards;
-  }
-  [data-status='running'] [data-status-icon] {
-    animation: dot-breathe 900ms ease-in-out infinite alternate;
+    animation: rise var(--dur-base) var(--ease-snap) backwards;
   }
   /* Bug Hunt: inspect tags pop in, the "No defect here." note rises, holds and sinks away. The note is
      aria-hidden (a live region announces it), so it may fade. */
   [data-hunt-inspect] {
-    animation: pop-in var(--dur-base) var(--ease-snap) backwards;
+    animation: rise var(--dur-base) var(--ease-snap) backwards;
   }
   .hunt-toast {
     animation: toast-life 2.8s var(--ease-snap) forwards;
-  }
-}
-@keyframes reveal-in {
-  from {
-    clip-path: inset(0 0 100% 0);
-    translate: 0 -0.4rem;
-  }
-}
-@keyframes pop-in {
-  from {
-    scale: 0.6;
-  }
-  70% {
-    scale: 1.08;
-  }
-}
-@keyframes field-shake {
-  20% {
-    translate: -6px 0;
-  }
-  40% {
-    translate: 5px 0;
-  }
-  60% {
-    translate: -3px 0;
-  }
-  80% {
-    translate: 2px 0;
-  }
-}
-@keyframes sheet-up {
-  from {
-    translate: 0 100%;
-  }
-}
-@keyframes dot-breathe {
-  from {
-    scale: 0.7;
-  }
-  to {
-    scale: 1;
   }
 }
 @keyframes toast-life {
@@ -1662,17 +1182,12 @@ html:active-view-transition-type(theme) [data-nav-marker] {
     }
   }
 }
-@media screen and (prefers-reduced-motion: no-preference) {
-  .skeleton > img {
-    animation: badge-in 500ms ease-out backwards;
-  }
-}
 @supports (animation-timeline: view()) {
   @media screen and (prefers-reduced-motion: no-preference) {
     .result-callout {
       position: relative;
       border-left-color: transparent;
-      animation: section-rise linear both;
+      animation: rise linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 70%;
     }
@@ -1687,11 +1202,6 @@ html:active-view-transition-type(theme) [data-nav-marker] {
       animation-timeline: view();
       animation-range: entry 10% cover 40%;
     }
-  }
-}
-@keyframes badge-in {
-  from {
-    opacity: 0;
   }
 }
 
@@ -1721,26 +1231,11 @@ html:active-view-transition-type(theme) [data-nav-marker] {
     .skill-card {
       view-timeline: --card block;
     }
-    .skill-card .chip {
-      animation: chip-pop linear both;
-      animation-timeline: --card;
-      animation-range: entry calc(25% + var(--i, 0) * 4%) entry calc(60% + var(--i, 0) * 4%);
-    }
-    .skill-check svg {
-      animation: check-pop linear both;
-      animation-timeline: --card;
-      animation-range: entry 50% cover 35%;
-    }
-    .score-bar::before {
-      animation: score-fill linear both;
-      animation-timeline: --odo;
-      animation-range: entry 30% cover 50%;
-    }
     .latest-run {
       view-timeline: --latest block;
     }
     .latest-run > * {
-      animation: stream-in linear both;
+      animation: rise linear both;
       animation-timeline: --latest;
       animation-range: entry 10% cover 35%;
     }
@@ -1748,9 +1243,9 @@ html:active-view-transition-type(theme) [data-nav-marker] {
       view-timeline: --resume block;
     }
     /* A registered length, not translate: /resume is a Lighthouse route, and a scroll-linked
-       translate holds a compositing layer per entry from the first frame (see .odo-strip). */
+       translate holds a compositing layer per entry from the first frame. */
     .resume-list > li {
-      translate: var(--rise) 0;
+      translate: 0 var(--rise);
       animation: rise-var linear both;
       animation-timeline: --resume;
       animation-range: entry 0% cover 25%;
@@ -1764,33 +1259,17 @@ html:active-view-transition-type(theme) [data-nav-marker] {
 }
 @keyframes rise-var {
   from {
-    --rise: -3rem;
+    --rise: 16px;
   }
   to {
     --rise: 0px;
-  }
-}
-@keyframes chip-pop {
-  from {
-    scale: 0.6;
-  }
-}
-@keyframes score-fill {
-  from {
-    scale: 0 1;
   }
 }
 
 /* Lists that change (part 2). The /projects result count rolls up to each new value. */
 @media screen and (prefers-reduced-motion: no-preference) {
   .count-roll {
-    animation: count-roll var(--dur-base) var(--ease-snap) backwards;
-  }
-}
-@keyframes count-roll {
-  from {
-    clip-path: inset(100% 0 0 0);
-    translate: 0 0.6em;
+    animation: rise var(--dur-base) var(--ease-snap) backwards;
   }
 }
 
@@ -1803,18 +1282,15 @@ html:active-view-transition-type(theme) [data-nav-marker] {
 }
 @media screen and (prefers-reduced-motion: no-preference) {
   .palette-option {
-    animation: reveal-in 260ms var(--ease-snap) backwards;
-    animation-delay: calc(var(--i, 0) * 25ms);
+    animation: rise var(--dur-base) var(--ease-snap) backwards;
+    animation-delay: calc(var(--i, 0) * 40ms);
   }
 }
 
 /* Top bar project menu: it drops open under Projects. */
 @media screen and (prefers-reduced-motion: no-preference) {
   .topnav-menu:not([hidden]) {
-    animation: reveal-in var(--dur-base) var(--ease-snap) backwards;
-  }
-  .topnav-menu:not([hidden]) > li {
-    animation: nav-in 360ms var(--ease-snap) backwards;
+    animation: rise var(--dur-base) var(--ease-snap) backwards;
   }
 }
 
@@ -1883,6 +1359,9 @@ html:active-view-transition-type(theme) [data-nav-marker] {
   background: var(--border);
 }
 @layer components {
+  .suite-row {
+    transition: translate var(--dur-fast) var(--ease-snap);
+  }
   .suite-row::before {
     content: '';
     position: absolute;
@@ -1892,16 +1371,13 @@ html:active-view-transition-type(theme) [data-nav-marker] {
     background: var(--secondary);
     transform-origin: bottom;
     scale: 1 0;
-    transition: scale var(--dur-base) var(--ease-snap);
-  }
-  .suite-name {
-    transition: translate var(--dur-base) var(--ease-snap);
+    transition: scale var(--dur-fast) var(--ease-snap);
   }
   .suite-row:is(:hover, :focus-within)::before {
     scale: 1 1;
   }
-  .suite-row:is(:hover, :focus-within) .suite-name {
-    translate: 0.5rem 0;
+  .suite-row:is(:hover, :focus-within) {
+    translate: 0 -2px;
   }
 }
 @supports (animation-timeline: view()) {
@@ -2150,41 +1626,33 @@ html:active-view-transition-type(theme) [data-nav-marker] {
   }
 }
 
-/* Section headings light up word by word as they scroll in, from the muted text colour (which already
-   passes AA) to full ink. One shared timeline per heading. */
-@supports (animation-timeline: view()) {
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .light-words {
-      view-timeline: --heading block;
-    }
-    .light-word {
-      animation: light-word linear both;
-      animation-timeline: --heading;
-      animation-range: entry calc(30% + var(--w, 0) * 8%) cover calc(28% + var(--w, 0) * 6%);
-    }
-  }
-}
-@keyframes light-word {
+/* Uniform motion (C50): one rhythm for the whole site. Everything that arrives rises 16 px over
+   400 ms on the shared easing, whether it plays on load or as it scrolls in; every card and control
+   that answers the pointer lifts 2 px over 180 ms; page changes take 120 ms out and 240 ms in. The
+   signature pieces (theme flood, project morph, palette grow, suite run, inspector) keep their shape
+   on the same timing. */
+@keyframes rise {
   from {
-    color: var(--text-muted);
-  }
-  to {
-    color: var(--text);
+    translate: 0 16px;
   }
 }
-
-/* Depth: the hero's dot field drifts at a slower speed than the page as it scrolls away. */
-@supports (animation-timeline: scroll()) {
-  @media screen and (prefers-reduced-motion: no-preference) {
-    .spotlight-dots {
-      animation: dots-drift linear both;
-      animation-timeline: scroll(root);
-      animation-range: 0 100vh;
-    }
+@media screen and (prefers-reduced-motion: no-preference) {
+  .drawer[open] nav > ul > li {
+    animation: rise var(--dur-base) var(--ease-snap) backwards;
   }
-}
-@keyframes dots-drift {
-  to {
-    translate: 0 30vh;
+  .drawer[open] nav > ul > li:nth-child(2) {
+    animation-delay: 40ms;
+  }
+  .drawer[open] nav > ul > li:nth-child(3) {
+    animation-delay: 80ms;
+  }
+  .drawer[open] nav > ul > li:nth-child(4) {
+    animation-delay: 120ms;
+  }
+  .drawer[open] nav > ul > li:nth-child(5) {
+    animation-delay: 160ms;
+  }
+  .drawer[open] nav > ul > li:nth-child(n + 6) {
+    animation-delay: 200ms;
   }
 }

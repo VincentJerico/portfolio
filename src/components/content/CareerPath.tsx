@@ -32,7 +32,7 @@ export function CareerPath() {
               step.state === 'done'
                 ? 'bg-accent text-bg'
                 : step.state === 'current'
-                  ? 'career-current border-2 border-accent bg-bg'
+                  ? 'border-2 border-accent bg-bg'
                   : 'border border-line text-ink-muted'
             }`}
           >

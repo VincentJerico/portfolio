@@ -13,31 +13,28 @@ test.describe('arrivals', () => {
   }) => {
     await page.goto('/');
     const headline = page.locator('[data-hero-text] > p').first();
-    expect(await animationName(headline)).toBe('header-rise');
+    expect(await animationName(headline)).toBe('rise');
     const fieldChildren = await page
       .locator('[data-spotlight] > *')
       .evaluateAll((els) => els.map((el) => getComputedStyle(el).animationName));
-    expect(fieldChildren).not.toContain('header-rise');
+    expect(fieldChildren).not.toContain('rise');
   });
 
   test('the 404 page arrives like every other page', async ({ page }) => {
     await page.goto('/no-such-page');
-    expect(await animationName(page.locator('main header > h1'))).toBe('line-rise');
+    expect(await animationName(page.locator('main header > h1'))).toBe('rise');
   });
 
-  test('skills cards pop their chips in and turn their status to a check as they scroll in', async ({
+  test('sections on a quieter page rise in with the shared rise as they scroll in', async ({
     page,
   }) => {
     await page.goto('/skills');
-    const card = page.locator('.skill-card').first();
-    expect(await animationName(card.locator('.chip').first())).toBe('chip-pop');
-    expect(await animationName(card.locator('.skill-check svg'))).toBe('check-pop');
+    expect(await animationName(page.locator('main section').first())).toBe('rise');
   });
 
-  test('quality scores roll on the odometer with a bar filled to the score', async ({ page }) => {
+  test('quality scores show with a bar filled to the score', async ({ page }) => {
     await page.goto('/quality');
     const table = page.getByRole('region', { name: /Lighthouse/ });
-    await expect(table.locator('[data-odometer]').first()).toBeAttached();
     const bar = table.locator('.score-bar').first();
     const fill = await bar.evaluate((el) => Number(el.style.getPropertyValue('--v')));
     expect(fill).toBeGreaterThan(0);
@@ -77,7 +74,7 @@ test.describe('answers', () => {
     await page.goto('/skills');
     const card = page.locator('.skill-card').first();
     await card.hover();
-    await expect.poll(() => card.evaluate((el) => getComputedStyle(el).translate)).toBe('0px -5px');
+    await expect.poll(() => card.evaluate((el) => getComputedStyle(el).translate)).toBe('0px -2px');
   });
 
   test('the Projects menu drops open and its links leave the tab order when shut', async ({
@@ -89,7 +86,7 @@ test.describe('answers', () => {
     const folder = nav.getByRole('button', { name: 'Project specs' });
     await folder.click();
     const list = page.locator('[data-topbar] .topnav-menu');
-    expect(await animationName(list)).toBe('reveal-in');
+    expect(await animationName(list)).toBe('rise');
     await expect(list.getByRole('link').first()).toBeVisible();
     await folder.click();
     await expect(list.getByRole('link').first()).toBeHidden();
@@ -114,15 +111,14 @@ test.describe('changes of shape', () => {
     await expect.poll(() => top.evaluate((el) => getComputedStyle(el).rotate)).toBe('45deg');
   });
 
-  test('form errors slide open and the fields in error shake once', async ({ page }) => {
+  test('form errors rise in under their fields', async ({ page }) => {
     await page.goto('/contact');
     await waitForHydration(page);
     await page.getByRole('button', { name: 'Send message' }).click();
     const alert = page.locator('form').getByRole('alert');
     await expect(alert).toBeVisible();
-    expect(await animationName(alert)).toBe('reveal-in');
+    expect(await animationName(alert)).toBe('rise');
     await expect(page.locator('form')).toHaveAttribute('data-status', 'invalid');
-    expect(await animationName(page.locator('[aria-invalid="true"]').first())).toBe('field-shake');
   });
 
   // Clipboard permissions can be granted in Chromium only.
@@ -136,7 +132,7 @@ test.describe('changes of shape', () => {
       const button = page.getByRole('button', { name: 'Copy email' });
       await button.click();
       await expect(page.getByRole('status').filter({ hasText: 'Copied' })).toBeVisible();
-      expect(await animationName(button.locator('svg'))).toBe('pop-in');
+      expect(await animationName(button.locator('svg'))).toBe('rise');
       await expect(page.getByText('Copied to clipboard')).toHaveCount(0, { timeout: 5000 });
     },
   );
@@ -150,10 +146,10 @@ test.describe('changes of shape', () => {
       .click();
     const panel = page.locator('[data-runner-panel]');
     await expect(panel).toBeVisible();
-    expect(await animationName(panel)).toBe('sheet-up');
+    expect(await animationName(panel)).toBe('rise');
     const row = panel.locator('li[data-check]').first();
     await expect(row).toBeVisible({ timeout: 15000 });
-    expect(await animationName(row)).toBe('reveal-in');
+    expect(await animationName(row)).toBe('rise');
   });
 });
 
@@ -173,7 +169,7 @@ test.describe('reduced motion', () => {
 test.describe('lists that change', () => {
   test.use({ viewport: { width: 1280, height: 900 }, isMobile: false, hasTouch: false });
 
-  test('filtering moves the cards that stay, shrinks away the ones that go, and rolls the count', async ({
+  test('filtering moves the cards that stay, lifts away the ones that go, and raises the count', async ({
     page,
   }) => {
     await page.goto('/projects');
@@ -186,7 +182,8 @@ test.describe('lists that change', () => {
       Element.prototype.animate = function (keyframes, options) {
         const frames = keyframes as Keyframe[];
         const ghost = Boolean(this.parentElement?.hasAttribute('inert'));
-        w.__moves.push(ghost ? 'ghost' : Object.keys(frames[0] ?? {}).join('+'));
+        const first = (frames[0] ?? {}) as { translate?: string };
+        w.__moves.push(ghost ? 'ghost' : first.translate === '0 16px' ? 'enter' : 'move');
         return original.call(this, keyframes, options);
       };
     });
@@ -195,11 +192,11 @@ test.describe('lists that change', () => {
     const moves = await page.evaluate(() => (window as unknown as { __moves: string[] }).__moves);
     expect(moves).toContain('ghost');
     const roll = page.getByRole('status').filter({ hasText: 'Showing' }).locator('.count-roll');
-    expect(await animationName(roll)).toBe('count-roll');
+    expect(await animationName(roll)).toBe('rise');
     await page.getByRole('button', { name: 'All', exact: true }).click();
     await expect
       .poll(() => page.evaluate(() => (window as unknown as { __moves: string[] }).__moves))
-      .toEqual(expect.arrayContaining(['translate+scale']));
+      .toEqual(expect.arrayContaining(['enter', 'move']));
     // The removed cards' copies leave once they have shrunk away.
     await expect(page.locator('[inert] > li')).toHaveCount(0);
   });
@@ -234,7 +231,7 @@ test.describe('lists that change', () => {
     await page.keyboard.press('ControlOrMeta+k');
     const option = page.getByRole('option').first();
     await expect(option).toBeVisible();
-    expect(await animationName(option)).toBe('reveal-in');
+    expect(await animationName(option)).toBe('rise');
     const marker = page.locator('.palette-marker');
     const before = await marker.evaluate((el) => el.style.translate);
     await page.keyboard.press('ArrowDown');
@@ -265,31 +262,32 @@ test.describe('inspector on scroll', () => {
     expect((await after(card)).content).toContain('inspected');
   });
 
-  test('section headings end in full ink once scrolled past', async ({ page }) => {
-    await page.goto('/');
-    const words = page.getByRole('heading', { name: 'Featured projects' }).locator('.light-word');
-    await expect(words).toHaveCount(2);
-    await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
-    const ink = await page.evaluate(() =>
-      getComputedStyle(document.documentElement).getPropertyValue('--text').trim(),
-    );
-    const colors = await words.evaluateAll((els) => els.map((el) => getComputedStyle(el).color));
-    const probe = await page.evaluate((value) => {
-      const el = document.createElement('span');
-      el.style.color = value;
-      document.body.append(el);
-      const rgb = getComputedStyle(el).color;
-      el.remove();
-      return rgb;
-    }, ink);
-    expect(new Set(colors)).toEqual(new Set([probe]));
-  });
-
-  test('under reduced motion nothing is drawn and headings are full ink', async ({ page }) => {
+  test('under reduced motion the inspector draws nothing', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/skills');
     expect((await after(page.locator('.skill-card').first())).content).toBe('none');
-    await page.goto('/');
-    expect(await animationName(page.locator('.light-word').first())).toBe('none');
+  });
+});
+
+test.describe('one rhythm', () => {
+  test.use({ viewport: { width: 1280, height: 860 }, isMobile: false, hasTouch: false });
+
+  test('arrivals share one rise and one timing; cards share one hover', async ({ page }) => {
+    await page.goto('/about');
+    const header = await page
+      .locator('main header > *')
+      .evaluateAll((els) =>
+        els.map(
+          (el) => `${getComputedStyle(el).animationName} ${getComputedStyle(el).animationDuration}`,
+        ),
+      );
+    expect(new Set(header)).toEqual(new Set(['rise 0.4s']));
+    const sections = await page
+      .locator('main section')
+      .evaluateAll((els) => els.map((el) => getComputedStyle(el).animationName));
+    expect(new Set(sections)).toEqual(new Set(['rise']));
+    const card = page.locator('.lift').first();
+    await card.hover();
+    await expect.poll(() => card.evaluate((el) => getComputedStyle(el).translate)).toBe('0px -2px');
   });
 });
