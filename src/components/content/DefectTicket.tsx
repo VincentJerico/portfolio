@@ -53,9 +53,9 @@ export function DefectTicket({
     <details
       id={`ticket-${finding.id}`}
       data-ticket-severity={finding.severity}
-      className="group scroll-mt-20 rounded-card border border-line bg-surface transition-colors duration-300 open:border-accent/50"
+      className="group scroll-mt-20 border-b border-line"
     >
-      <summary className="flex min-h-11 cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 [&::-webkit-details-marker]:hidden">
+      <summary className="flex min-h-11 cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-2 py-3 hover:text-accent [&::-webkit-details-marker]:hidden">
         <span
           aria-hidden="true"
           className="font-mono text-ink-muted transition-transform group-open:rotate-90"
@@ -68,7 +68,7 @@ export function DefectTicket({
         </span>
         <SeverityChip severity={finding.severity} />
       </summary>
-      <div className="border-t border-line px-4 py-4">
+      <div className="pb-5 pl-6">
         {rows.length > 0 && (
           <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-[9rem_1fr]">
             {rows.map(([term, value]) => (

@@ -24,7 +24,7 @@ export function StatusChip({ status, label }: { status: ChipStatus; label?: stri
   return (
     <span
       data-status={status}
-      className={`inline-flex items-center gap-1.5 rounded-chip border bg-surface px-2 py-0.5 font-mono text-xs font-medium tracking-[0.04em] uppercase ${tone}`}
+      className={`inline-flex items-center gap-1.5 font-mono text-xs font-medium tracking-[0.04em] uppercase ${tone}`}
     >
       {/* The icon sits in a box so its animations can run on the compositor (an SVG element's
           cannot). */}

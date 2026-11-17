@@ -1,6 +1,5 @@
 'use client';
 
-import { Search } from 'lucide-react';
 import { useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 interface FilterCard {
@@ -8,6 +7,7 @@ interface FilterCard {
   category: string;
   /** Everything a visitor might type to find this project: name, hook, summary, stack. */
   text: string;
+  /** The row's contents (WorkRowBody), rendered on the server. */
   card: ReactNode;
 }
 
@@ -175,40 +175,34 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
       {/* Rendered on the server too, but invisible (and so unfocusable and unannounced) until
           hydrated: it reserves its space, so the grid never jumps (spec 12.5 CLS). */}
       <div className={hydrated ? '' : 'invisible'}>
-        <div className="mb-6 flex flex-col gap-4">
+        <div className="mb-8 flex flex-col gap-6">
           <div className="flex max-w-md flex-col gap-1.5">
             <label htmlFor="project-search" className="label-mono text-ink">
               Search projects
             </label>
-            <div className="relative">
-              <Search
-                aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-muted"
-              />
-              <input
-                id="project-search"
-                type="search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                aria-describedby="project-search-hint"
-                autoComplete="off"
-                spellCheck={false}
-                enterKeyHint="search"
-                className="block min-h-11 w-full rounded-chip border border-line bg-surface py-2 pr-3 pl-9 text-ink transition-[border-color] duration-150 hover:border-ink-muted focus-visible:border-accent"
-              />
-            </div>
+            <input
+              id="project-search"
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              aria-describedby="project-search-hint"
+              autoComplete="off"
+              spellCheck={false}
+              enterKeyHint="search"
+              className="block min-h-11 w-full border-0 border-b border-line bg-transparent px-0 py-2 text-lg text-ink hover:border-ink-muted focus-visible:border-accent focus-visible:outline-none"
+            />
             <p id="project-search-hint" className="text-sm text-ink-muted">
               By name, tool or result, like Playwright or OWASP.
             </p>
           </div>
-          <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-2">
+          <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-x-5">
             {options.map(({ value, label }) => (
               <button
                 key={value}
                 type="button"
                 aria-pressed={active === value}
                 onClick={() => choose(value)}
-                className="min-h-11 rounded-chip border border-line bg-surface px-3 font-mono text-xs font-medium text-ink-muted hover:text-ink aria-pressed:border-accent aria-pressed:bg-accent aria-pressed:text-bg"
+                className="min-h-11 min-w-11 font-mono text-[0.8125rem] text-ink-muted underline-offset-4 hover:text-ink aria-pressed:text-accent aria-pressed:underline"
               >
                 {label}
               </button>
@@ -236,16 +230,16 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
           className="pointer-events-none absolute inset-0 z-10"
         />
         {/* Always mounted, even when empty, so the last cards can still leave. */}
-        <ul ref={listRef} className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <ul ref={listRef} className="work-list">
           {shown.map(({ slug, card }) => (
-            <li key={slug} data-slug={slug}>
+            <li key={slug} data-slug={slug} className="work-row">
               {card}
             </li>
           ))}
         </ul>
       </div>
       {shown.length === 0 && (
-        <div className="reveal-in rounded-card border border-line bg-surface p-6">
+        <div className="reveal-in border-y border-line py-6">
           <p className="text-ink">
             {terms.length > 0
               ? `No projects match "${query.trim()}"${active === ALL ? '' : ' in this category'}.`
@@ -257,7 +251,7 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
               setQuery('');
               choose(ALL);
             }}
-            className="mt-3 inline-flex min-h-11 items-center font-semibold text-accent"
+            className="mt-2 inline-flex min-h-11 items-center font-mono text-[0.8125rem] text-accent"
           >
             Show all projects
           </button>

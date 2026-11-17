@@ -8,7 +8,7 @@ const all = projectsInOrder();
 test.describe('projects index', () => {
   test('filter narrows the grid, syncs the URL and announces the count', async ({ page }) => {
     await page.goto('/projects');
-    const cards = page.locator('main article');
+    const cards = page.locator('main li[data-slug]:not([inert] *)');
     await expect(cards).toHaveCount(all.length);
     const status = page.getByRole('status').filter({ hasText: 'Showing' });
 
@@ -30,7 +30,7 @@ test.describe('projects index', () => {
     page,
   }) => {
     await page.goto('/projects');
-    const cards = page.locator('main article');
+    const cards = page.locator('main li[data-slug]:not([inert] *)');
     const search = page.getByRole('searchbox', { name: 'Search projects' });
     const target = all.find((p) => p.category === 'security')!;
     const byStack = all.filter((p) =>
@@ -52,7 +52,7 @@ test.describe('projects index', () => {
 
   test('an unknown category shows everything with All pressed', async ({ page }) => {
     await page.goto('/projects?category=nope');
-    await expect(page.locator('main article')).toHaveCount(all.length);
+    await expect(page.locator('main li[data-slug]:not([inert] *)')).toHaveCount(all.length);
     await expect(page.getByRole('button', { name: 'All', exact: true })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -61,7 +61,7 @@ test.describe('projects index', () => {
 
   test('a category in the URL is applied on load', async ({ page }) => {
     await page.goto('/projects?category=performance');
-    await expect(page.locator('main article')).toHaveCount(1);
+    await expect(page.locator('main li[data-slug]:not([inert] *)')).toHaveCount(1);
   });
 });
 
@@ -70,7 +70,7 @@ test.describe('projects index without JavaScript', () => {
 
   test('shows every project and no filter buttons', async ({ page }) => {
     await page.goto('/projects?category=security');
-    await expect(page.locator('main article')).toHaveCount(all.length);
+    await expect(page.locator('main li[data-slug]:not([inert] *)')).toHaveCount(all.length);
     await expect(page.getByRole('button', { name: 'Security', exact: true })).toHaveCount(0);
   });
 });
@@ -88,7 +88,7 @@ test.describe('test report pages', () => {
   test('severity counts in the run summary equal the rendered tickets', async ({ page }) => {
     const project = projectBySlug('accessibility-testing')!;
     await page.goto(`/projects/${project.slug}`);
-    const summary = page.getByRole('region', { name: 'Run summary' });
+    const summary = page.getByRole('region', { name: /^Summary/ });
     for (const { severity, count } of severityCounts(project.findings)) {
       await expect(summary.getByText(new RegExp(`^${count}\\s*${severity}$`, 'i'))).toBeVisible();
       await expect(page.locator(`[data-ticket-severity="${severity}"]`)).toHaveCount(count);
@@ -124,8 +124,8 @@ test.describe('test report pages', () => {
 
   test('LegataLink is a team project with a live link and no repo', async ({ page }) => {
     await page.goto('/projects/legatalink');
-    const summary = page.getByRole('region', { name: 'Run summary' });
-    await expect(summary).toContainText('Team project');
+    const summary = page.getByRole('region', { name: /^Summary/ });
+    await expect(summary).toContainText(/team project/i);
     await expect(summary.getByRole('link', { name: /^Live site/ })).toBeVisible();
     await expect(summary.getByRole('link', { name: /^Repo/ })).toHaveCount(0);
   });
@@ -147,7 +147,7 @@ test.describe('test report pages', () => {
 test.describe('GitHub data (test builds use the fixture)', () => {
   test('a project with a repo shows last commit and topics', async ({ page }) => {
     await page.goto('/projects/accessibility-testing');
-    const summary = page.getByRole('region', { name: 'Run summary' });
+    const summary = page.getByRole('region', { name: /^Summary/ });
     await expect(summary.getByText('Last commit', { exact: true })).toBeVisible();
     await expect(summary.locator('time')).toHaveText('1 Jan 2000');
     await expect(summary.locator('time')).toHaveAttribute('datetime', '2000-01-01');

@@ -1,4 +1,3 @@
-import { ArrowLeft, ArrowRight } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ViewTransition } from 'react';
@@ -87,22 +86,9 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
           ...(project.liveUrl ? { url: project.liveUrl } : {}),
         }}
       />
-      {/* Once the header scrolls away, the title docks here as a compact bar (CSS scroll timeline).
-          It repeats the title, so it is hidden from assistive tech; it takes no layout space. */}
-      <div data-report-dock aria-hidden="true" className="report-dock" data-print-hide>
-        <div className="report-dock-bar">
-          <span className="font-mono text-xs text-ink-muted">
-            suite {String(project.order).padStart(2, '0')}
-          </span>
-          <span className="min-w-0 truncate font-semibold text-ink">{project.name}</span>
-          <span className="ml-auto hidden font-mono text-xs text-ink-muted sm:inline">
-            {categoryLabel(project.category)}
-          </span>
-        </div>
-      </div>
-      <header className="flex flex-col gap-5">
+      <header className="flex flex-col gap-6">
         <nav aria-label="Breadcrumb">
-          <ol className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
+          <ol className="label-mono flex flex-wrap items-center gap-2 text-ink-muted">
             <li>
               <Link href="/projects" className="inline-flex min-h-11 items-center">
                 Projects
@@ -110,31 +96,21 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
             </li>
             <li aria-hidden="true">/</li>
             <li>
-              <span aria-current="page" className="font-mono text-ink">
+              <span aria-current="page" className="text-ink">
                 {project.name}
               </span>
             </li>
           </ol>
         </nav>
-        {/* Suite number, category and name morph in from the row or door the visitor came from. */}
         <p className="label-mono text-ink-muted">
-          Test report ·{' '}
-          <ViewTransition name={`project-suite-${project.slug}`} share="morph" default="none">
-            <span className="inline-block">suite {String(project.order).padStart(2, '0')}</span>
-          </ViewTransition>
-          {' · '}
-          <ViewTransition name={`project-cat-${project.slug}`} share="morph" default="none">
-            <span className="inline-block">{categoryLabel(project.category)}</span>
-          </ViewTransition>
+          Project {String(project.order).padStart(2, '0')} · {categoryLabel(project.category)}
         </p>
         <ViewTransition name={`project-title-${project.slug}`} share="morph" default="none">
           {/* The morph target: it skips the entrance rises, so the view transition captures it in
               place rather than clipped and offset. */}
-          <h1 data-morph-title className="break-words">
-            {project.name}
-          </h1>
+          <h1 data-morph-title>{project.name}</h1>
         </ViewTransition>
-        <p className="measure text-lg text-ink-muted">{project.summary}</p>
+        <p className="measure text-lg text-ink-muted lg:text-xl">{project.summary}</p>
       </header>
 
       <RunSummaryPanel project={project} github={github} />
@@ -160,15 +136,11 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
       )}
 
       {project.findings.length > 0 && (
-        <Section
-          id="findings"
-          title="Findings"
-          kicker={`${project.findings.length} defect tickets`}
-        >
+        <Section id="findings" title="Findings" kicker={`${project.findings.length} findings`}>
           <TicketOpener />
           <div className="flex flex-col gap-6">
             <FindingsTable findings={project.findings} />
-            <div className="flex flex-col gap-2">
+            <div className="border-t border-line">
               {project.findings.map((finding) => (
                 <DefectTicket
                   key={finding.id}
@@ -220,21 +192,12 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
 
       <nav
         aria-label="More projects"
-        className="grid gap-3 border-t border-line pt-8 sm:grid-cols-2"
+        className="grid gap-6 border-t border-line pt-8 sm:grid-cols-2"
       >
         {prev ? (
-          <Link
-            href={`/projects/${prev.slug}`}
-            className="lift group flex min-h-11 flex-col gap-1 rounded-card border border-line bg-surface p-4 no-underline"
-          >
-            <span className="label-mono flex items-center gap-1.5 text-ink-muted">
-              <ArrowLeft
-                aria-hidden="true"
-                className="size-3.5 transition-transform group-hover:-translate-x-1"
-              />{' '}
-              Previous
-            </span>
-            <span className="font-mono text-ink">{prev.name}</span>
+          <Link href={`/projects/${prev.slug}`} className="group flex flex-col gap-1 no-underline">
+            <span className="label-mono text-ink-muted">Previous</span>
+            <span className="work-row-name text-ink group-hover:text-accent">{prev.name}</span>
           </Link>
         ) : (
           <span />
@@ -242,16 +205,10 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
         {next && (
           <Link
             href={`/projects/${next.slug}`}
-            className="lift group flex min-h-11 flex-col items-end gap-1 rounded-card border border-line bg-surface p-4 text-right no-underline"
+            className="group flex flex-col items-end gap-1 text-right no-underline"
           >
-            <span className="label-mono flex items-center gap-1.5 text-ink-muted">
-              Next{' '}
-              <ArrowRight
-                aria-hidden="true"
-                className="size-3.5 transition-transform group-hover:translate-x-1"
-              />
-            </span>
-            <span className="font-mono text-ink">{next.name}</span>
+            <span className="label-mono text-ink-muted">Next</span>
+            <span className="work-row-name text-ink group-hover:text-accent">{next.name}</span>
           </Link>
         )}
       </nav>
