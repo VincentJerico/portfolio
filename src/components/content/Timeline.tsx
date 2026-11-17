@@ -1,52 +1,26 @@
 import Link from 'next/link';
 import type { TimelineEvent } from '@/content/schema';
-import { Inspectable } from '@/components/bughunt/Inspectable';
 import { formatTimelineDate } from '@/lib/format';
-import { githubSlug } from '@/lib/slug';
 
-// HUNT-03 (Bug Hunt only): an event dated in the future.
-const PLANTED_DATES: Record<string, string> = {
-  'about-timeline-published-performance-testing-k6': '24 Oct 2027',
-};
-
-export function Timeline({
-  events,
-  huntPrefix,
-}: {
-  events: readonly TimelineEvent[];
-  huntPrefix: string;
-}) {
+/** The timeline as a plain ruled list (C51): the date in mono, then what happened. */
+export function Timeline({ events }: { events: readonly TimelineEvent[] }) {
   return (
-    <ol className="timeline-track border-l border-line">
+    <ol className="border-t border-line">
       {events.map((event) => (
-        <li key={`${event.date}-${event.title}`} className="relative pb-6 pl-6 last:pb-0">
-          <span
-            aria-hidden="true"
-            className={`absolute top-2 -left-[5px] size-2.5 rounded-full border-2 border-bg ${
-              event.kind === 'next' ? 'bg-ink-muted' : 'bg-accent'
-            }`}
-          />
-          <Inspectable
-            id={`${huntPrefix}-${githubSlug(event.title)}`}
-            label={`${event.title} timeline entry`}
-            planted={
-              PLANTED_DATES[`${huntPrefix}-${githubSlug(event.title)}`] && (
-                <p className="label-mono text-ink-muted">
-                  {PLANTED_DATES[`${huntPrefix}-${githubSlug(event.title)}`]}
-                </p>
-              )
-            }
-          >
-            <p className="label-mono text-ink-muted">{formatTimelineDate(event.date)}</p>
-          </Inspectable>
-          <p className="mt-1 text-ink">
+        <li
+          key={`${event.date}-${event.title}`}
+          className="grid gap-x-6 gap-y-1 border-b border-line py-3 sm:grid-cols-[9rem_minmax(0,1fr)]"
+        >
+          <p className="label-mono pt-0.5 text-ink-muted">{formatTimelineDate(event.date)}</p>
+          <p className="text-ink">
             {event.href ? (
-              <Link href={event.href} className="draw-link text-ink">
+              <Link href={event.href} className="hit-area text-ink hover:text-accent">
                 {event.title}
               </Link>
             ) : (
               event.title
             )}
+            {event.kind === 'next' && <span className="label-mono ml-2 text-ink-muted">next</span>}
           </p>
         </li>
       ))}

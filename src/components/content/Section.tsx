@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react';
-import { Inspectable } from '@/components/bughunt/Inspectable';
 
 interface SectionProps {
   id: string;
   title: string;
-  /** Mono control-panel label above the heading. */
+  /** A small mono label above the heading. */
   kicker?: string;
   action?: ReactNode;
   children: ReactNode;
@@ -19,30 +18,7 @@ export function Section({ id, title, kicker, action, children, className = '' }:
       <div className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
         <div>
           {kicker && <p className="label-mono mb-2 text-ink-muted">{kicker}</p>}
-          <Inspectable id={`section-${id}`} label={`${title} heading`}>
-            <h2 id={headingId} className="flex items-center gap-3">
-              {/* Decorative: the dot morphs from a pending ring into a filled check as the section
-                  scrolls into view, so each section "passes" (globals.css). */}
-              <span
-                aria-hidden="true"
-                className="reveal-dot grid size-3.5 shrink-0 place-items-center rounded-full print:hidden"
-              >
-                <svg data-dot-check viewBox="0 0 10 10" className="size-2.5">
-                  <path
-                    className="dot-check"
-                    d="M2.2 5.3l1.9 1.8 3.7-4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    pathLength={1}
-                  />
-                </svg>
-              </span>
-              {title}
-            </h2>
-          </Inspectable>
+          <h2 id={headingId}>{title}</h2>
         </div>
         {action}
       </div>
