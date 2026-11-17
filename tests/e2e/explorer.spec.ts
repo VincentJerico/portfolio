@@ -66,3 +66,41 @@ test('coverage still works for the visit when localStorage throws', async ({ pag
   await page.locator('[data-topbar]').getByRole('link', { name: 'Skills', exact: true }).click();
   await expect(page.locator('[data-statusbar]').getByText(/You've covered 2 of/)).toBeVisible();
 });
+
+test('the top bar is plain text links, with no status lights', async ({ page }) => {
+  await page.goto('/');
+  const nav = page.locator('[data-topbar] nav');
+  await expect(nav.locator('.rounded-full:not([data-nav-marker])')).toHaveCount(0);
+});
+
+test('resting the mouse on Projects opens its menu; moving away closes it', async ({ page }) => {
+  await page.goto('/');
+  const menu = page.locator('[data-topbar] .topnav-menu');
+  await expect(menu).toBeHidden();
+  await page.locator('[data-topbar] a[href="/projects"]').hover();
+  await expect(menu).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Project specs' })).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  );
+  await page.mouse.move(640, 600);
+  await expect(menu).toBeHidden();
+});
+
+test('the status bar is icons that name themselves, with a tooltip on hover', async ({ page }) => {
+  await page.goto('/');
+  const bar = page.locator('[data-statusbar]');
+  for (const name of ['Run tests on this page', 'Bug Hunt']) {
+    await expect(bar.getByRole('button', { name })).toBeVisible();
+  }
+  for (const name of [/Site checks/, 'GitHub', 'Email']) {
+    await expect(bar.getByRole('link', { name })).toBeVisible();
+  }
+  const run = bar.getByRole('button', { name: 'Run tests on this page' });
+  await run.hover();
+  await expect
+    .poll(() => run.evaluate((el) => getComputedStyle(el, '::after').visibility))
+    .toBe('visible');
+  // Minimal: no visible sentence, just the coverage count.
+  await expect(bar.getByText(/^\d+\/\d+$/)).toBeVisible();
+});

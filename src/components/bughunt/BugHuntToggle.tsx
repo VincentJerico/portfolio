@@ -23,6 +23,35 @@ export function BugHuntToggle({ bar = false }: { bar?: boolean }) {
   const { enabled, active, found, bugs, setEnabled } = useBugHunt();
   const hints = bar ? [] : huntHints(bugs, found);
 
+  if (bar) {
+    // The minimal status bar: a bug icon that lights up while hunting, and the count beside it.
+    return (
+      <div data-print-hide className="flex items-center">
+        <button
+          type="button"
+          aria-pressed={enabled}
+          data-tip={`Bug Hunt ${enabled ? 'on' : 'off'}`}
+          onClick={() => setEnabled(!enabled)}
+          className={`tip inline-flex size-11 items-center justify-center rounded-chip hover:bg-surface-2 hover:text-ink ${
+            enabled ? 'text-warn' : 'text-ink-muted'
+          }`}
+        >
+          <Bug aria-hidden="true" className="size-4" />
+          <span className="sr-only">Bug Hunt</span>
+        </button>
+        {active && (
+          <p className="reveal-in pr-2 font-mono text-[0.6875rem] text-warn">
+            <span className="sr-only">Bugs found </span>
+            <span key={found.length} className="pop-in inline-block">
+              {found.length}
+            </span>
+            /{bugs.length}
+          </p>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div data-print-hide className={bar ? 'flex items-center gap-1' : 'flex flex-col gap-1'}>
       <button
