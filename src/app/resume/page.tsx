@@ -1,5 +1,6 @@
 import { Download } from 'lucide-react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { pageMetadata } from '@/lib/seo';
 import type { ReactNode } from 'react';
 import { ButtonLink } from '@/components/ui/Button';
@@ -46,12 +47,14 @@ export default function ResumePage() {
         <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-muted">
           <li>{profile.location}</li>
           <li>
-            <a href={`mailto:${profile.email}`} className="font-mono">
+            <a href={`mailto:${profile.email}`} className="hit-area font-mono">
               {profile.email}
             </a>
           </li>
           <li>
-            <a href={profile.github}>GitHub</a>
+            <a href={profile.github} className="hit-area">
+              GitHub
+            </a>
           </li>
           {profile.linkedin && (
             <li>
@@ -94,7 +97,12 @@ export default function ResumePage() {
         <ul className="resume-list flex flex-col gap-2 text-[0.9375rem] print:text-[10pt]">
           {projects.map((project) => (
             <li key={project.slug} className="break-inside-avoid">
-              <span className="font-mono font-medium text-ink">{project.name}</span>
+              <Link
+                href={`/projects/${project.slug}`}
+                className="hit-area font-mono font-medium text-ink underline decoration-line underline-offset-4 hover:decoration-accent"
+              >
+                {project.name}
+              </Link>
               {project.team && <span className="text-ink-muted"> (team project)</span>}
               <span className="text-ink-muted"> — {project.summary}</span>
             </li>

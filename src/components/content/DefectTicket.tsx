@@ -43,7 +43,7 @@ export function DefectTicket({
   if (evidenceLabel && finding.evidenceIndex !== undefined) {
     rows.push([
       'Evidence',
-      <a key="ev" href={`#evidence-${finding.evidenceIndex}`}>
+      <a key="ev" href={`#evidence-${finding.evidenceIndex}`} className="hit-area">
         {evidenceLabel}
       </a>,
     ]);

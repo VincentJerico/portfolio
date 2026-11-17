@@ -47,7 +47,7 @@ export function CareerPath() {
           <span className="flex min-w-0 flex-col gap-1">
             <span className="font-semibold break-words text-ink">{step.label}</span>
             <span
-              className={`label-mono ${step.state === 'current' ? 'text-accent' : 'text-ink-muted'}`}
+              className={`label-mono ${step.state === 'current' ? 'font-semibold text-ink' : 'text-ink-muted'}`}
             >
               {step.state}
             </span>

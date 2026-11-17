@@ -69,7 +69,7 @@ export function RunSummaryPanel({
               <a
                 href={`#ticket-${project.findings.find((f) => f.severity === severity)!.id}`}
                 data-open-severity={severity}
-                className="press inline-flex items-center no-underline pointer-coarse:min-h-11"
+                className="press inline-flex min-h-11 items-center no-underline"
               >
                 <SeverityChip severity={severity} count={count} />
               </a>

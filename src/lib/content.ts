@@ -24,11 +24,20 @@ export function projectBySlug(slug: string): Project | undefined {
 
 /** The areas the public suites cover, in project order; the hub and capstone are not testing areas. */
 export function testedAreas(): string[] {
-  return [
+  return testedAreaLinks().map((area) => area.label);
+}
+
+/** The testing areas the public suites cover, each with the /projects filter that lists them. */
+export function testedAreaLinks(): { label: string; href: string }[] {
+  const categories = [
     ...new Set(
       projectsInOrder()
         .filter((project) => project.category !== 'hub' && project.category !== 'capstone')
-        .map((project) => categoryLabel(project.category)),
+        .map((project) => project.category),
     ),
   ];
+  return categories.map((category) => ({
+    label: categoryLabel(category),
+    href: `/projects?category=${category}`,
+  }));
 }
