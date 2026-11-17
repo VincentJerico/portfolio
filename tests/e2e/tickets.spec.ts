@@ -3,6 +3,11 @@ import { projectBySlug } from '../../src/lib/content';
 
 const a11y = projectBySlug('accessibility-testing')!;
 
+// These tests click links inside sections that rise into place as they scroll in. On a slow runner
+// the section can still be moving when the click lands, so the click hits a neighbouring row (CI
+// once opened F-4 instead of F-3). Reduced motion holds the sections still; motion is tested apart.
+test.use({ reducedMotion: 'reduce' });
+
 test('a ticket shows the quoted source fields', async ({ page }) => {
   await page.goto('/projects/accessibility-testing');
   const ticket = page.locator('#ticket-F-1');
