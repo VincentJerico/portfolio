@@ -1,22 +1,14 @@
-import { expect, test, type Page } from '../helpers/test';
-import { navItems } from '../../src/lib/nav-items';
+import { expect, test } from '../helpers/test';
+import { profile } from '../../src/content';
+import { FOOTER_NAV, PRIMARY_NAV } from '../../src/lib/nav';
+import { footerNavItems, navItems, primaryNavItems } from '../../src/lib/nav-items';
 import { waitForHydration } from '../helpers/hydration';
 import { tabKey } from '../helpers/keys';
 
+// The minimal shell (C51): a plain top bar, a footer, and nothing else around the page.
+
 const MOBILE = { width: 375, height: 812 };
 const DESKTOP = { width: 1280, height: 800 };
-
-// Next's client scripts only: CSS shares the chunk path, and holding it would block the first paint.
-function isNextScript(url: URL) {
-  return url.pathname.startsWith('/_next/static/') && url.pathname.endsWith('.js');
-}
-
-async function activeIsInside(page: Page, selector: string) {
-  return page.evaluate(
-    (sel) => !!document.querySelector(sel)?.contains(document.activeElement),
-    selector,
-  );
-}
 
 test.describe('every route', () => {
   for (const { href, label } of navItems()) {
@@ -46,197 +38,114 @@ test('skip link is the first tab stop and moves focus to main', async ({ page, b
   await expect(page.locator('main')).toBeFocused();
 });
 
-test.describe('desktop sidebar', () => {
-  test.use({ viewport: DESKTOP });
+test.describe('top bar', () => {
+  test.use({ viewport: DESKTOP, isMobile: false, hasTouch: false });
 
-  test('shows the nav with the current page marked and no menu button', async ({ page }) => {
-    await page.goto('/projects');
-    const nav = page.getByRole('navigation', { name: 'Site' });
-    await expect(nav).toBeVisible();
+  test('links the name home and lists the main pages, nothing more', async ({ page }) => {
+    await page.goto('/about');
+    const header = page.locator('[data-site-header]');
+    await expect(header.getByRole('link', { name: profile.fullName })).toHaveAttribute('href', '/');
+    const nav = header.getByRole('navigation', { name: 'Site' });
+    await expect(nav.getByRole('link')).toHaveText(primaryNavItems().map((item) => item.label));
+    expect(PRIMARY_NAV.map((item) => item.label)).toEqual([
+      'Projects',
+      'Work',
+      'About',
+      'Resume',
+      'Contact',
+    ]);
+  });
+
+  test('marks the page you are on, including inside a section', async ({ page }) => {
+    await page.goto('/projects/accessibility-testing');
+    const nav = page.locator('[data-site-header]').getByRole('navigation', { name: 'Site' });
     await expect(nav.getByRole('link', { name: 'Projects' })).toHaveAttribute(
       'aria-current',
       'page',
     );
-    await expect(nav.getByRole('link', { name: 'Overview' })).not.toHaveAttribute(
-      'aria-current',
-      /.*/,
-    );
-    await expect(page.getByRole('button', { name: 'Menu', exact: true })).toBeHidden();
+    await expect(nav.locator('[aria-current]')).toHaveCount(1);
   });
+});
 
-  test('every tab stop in the shell shows a visible focus indicator', async ({
-    page,
-    browserName,
-  }) => {
-    // Skip link, nav links, Projects folder, GitHub, Email, run tests, site checks, light switch.
-    const shellTabStops = 1 + navItems().length + 1 + 1 + 2 + 1 + 1;
-    await page.goto('/');
-    for (let i = 0; i < shellTabStops; i++) {
-      await page.keyboard.press(tabKey(browserName));
-      const outline = await page.evaluate(() => {
-        const el = document.activeElement as HTMLElement | null;
-        if (!el || el === document.body) return null;
-        const style = getComputedStyle(el);
-        return { width: parseFloat(style.outlineWidth), style: style.outlineStyle };
-      });
-      expect(outline, `tab stop ${i + 1}`).not.toBeNull();
-      expect(outline!.style, `tab stop ${i + 1}`).not.toBe('none');
-      expect(outline!.width, `tab stop ${i + 1}`).toBeGreaterThan(0);
+test.describe('footer', () => {
+  test('every route links the other pages, GitHub, the email and the CV', async ({ page }) => {
+    test.slow(); // every route
+    expect(FOOTER_NAV.map((item) => item.label)).toEqual(['Skills', 'Notes', 'Quality']);
+    for (const { href } of navItems()) {
+      await page.goto(href);
+      const footer = page.locator('[data-site-footer]');
+      for (const item of footerNavItems()) {
+        await expect(
+          footer.getByRole('link', { name: item.label, exact: true }),
+          href,
+        ).toHaveAttribute('href', item.href);
+      }
+      await expect(footer.getByRole('link', { name: 'GitHub' })).toHaveAttribute(
+        'href',
+        profile.github,
+      );
+      await expect(footer.getByRole('link', { name: profile.email })).toHaveAttribute(
+        'href',
+        `mailto:${profile.email}`,
+      );
+      await expect(footer.getByRole('link', { name: 'Download CV' })).toHaveAttribute(
+        'href',
+        profile.cvPdf,
+      );
     }
   });
 });
 
-test.describe('mobile drawer', () => {
+test.describe('phone menu', () => {
   test.use({ viewport: MOBILE });
 
-  test('the drawer renders its contents on first open, and its theme toggle works', async ({
-    page,
-  }) => {
-    await page.emulateMedia({ colorScheme: 'dark' });
+  test('Menu opens the site menu, Escape closes it and focus goes back', async ({ page }) => {
     await page.goto('/');
     await waitForHydration(page);
-    const drawer = page.locator('#site-drawer');
-    // Closed, the drawer holds only a <noscript> copy, which costs nothing to hydrate.
-    await expect(
-      drawer.getByRole('button', { name: 'Dark theme', includeHidden: true }),
-    ).toHaveCount(0);
-    await page.getByRole('button', { name: 'Menu', exact: true }).click();
-    const toggle = drawer.getByRole('button', { name: 'Dark theme' });
-    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
-    await toggle.click();
-    await expect(page.locator('html')).toHaveClass(/\blight\b/);
-  });
-
-  test('menu button reflects state and Esc returns focus to it', async ({ page }) => {
-    await page.goto('/');
-    const menu = page.getByRole('button', { name: 'Menu', exact: true });
-    await expect(menu).toHaveAttribute('aria-expanded', 'false');
-    await expect(menu).toHaveAttribute('aria-controls', 'site-drawer');
-    await menu.focus();
-    await page.keyboard.press('Enter');
-    await expect(page.locator('#site-drawer')).toBeVisible();
+    const header = page.locator('[data-site-header]');
+    await expect(header.getByRole('navigation', { name: 'Site' })).toBeHidden();
+    const menu = header.getByRole('button', { name: 'Menu', exact: true });
+    await menu.click();
+    const dialog = page.getByRole('dialog', { name: 'Site menu' });
+    await expect(dialog).toBeVisible();
     await expect(menu).toHaveAttribute('aria-expanded', 'true');
-    expect(await activeIsInside(page, '#site-drawer')).toBe(true);
+    for (const item of primaryNavItems()) {
+      await expect(dialog.getByRole('link', { name: item.label, exact: true })).toBeVisible();
+    }
     await page.keyboard.press('Escape');
-    await expect(page.locator('#site-drawer')).toBeHidden();
+    await expect(dialog).toBeHidden();
     await expect(menu).toHaveAttribute('aria-expanded', 'false');
     await expect(menu).toBeFocused();
   });
 
-  test('a drawer opened before hydration stays open once the page hydrates', async ({ page }) => {
-    // The menu opens natively through an invoker command, so a fast tap on a slow phone can open
-    // the drawer before React hydrates. Hold the scripts to make that window deterministic.
-    let releaseScripts!: () => void;
-    const scriptsHeld = new Promise<void>((resolve) => (releaseScripts = resolve));
-    await page.route(isNextScript, async (route) => {
-      await scriptsHeld;
-      await route.continue();
-    });
-    await page.goto('/', { waitUntil: 'commit' });
-    const menu = page.getByRole('button', { name: 'Menu', exact: true });
-    await menu.click();
-    await expect(page.locator('#site-drawer')).toBeVisible();
-    releaseScripts();
-    // aria-expanded only turns true once React has hydrated and synced with the open dialog.
-    await expect(menu).toHaveAttribute('aria-expanded', 'true');
-    await expect(page.locator('#site-drawer')).toBeVisible();
-  });
-
-  test('focus stays inside the open drawer while tabbing both ways', async ({
-    page,
-    browserName,
-  }) => {
+  test('choosing a page closes the menu and goes there', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: 'Menu', exact: true }).click();
-    await expect(page.locator('#site-drawer')).toBeVisible();
-    for (let i = 0; i < 20; i++) {
-      await page.keyboard.press(tabKey(browserName));
-      expect(await activeIsInside(page, '#site-drawer'), `Tab ${i + 1}`).toBe(true);
-    }
-    for (let i = 0; i < 20; i++) {
-      await page.keyboard.press(tabKey(browserName, true));
-      expect(await activeIsInside(page, '#site-drawer'), `Shift+Tab ${i + 1}`).toBe(true);
-    }
-  });
-
-  test('close button closes the drawer and returns focus to the menu button', async ({ page }) => {
-    await page.goto('/');
-    const menu = page.getByRole('button', { name: 'Menu', exact: true });
-    await menu.click();
-    await page.getByRole('button', { name: 'Close menu' }).click();
-    await expect(page.locator('#site-drawer')).toBeHidden();
-    await expect(menu).toHaveAttribute('aria-expanded', 'false');
-    await expect(menu).toBeFocused();
-  });
-
-  test('choosing a link navigates, closes the drawer and returns focus', async ({ page }) => {
-    await page.goto('/');
-    const menu = page.getByRole('button', { name: 'Menu', exact: true });
-    await menu.click();
-    await page.locator('#site-drawer').getByRole('link', { name: 'About' }).click();
-    await expect(page).toHaveURL(/\/about$/);
-    await expect(page.locator('#site-drawer')).toBeHidden();
-    await expect(menu).toHaveAttribute('aria-expanded', 'false');
-    await expect(menu).toBeFocused();
-  });
-
-  test('drawer closes when the viewport grows to desktop', async ({ page }) => {
-    await page.goto('/');
-    // The resize handler that closes the drawer attaches on hydration; opening it earlier (through
-    // the native invoker) left the test racing that and flaking under load.
     await waitForHydration(page);
-    await page.getByRole('button', { name: 'Menu', exact: true }).click();
-    await expect(page.locator('#site-drawer')).toBeVisible();
-    await page.setViewportSize(DESKTOP);
-    await expect(page.locator('#site-drawer')).toBeHidden();
-    // CSS hides the drawer on the resize itself; the media-query `change` handler that closes the
-    // modal runs a frame later, so wait for it rather than reading once.
-    await expect
-      .poll(() => page.evaluate(() => document.querySelector(':modal') === null))
-      .toBe(true);
     await page
-      .getByRole('navigation', { name: 'Site' })
-      .getByRole('link', { name: 'Skills' })
+      .locator('[data-site-header]')
+      .getByRole('button', { name: 'Menu', exact: true })
       .click();
-    await expect(page).toHaveURL(/\/skills$/);
+    const dialog = page.getByRole('dialog', { name: 'Site menu' });
+    await dialog.getByRole('link', { name: 'About', exact: true }).click();
+    await expect(page).toHaveURL(/\/about$/);
+    await expect(dialog).toBeHidden();
   });
 });
 
-test.describe('mobile drawer in a browser without invoker commands', () => {
-  test.use({ viewport: MOBILE });
+test.describe('removed parts stay removed', () => {
+  test.use({ viewport: DESKTOP, isMobile: false, hasTouch: false });
 
-  test.beforeEach(async ({ page }) => {
-    // Simulate iOS < 26.2: no `command` support, and cancel the native action so only a
-    // JavaScript fallback could open or close the drawer.
-    await page.addInitScript(() => {
-      delete (HTMLButtonElement.prototype as { command?: unknown }).command;
-      document.addEventListener('command', (event) => event.preventDefault(), true);
-    });
-  });
-
-  test('menu and close buttons still work', async ({ page }) => {
+  test('no status bar, pull cord, bug hunt, test runner or command palette', async ({ page }) => {
     await page.goto('/');
-    const menu = page.getByRole('button', { name: 'Menu', exact: true });
-    await menu.click();
-    await expect(page.locator('#site-drawer')).toBeVisible();
-    await expect(menu).toHaveAttribute('aria-expanded', 'true');
-    await page.getByRole('button', { name: 'Close menu' }).click();
-    await expect(page.locator('#site-drawer')).toBeHidden();
-    await expect(menu).toBeFocused();
-  });
-});
-
-test.describe('mobile drawer without JavaScript', () => {
-  test.use({ viewport: MOBILE, javaScriptEnabled: false });
-
-  test('menu button still opens the drawer and every nav link is reachable', async ({ page }) => {
-    await page.goto('/');
-    await page.getByRole('button', { name: 'Menu', exact: true }).click();
-    const drawer = page.locator('#site-drawer');
-    await expect(drawer).toBeVisible();
-    for (const { label } of navItems()) {
-      await expect(drawer.getByRole('link', { name: label })).toBeVisible();
-    }
+    await waitForHydration(page);
+    await expect(
+      page.locator('[data-statusbar], [data-topbar], [data-scroll-progress], [data-runner-panel]'),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole('button', { name: /Light switch|Bug hunt|Run tests|Search/ }),
+    ).toHaveCount(0);
+    await page.keyboard.press('ControlOrMeta+k');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 });
 
@@ -246,24 +155,12 @@ test.describe('not found', () => {
     expect(response?.status()).toBe(404);
     await expect(page.locator('h1')).toHaveCount(1);
     const main = page.locator('main');
-    await expect(main.getByRole('link', { name: 'Overview' })).toBeVisible();
+    await expect(main.getByRole('link', { name: 'Home' })).toBeVisible();
     await expect(main.getByRole('link', { name: 'Projects' })).toBeVisible();
   });
 
   test('unknown project slug returns 404', async ({ page }) => {
     const response = await page.goto('/projects/anything');
     expect(response?.status()).toBe(404);
-  });
-});
-
-test.describe('project morph navigation', () => {
-  test('report links still navigate with the morph', async ({ page }) => {
-    await page.goto('/projects');
-    await page
-      .getByRole('link', { name: /^Read the report for/ })
-      .first()
-      .click();
-    await expect(page).toHaveURL(/\/projects\/[a-z0-9-]+$/);
-    await expect(page.locator('h1')).toHaveCount(1);
   });
 });
