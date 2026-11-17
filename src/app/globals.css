@@ -836,25 +836,25 @@
   }
 
   /* Page headers, and the home hero's text column (data-hero-text), rise in once, line by line, on
-     load. Transform only: no opacity (the title paints at
+     load: short and close, so a page change settles in about half a second. Transform only: no opacity (the title paints at
      once, so LCP is unaffected and axe never scans faded text) and no filter, whose per-frame repaint
      during load pushed blocking time over budget. */
   main :is(header, [data-hero-text]) > :not([data-morph-title], .split-title) {
-    animation: header-rise 720ms var(--ease-snap) backwards;
+    animation: header-rise 480ms var(--ease-snap) backwards;
   }
   /* The page title rises out of its own line: it moves up while its clip opens from the top, so it
      looks masked by the line it sits on. Clip, not opacity, so the title still counts as painted. */
   main :is(header, [data-hero-text]) > h1:not([data-morph-title], .split-title) {
-    animation: line-rise 720ms var(--ease-snap) backwards;
+    animation: line-rise 480ms var(--ease-snap) backwards;
   }
   main :is(header, [data-hero-text]) > :nth-child(2) {
-    animation-delay: 90ms;
+    animation-delay: 50ms;
   }
   main :is(header, [data-hero-text]) > :nth-child(3) {
-    animation-delay: 180ms;
+    animation-delay: 100ms;
   }
   main :is(header, [data-hero-text]) > :nth-child(n + 4) {
-    animation-delay: 270ms;
+    animation-delay: 150ms;
   }
 
   /* Thumbnails lean in on hover. */
@@ -878,7 +878,7 @@
 }
 @keyframes header-rise {
   from {
-    translate: 0 3rem;
+    translate: 0 1.25rem;
   }
 }
 
@@ -1296,15 +1296,15 @@
   }
 }
 
-/* Route change: the old page leaves quickly, the new one rises in once it has gone. A project's name
-   morphs from its card into the report title (.morph). */
+/* Route change: quick and light, one page at a time. The old page lifts away in 120 ms, then the new
+   one rises into place over 240 ms, so the two never overlap into a double image; the top bar and
+   status bar never move. No blur: a filter on a whole-page snapshot is costly to draw and stuttered
+   on phones. A project's name morphs from its card into the report title (.morph). */
 ::view-transition-old(.page-exit) {
-  animation: var(--dur-fast) ease-out both vt-fade-out;
+  animation: 120ms ease-in both vt-out;
 }
 ::view-transition-new(.page-enter) {
-  animation:
-    var(--dur-base) ease-out var(--dur-fast) both vt-fade-in,
-    var(--dur-slow) var(--ease-snap) both vt-rise;
+  animation: 240ms var(--ease-snap) 110ms both vt-in;
 }
 /* The active page's marker (the top bar's underline, the drawer's row) glides to the new page on
    navigation. A named element is drawn above
@@ -1347,55 +1347,66 @@ html:active-view-transition-type(theme) [data-nav-marker] {
   mix-blend-mode: normal;
 }
 
-/* Test-runner page change (layout/RouteRunner.tsx): the panel joins the navigation's view transition
-   and slides up over the old page; once the new page is in, its line fills, the route's CI result
-   stamps, and it lifts away. */
-/* Covers the content area only: the top bar (and on desktop the status bar) stay on screen, since
-   they persist across page changes. */
+/* Test-runner chip (layout/RouteRunner.tsx): on a page change a small chip in the corner reports the
+   page as a spec (its file name, a filling line, then its real CI result) and slides away about a
+   second later. It sits in the bottom corner, clear of the page header: at the screen's edge on
+   phones, above the status bar on desktop. Decorative and pointer-transparent; off under reduced
+   motion. */
 .route-runner {
   position: fixed;
-  inset: 3.5rem 0 0;
+  bottom: 1rem;
+  left: 1rem;
   z-index: 55;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.875rem;
-  padding: 0 clamp(1.5rem, 8vw, 6rem);
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-chip);
   background: var(--surface-2);
+  box-shadow: 0 10px 24px -14px var(--backdrop);
   pointer-events: none;
-  view-transition-name: route-runner;
-  animation: runner-lift 420ms var(--ease-snap) 760ms both;
+  animation: runner-chip 1100ms var(--ease-snap) both;
 }
 @media (min-width: 1024px) {
   .route-runner {
-    inset: 3.5rem 0 2.75rem;
+    bottom: 3.5rem;
   }
 }
 .route-runner-bar {
   position: relative;
+  width: 3.5rem;
   height: 2px;
-  max-width: 34rem;
+  border-radius: 1px;
   background: var(--border);
   overflow: hidden;
 }
 .route-runner-bar i {
   position: absolute;
   inset: 0;
-  background: var(--pass);
+  background: var(--accent);
   transform-origin: left;
-  animation: runner-bar 480ms var(--ease-snap) 120ms both;
+  animation: runner-bar 420ms var(--ease-snap) 100ms both;
 }
 .route-runner-stamp {
   width: fit-content;
   transform-origin: left center;
-  animation: runner-stamp 220ms ease 560ms both;
+  animation: runner-stamp 200ms ease 480ms both;
 }
-::view-transition-new(route-runner) {
-  animation: runner-in 320ms var(--ease-snap) both;
-}
-@keyframes runner-in {
-  from {
-    translate: 0 100%;
+@keyframes runner-chip {
+  0% {
+    translate: 0 0.5rem;
+    opacity: 0;
+  }
+  14%,
+  82% {
+    translate: 0 0;
+    opacity: 1;
+  }
+  100% {
+    translate: 0 0.5rem;
+    opacity: 0;
+    visibility: hidden;
   }
 }
 @keyframes runner-bar {
@@ -1409,12 +1420,6 @@ html:active-view-transition-type(theme) [data-nav-marker] {
     scale: 1.4;
   }
 }
-@keyframes runner-lift {
-  to {
-    translate: 0 -100%;
-    visibility: hidden;
-  }
-}
 
 ::view-transition-group(.morph) {
   animation-duration: var(--dur-slow);
@@ -1423,20 +1428,16 @@ html:active-view-transition-type(theme) [data-nav-marker] {
 ::view-transition-image-pair(.morph) {
   animation-name: vt-via-blur;
 }
-@keyframes vt-fade-out {
+@keyframes vt-out {
   to {
     opacity: 0;
+    translate: 0 -8px;
   }
 }
-@keyframes vt-fade-in {
+@keyframes vt-in {
   from {
     opacity: 0;
-  }
-}
-@keyframes vt-rise {
-  from {
-    translate: 0 48px;
-    filter: blur(8px);
+    translate: 0 16px;
   }
 }
 @keyframes vt-via-blur {
