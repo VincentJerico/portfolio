@@ -53,6 +53,8 @@
   :root {
     --dur-fast: 180ms;
     --dur-base: 400ms;
+    /* A page change: the new page's sheet sliding up over the old (C52). */
+    --dur-sheet: 460ms;
   }
 
   /* Page titles: Bricolage at its narrowest, heaviest display cut, the poster's voice on every page. */
@@ -679,29 +681,39 @@
   }
 }
 
-/* Route change: quick and light, one page at a time. The old page lifts away in 120 ms, then the new
-   one rises into place over 240 ms, so the two never overlap; the top bar never moves. A project's
-   name morphs from its row into the report title (.morph). */
-::view-transition-old(.page-exit) {
-  animation: 120ms var(--ease-snap) both vt-out;
+/* Route change (C52 move 1): the new page slides up over the old like a sheet of paper, clipped from
+   its bottom edge, while the old page sinks 32 px under it; the new title's letters then rise in. The
+   sheet is opaque (the paper colour), so the two pages never show through each other. The top bar
+   never moves. A project's name morphs from its row into the report title (.morph) in step. */
+::view-transition-group(.page-enter) {
+  background: var(--bg);
+  animation: var(--dur-sheet) var(--ease-snap) both vt-sheet;
 }
 ::view-transition-new(.page-enter) {
-  animation: 240ms var(--ease-snap) 110ms both vt-in;
+  animation: var(--dur-sheet) var(--ease-snap) both rise;
+}
+::view-transition-old(.page-exit) {
+  animation: var(--dur-sheet) var(--ease-snap) both vt-sink;
 }
 ::view-transition-group(.morph) {
-  animation-duration: var(--dur-base);
+  animation-duration: var(--dur-sheet);
   animation-timing-function: var(--ease-snap);
 }
-@keyframes vt-out {
+/* The edge travels one screen height, not the page's: a tall page's sheet still sweeps the whole
+   screen over the full duration instead of arriving at the end. */
+@keyframes vt-sheet {
+  from {
+    clip-path: inset(100vh 0 0 0);
+  }
   to {
-    opacity: 0;
-    translate: 0 -8px;
+    clip-path: inset(0);
   }
 }
-@keyframes vt-in {
-  from {
-    opacity: 0;
-    translate: 0 16px;
+/* The old page is a snapshot on its way out, so fading it is not the faded-text case C50 rules out. */
+@keyframes vt-sink {
+  to {
+    translate: 0 -32px;
+    opacity: 0.4;
   }
 }
 
