@@ -1,4 +1,4 @@
-import { expect, test, type Locator } from '../helpers/test';
+import { expect, test, type Locator, type Page } from '../helpers/test';
 import { metrics, profile } from '../../src/content';
 import { waitForHydration } from '../helpers/hydration';
 
@@ -411,5 +411,95 @@ test.describe('one rhythm', () => {
         row.locator('.work-row-link > span').evaluate((el) => getComputedStyle(el).translate),
       )
       .toBe('12px');
+  });
+});
+
+// C52 move 9: smooth scrolling for mouse and trackpad only; touch, keyboard, reduced motion and open
+// dialogs keep native scrolling.
+test.describe('smooth scrolling', () => {
+  const smooth = (page: Page) =>
+    page.evaluate(() => document.documentElement.classList.contains('lenis'));
+  // The component decides on an idle callback; once one has run here, its decision is made.
+  const afterIdle = (page: Page) =>
+    page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          (window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 200)))(() =>
+            window.setTimeout(resolve, 50),
+          ),
+        ),
+    );
+  const frames = (page: Page, count: number) =>
+    page.evaluate(
+      (n) =>
+        new Promise<void>((resolve) => {
+          const tick = () => (n-- > 0 ? requestAnimationFrame(tick) : resolve());
+          tick();
+        }),
+      count,
+    );
+  const atBottom = (page: Page) =>
+    page.evaluate(
+      () => window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2,
+    );
+
+  test.describe('with a mouse', () => {
+    test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+    test('the wheel glides, and still reaches the bottom', async ({ page }) => {
+      await page.goto('/');
+      await waitForHydration(page);
+      await expect.poll(() => smooth(page)).toBe(true);
+      await page.mouse.move(640, 400);
+      await page.mouse.wheel(0, 30000);
+      await expect.poll(() => atBottom(page), { timeout: 10_000 }).toBe(true);
+    });
+
+    test('the keyboard still scrolls natively', async ({ page }) => {
+      await page.goto('/');
+      await waitForHydration(page);
+      await expect.poll(() => smooth(page)).toBe(true);
+      await page.keyboard.press('End');
+      await expect.poll(() => atBottom(page), { timeout: 10_000 }).toBe(true);
+    });
+  });
+
+  test.describe('with a narrow mouse window', () => {
+    test.use({ viewport: { width: 700, height: 800 }, isMobile: false, hasTouch: false });
+
+    test('an open menu keeps the page still under the wheel', async ({ page }) => {
+      await page.goto('/');
+      await waitForHydration(page);
+      await expect.poll(() => smooth(page)).toBe(true);
+      await page
+        .locator('[data-site-header]')
+        .getByRole('button', { name: 'Menu', exact: true })
+        .click();
+      await expect(page.getByRole('dialog', { name: 'Site menu' })).toBeVisible();
+      const before = await page.evaluate(() => window.scrollY);
+      await page.mouse.move(350, 400);
+      await page.mouse.wheel(0, 2000);
+      await frames(page, 30);
+      expect(await page.evaluate(() => window.scrollY)).toBe(before);
+    });
+  });
+
+  test.describe('on a touch screen', () => {
+    test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+    test('scrolling stays native', async ({ page }) => {
+      await page.goto('/');
+      await waitForHydration(page);
+      await afterIdle(page);
+      expect(await smooth(page)).toBe(false);
+    });
+  });
+
+  test('reduced motion keeps native scrolling', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    await waitForHydration(page);
+    await afterIdle(page);
+    expect(await smooth(page)).toBe(false);
   });
 });

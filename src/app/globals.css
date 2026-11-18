@@ -39,6 +39,14 @@
     -webkit-text-size-adjust: 100%;
     /* Keep focused elements clear of the 56 px sticky top bar (SC 2.4.11). */
     scroll-padding-top: 4.5rem;
+    /* The scrollbar's room is kept even while a modal dialog locks the page (below), so nothing
+       shifts sideways as one opens. */
+    scrollbar-gutter: stable;
+  }
+  /* While a modal dialog (the phone menu, an evidence image) is open, the page under it holds still:
+     the wheel would otherwise chain through the dialog and scroll it (C52, with smooth scrolling). */
+  html:has(dialog:modal) {
+    overflow: hidden;
   }
 
   body {
