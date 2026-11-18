@@ -25,6 +25,10 @@ test('print layout drops the site chrome and prints black on white', async ({ pa
     return { color: style.color, background: style.backgroundColor };
   });
   expect(colors).toEqual({ color: 'rgb(0, 0, 0)', background: 'rgb(255, 255, 255)' });
+  // The paper grain is for screens only (C52).
+  expect(await page.evaluate(() => getComputedStyle(document.body, '::before').display)).toBe(
+    'none',
+  );
 });
 
 test('the generated CV is a 1-2 page PDF', async ({ request }) => {

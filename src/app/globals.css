@@ -511,6 +511,33 @@
     }
   }
 
+  /* C52 move 10: a still paper grain behind the content, never over text. Body is its own stacking
+     context, so the grain sits between its paper colour and everything on it. Screens only. */
+  body {
+    isolation: isolate;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: var(--grain);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px;
+  }
+
+  /* C52 move 10: a hairline under the top bar. Drawn and still by default; the motion section draws
+     it out from the centre over the first 120 px of scroll. */
+  [data-site-header]::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 1px;
+    background: var(--border);
+    transform-origin: center;
+  }
+
   .skeleton {
     position: relative;
     overflow: hidden;
@@ -593,6 +620,9 @@
     --shadow: none;
   }
 
+  body::before {
+    display: none;
+  }
   .contact-sheet {
     box-shadow: none;
     clip-path: none;
@@ -879,6 +909,11 @@
       animation: ring-turn linear both;
       animation-timeline: scroll(root);
     }
+    [data-site-header]::after {
+      animation: header-rule linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0px 120px;
+    }
     .resume-list {
       view-timeline: --resume block;
     }
@@ -987,6 +1022,11 @@
 @keyframes ring-turn {
   to {
     rotate: 2turn;
+  }
+}
+@keyframes header-rule {
+  from {
+    scale: 0 1;
   }
 }
 @property --rise {

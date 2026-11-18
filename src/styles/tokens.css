@@ -24,6 +24,7 @@
   --shadow: none;
   /* Dialog backdrops: a dim of the page's own ink, never plain black. */
   --backdrop: rgb(32 38 58 / 0.45);
+  --grain: 0.05;
 }
 
 .dark,
@@ -43,4 +44,5 @@
   --focus-ring: #ff7a59;
   --shadow: none;
   --backdrop: rgb(10 15 24 / 0.62);
+  --grain: 0.07;
 }

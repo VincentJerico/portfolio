@@ -8,6 +8,25 @@ import { waitForHydration } from '../helpers/hydration';
 const animationName = (locator: Locator) =>
   locator.evaluate((el) => getComputedStyle(el).animationName);
 
+test('the paper has a still grain behind the content', async ({ page }) => {
+  await page.goto('/');
+  const grain = await page.evaluate(() => {
+    const style = getComputedStyle(document.body, '::before');
+    return {
+      position: style.position,
+      zIndex: style.zIndex,
+      pointerEvents: style.pointerEvents,
+      image: style.backgroundImage,
+      animation: style.animationName,
+    };
+  });
+  expect(grain.position).toBe('fixed');
+  expect(grain.zIndex).toBe('-1');
+  expect(grain.pointerEvents).toBe('none');
+  expect(grain.image).toContain('data:image/svg+xml');
+  expect(grain.animation).toBe('none');
+});
+
 test.describe('arrivals', () => {
   test('the poster rises in on the home page', async ({ page }) => {
     await page.goto('/');
@@ -145,6 +164,16 @@ test.describe('scroll-linked', () => {
       /^scroll\(root/,
     );
     expect(await animationName(contact.locator('.contact-arrow path'))).toBe('draw');
+  });
+
+  test('a rule draws under the top bar once you scroll', async ({ page }) => {
+    await page.goto('/');
+    const rule = await page.evaluate(() => {
+      const style = getComputedStyle(document.querySelector('[data-site-header]')!, '::after');
+      return { name: style.animationName, timeline: style.animationTimeline };
+    });
+    expect(rule.name).toBe('header-rule');
+    expect(rule.timeline).toMatch(/^scroll\(root/);
   });
 
   test('the skills strip moves with the scroll', async ({ page }) => {
@@ -302,6 +331,11 @@ test.describe('reduced motion', () => {
     expect(await animationName(contact)).toBe('none');
     expect(await animationName(contact.locator('.cv-ring svg'))).toBe('none');
     expect(await animationName(contact.locator('.contact-arrow path'))).toBe('none');
+    expect(
+      await page.evaluate(
+        () => getComputedStyle(document.querySelector('[data-site-header]')!, '::after').scale,
+      ),
+    ).toMatch(/^(none|1( 1)?)$/);
     await page.goto('/about');
     expect(
       await page

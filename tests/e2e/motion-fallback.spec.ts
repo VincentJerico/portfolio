@@ -67,4 +67,13 @@ test.describe('without scroll-driven animations', () => {
     // The finished band: out to the viewport's edges (half the 1280 px viewport), no rounded card.
     expect(clip).toBe('inset(0px calc(50% - 640px))');
   });
+
+  test('the header rule is drawn, still', async ({ page }) => {
+    await page.goto('/');
+    expect(
+      await page.evaluate(
+        () => getComputedStyle(document.querySelector('[data-site-header]')!, '::after').scale,
+      ),
+    ).toMatch(/^(none|1( 1)?)$/);
+  });
 });
