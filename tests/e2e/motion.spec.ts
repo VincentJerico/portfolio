@@ -135,6 +135,18 @@ test.describe('changes of shape', () => {
 test.describe('scroll-linked', () => {
   test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
 
+  test('the ending grows into a sheet, the CV ring turns and the arrow draws', async ({ page }) => {
+    await page.goto('/');
+    const contact = page.getByRole('region', { name: 'Contact' });
+    expect(await animationName(contact)).toBe('sheet');
+    const ring = contact.locator('.cv-ring svg');
+    expect(await animationName(ring)).toBe('ring-turn');
+    expect(await ring.evaluate((el) => getComputedStyle(el).animationTimeline)).toMatch(
+      /^scroll\(root/,
+    );
+    expect(await animationName(contact.locator('.contact-arrow path'))).toBe('draw');
+  });
+
   test('the skills strip moves with the scroll', async ({ page }) => {
     await page.goto('/');
     const rows = page.locator('.marquee-row');
@@ -285,6 +297,12 @@ test.describe('reduced motion', () => {
     await page.goto('/about');
     expect(await animationName(page.locator('#numbers .odo-reel').first())).toBe('none');
     expect(await animationName(page.locator('.career-track ol'))).toBe('none');
+    await page.goto('/');
+    const contact = page.getByRole('region', { name: 'Contact' });
+    expect(await animationName(contact)).toBe('none');
+    expect(await animationName(contact.locator('.cv-ring svg'))).toBe('none');
+    expect(await animationName(contact.locator('.contact-arrow path'))).toBe('none');
+    await page.goto('/about');
     expect(
       await page
         .locator('#method ol > li')

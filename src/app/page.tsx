@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { WorkList } from '@/components/content/WorkList';
+import { CvRing } from '@/components/motion/CvRing';
 import { Letters } from '@/components/motion/Letters';
 import { Marquee } from '@/components/motion/Marquee';
 import { LocalTime } from '@/components/layout/LocalTime';
@@ -102,8 +103,16 @@ export default function HomePage() {
         </section>
       )}
 
-      <section aria-labelledby="contact-heading">
-        <h2 id="contact-heading">Contact</h2>
+      <section aria-labelledby="contact-heading" className="theme-flip contact-sheet">
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <h2 id="contact-heading">Contact</h2>
+            <svg className="contact-arrow" aria-hidden="true" focusable="false" viewBox="0 0 48 48">
+              <path pathLength={1} d="M8 40 L40 8 M14 8 H40 V34" />
+            </svg>
+          </div>
+          <CvRing href={profile.cvPdf} parts={[profile.role, profile.location]} />
+        </div>
         <p className="mt-6">
           <a href={`mailto:${profile.email}`} className="contact-email">
             {profile.email}
@@ -111,9 +120,6 @@ export default function HomePage() {
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <CopyButton value={profile.email} label="Copy email" />
-          <ButtonLink href={profile.cvPdf} download>
-            Download CV
-          </ButtonLink>
           <ButtonLink href={profile.github} variant="ghost">
             GitHub
           </ButtonLink>

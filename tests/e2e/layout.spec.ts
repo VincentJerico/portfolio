@@ -61,6 +61,22 @@ test.describe('layout', () => {
     });
   }
 
+  // C52: the skills strip, the career strip and the full-bleed Contact never push the page sideways.
+  for (const route of ['/', '/about']) {
+    for (const width of [320, 1280]) {
+      test(`${route} never scrolls sideways at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 800 });
+        await page.goto(route);
+        await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          ),
+        ).toBeLessThanOrEqual(0);
+      });
+    }
+  }
+
   test('the inline-block utility sets display only, never a width', async ({ page }) => {
     await page.goto('/');
     // A spacing token named "block" once made Tailwind emit inline-block as an inline-size rule.

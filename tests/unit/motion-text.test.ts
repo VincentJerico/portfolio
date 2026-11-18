@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { skills } from '@/content';
-import { reel, skillRows, splitLetters } from '@/lib/motion-text';
+import { reel, ringText, skillRows, splitLetters } from '@/lib/motion-text';
 
 describe('splitLetters', () => {
   it('numbers every letter of a single word', () => {
@@ -43,5 +43,11 @@ describe('reel', () => {
   it('turns a 0 a full circle', () => {
     expect(reel(0).steps).toBe(10);
     expect(reel(0).lines.split('\n')).toHaveLength(10);
+  });
+});
+
+describe('ringText', () => {
+  it('joins the parts with a dot and closes the loop', () => {
+    expect(ringText(['A', 'B'])).toBe('A · B · ');
   });
 });

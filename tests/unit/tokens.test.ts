@@ -17,6 +17,12 @@ describe('tokens.css', () => {
     expect(themes.light.bg?.toLowerCase()).toBe('#efe9de');
   });
 
+  // C52: the home ending (.theme-flip) is set in the other theme's tokens, already checked for contrast.
+  it('sets .theme-flip in the opposite theme', () => {
+    expect(css).toMatch(/(?:^|\n):root,\n\.light,\n\.dark \.theme-flip\s*\{/);
+    expect(css).toMatch(/(?:^|\n)\.dark,\n:root:not\(\.dark\) \.theme-flip\s*\{/);
+  });
+
   it('keeps the dark theme a deep slate rather than near-black (C48)', () => {
     expect(themes.dark.bg?.toLowerCase()).toBe('#151c26');
   });

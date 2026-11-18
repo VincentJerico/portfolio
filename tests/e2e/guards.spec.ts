@@ -65,6 +65,18 @@ test('focus is never entirely obscured while tabbing a report page (F-7)', async
   }
 });
 
+// C52: the pinned career strip, the checklist deck and the clipped Contact sheet must never hide focus.
+for (const route of ['/', '/about']) {
+  test(`focus is never entirely obscured while tabbing ${route}`, async ({ page, browserName }) => {
+    await page.goto(route);
+    await waitForHydration(page);
+    for (let i = 0; i < 50; i++) {
+      await page.keyboard.press(tabKey(browserName));
+      expect(await focusEntirelyObscured(page), `Tab ${i + 1}`).toBe(false);
+    }
+  });
+}
+
 // Links are checked over HTTP from the prerendered HTML: rendering 20 pages in a browser adds nothing
 // to "does this link resolve" and outran the test timeout on CI WebKit.
 test('every internal link reachable from the overview resolves', async ({ request, baseURL }) => {

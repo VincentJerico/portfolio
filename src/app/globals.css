@@ -437,6 +437,80 @@
     display: none;
   }
 
+  /* C52 move 11: home's Contact is the ending, set in the other theme (.theme-flip, tokens.css) and full
+     bleed: the shadow paints the band edge to edge and the clip shows it out to the viewport's edges
+     without widening the page. The motion section grows it from a rounded card as it scrolls in. */
+  .contact-sheet {
+    background: var(--bg);
+    color: var(--text);
+    box-shadow: 0 0 0 100vmax var(--bg);
+    /* Out to the viewport's edges exactly, so the grow-in (below) widens visibly all the way. */
+    clip-path: inset(0 calc(50% - 50vw));
+    padding-block: clamp(4rem, 3rem + 5vw, 8rem);
+  }
+  .contact-arrow {
+    flex: none;
+    width: clamp(2.5rem, 1.5rem + 3vw, 4.5rem);
+    height: auto;
+    color: var(--accent);
+    view-timeline: --arrow block;
+  }
+  .contact-arrow path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 4;
+    stroke-linecap: square;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+
+  /* C52 move 5: the CV link as a ring of text around a filled centre. */
+  .cv-ring {
+    position: relative;
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 9rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .cv-ring svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .cv-ring text {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    fill: currentColor;
+  }
+  .cv-ring-label {
+    display: grid;
+    place-items: center;
+    width: 58%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--text);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.2;
+    text-align: center;
+    transition: background-color var(--dur-fast) var(--ease-snap);
+  }
+  .cv-ring:is(:hover, :focus-visible) .cv-ring-label {
+    background: var(--accent);
+  }
+  @media (max-width: 639px) {
+    .cv-ring {
+      width: 7rem;
+    }
+  }
+
   .skeleton {
     position: relative;
     overflow: hidden;
@@ -501,7 +575,9 @@
 @media print {
   :root,
   .light,
-  .dark {
+  .dark,
+  :root:not(.dark) .theme-flip,
+  .dark .theme-flip {
     color-scheme: light;
     --bg: #ffffff;
     --surface: #ffffff;
@@ -515,6 +591,12 @@
     --warn: #000000;
     --fail: #000000;
     --shadow: none;
+  }
+
+  .contact-sheet {
+    box-shadow: none;
+    clip-path: none;
+    padding-block: 0;
   }
 
   @page {
@@ -781,6 +863,22 @@
       text-align: center;
       white-space: pre;
     }
+    /* C52 moves 5 and 11: the ending grows from a rounded card to full bleed as it scrolls in, its
+       arrow draws itself, and the CV ring turns with the page's scroll. */
+    .contact-sheet {
+      animation: sheet linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 35%;
+    }
+    .contact-arrow path {
+      animation: draw linear both;
+      animation-timeline: --arrow;
+      animation-range: entry 20% cover 40%;
+    }
+    .cv-ring svg {
+      animation: ring-turn linear both;
+      animation-timeline: scroll(root);
+    }
     .resume-list {
       view-timeline: --resume block;
     }
@@ -872,6 +970,24 @@
   syntax: '<number>';
   inherits: false;
   initial-value: 0;
+}
+@keyframes sheet {
+  from {
+    clip-path: inset(3rem 1rem round 1.5rem);
+  }
+  to {
+    clip-path: inset(0 calc(50% - 50vw) round 0);
+  }
+}
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+@keyframes ring-turn {
+  to {
+    rotate: 2turn;
+  }
 }
 @property --rise {
   syntax: '<length>';

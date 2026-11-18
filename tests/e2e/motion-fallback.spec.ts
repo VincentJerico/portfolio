@@ -58,4 +58,13 @@ test.describe('without scroll-driven animations', () => {
       .evaluateAll((els) => els.map((el) => el.getBoundingClientRect().top));
     expect(new Set(tops).size).toBe(tops.length);
   });
+
+  test('home: Contact is full bleed', async ({ page }) => {
+    await page.goto('/');
+    const clip = await page
+      .getByRole('region', { name: 'Contact' })
+      .evaluate((el) => getComputedStyle(el).clipPath);
+    // The finished band: out to the viewport's edges (half the 1280 px viewport), no rounded card.
+    expect(clip).toBe('inset(0px calc(50% - 640px))');
+  });
 });

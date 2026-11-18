@@ -6,7 +6,8 @@
    and bans anything that reads as white or black. */
 
 :root,
-.light {
+.light,
+.dark .theme-flip {
   color-scheme: light;
   --bg: #efe9de;
   --surface: #e9e2d5;
@@ -25,7 +26,8 @@
   --backdrop: rgb(32 38 58 / 0.45);
 }
 
-.dark {
+.dark,
+:root:not(.dark) .theme-flip {
   color-scheme: dark;
   --bg: #151c26;
   --surface: #1b2430;

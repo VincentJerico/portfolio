@@ -38,3 +38,8 @@ export function reel(digit: number): { lines: string; steps: number } {
   const steps = digit === 0 ? 10 : digit;
   return { lines: Array.from({ length: steps }, (_, i) => String(i)).join('\n'), steps };
 }
+
+/** The CV ring's text: the parts joined with a dot, closing the loop so the end meets the start. */
+export function ringText(parts: string[]): string {
+  return `${parts.join(' · ')} · `;
+}

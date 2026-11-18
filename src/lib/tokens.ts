@@ -53,7 +53,13 @@ function readBlock(css: string, selector: string): ThemeTokens {
   return tokens;
 }
 
-/** Reads the light (`:root, .light`, the no-JS default) and dark (`.dark`) token blocks (C51). */
+/**
+ * Reads the light (`:root, .light`, the no-JS default) and dark (`.dark`) token blocks (C51). Each
+ * block also styles `.theme-flip` inside the other theme (C52), so its selector list carries that too.
+ */
 export function parseTokens(css: string): { dark: ThemeTokens; light: ThemeTokens } {
-  return { dark: readBlock(css, '.dark'), light: readBlock(css, ':root,\n.light') };
+  return {
+    dark: readBlock(css, '.dark,\n:root:not(.dark) .theme-flip'),
+    light: readBlock(css, ':root,\n.light,\n.dark .theme-flip'),
+  };
 }
