@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { WorkList } from '@/components/content/WorkList';
+import { Letters } from '@/components/motion/Letters';
 import { LocalTime } from '@/components/layout/LocalTime';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { ButtonLink } from '@/components/ui/Button';
@@ -27,7 +28,7 @@ export default function HomePage() {
   const caseStudies = approvedCaseStudies();
   const role = visible(experience).find((item) => item.hasCaseStudies);
   const school = visible(education)[0]?.school;
-  const [first, second] = profile.displayName.split(' ');
+  const [first = '', second = ''] = profile.displayName.split(' ');
   const surname = profile.fullName.slice(profile.displayName.length).trim();
   // "Playwright, API, accessibility, security and performance testing" (the one-liner's middle).
   const practice = profile.oneLiner.split(' · ')[1];
@@ -51,8 +52,13 @@ export default function HomePage() {
       />
 
       <header data-poster className="poster-hero">
-        <h1 className="poster">
-          <span>{first}</span> <span>{second}</span>
+        <h1 className="poster" aria-label={profile.fullName}>
+          <span>
+            <Letters text={first} />
+          </span>{' '}
+          <span>
+            <Letters text={second} start={first.length} />
+          </span>
           {surname && <span className="sr-only"> {surname}</span>}
         </h1>
         <p className="poster-line">{profile.headline}</p>

@@ -522,6 +522,16 @@
     translate: 0 16px;
   }
 }
+@keyframes letter {
+  from {
+    translate: 0 0.35em;
+    rotate: 6deg;
+  }
+}
+/* A word never breaks between its letters (they are inline blocks while they move). */
+.word {
+  white-space: nowrap;
+}
 
 /* P5: view transitions are motion too. */
 @media (prefers-reduced-motion: reduce) {
@@ -597,8 +607,17 @@
 
   /* Page headers, and the poster on the home page, rise in once, line by line, on load. No opacity:
      the title paints at once, so LCP is unaffected and axe never scans faded text. */
-  main header > :not([data-morph-title]) {
+  main header > :not([data-morph-title], :has(.letter)) {
     animation: rise var(--dur-base) var(--ease-snap) backwards;
+  }
+
+  /* C52 move 2: page titles arrive letter by letter, each rising 0.35 em and straightening from a
+     slight lean, 28 ms apart. Transform only and nothing starts hidden, so the title still paints at
+     once (LCP) and its text is the plain heading text. */
+  .letter {
+    display: inline-block;
+    transform-origin: 0 100%;
+    animation: letter 520ms var(--ease-snap) calc(var(--i) * 28ms) backwards;
   }
   main header > :nth-child(2) {
     animation-delay: 40ms;

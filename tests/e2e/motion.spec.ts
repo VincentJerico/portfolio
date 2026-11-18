@@ -15,7 +15,38 @@ test.describe('arrivals', () => {
 
   test('the 404 page arrives like every other page', async ({ page }) => {
     await page.goto('/no-such-page');
-    expect(await animationName(page.locator('main header > h1'))).toBe('rise');
+    expect(await animationName(page.locator('main header > h1 .letter').first())).toBe('letter');
+  });
+
+  test('page titles arrive letter by letter', async ({ page }) => {
+    await page.goto('/about');
+    const h1 = page.locator('main header h1');
+    const letters = h1.locator('.letter');
+    await expect(letters).toHaveCount(5);
+    expect(await h1.evaluate((el) => el.textContent)).toBe('About');
+    // Inline-block letters read as separate words, so the heading must carry its text as its name.
+    await expect(h1).toHaveAccessibleName('About');
+    // Nothing starts hidden, so the largest paint is never held back by the motion.
+    expect(await letters.first().evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+    expect(
+      await letters.evaluateAll((els) =>
+        els.map((el) => getComputedStyle(el).getPropertyValue('--i').trim()),
+      ),
+    ).toEqual(['0', '1', '2', '3', '4']);
+    expect(await animationName(letters.first())).toBe('letter');
+    expect(await letters.nth(4).evaluate((el) => getComputedStyle(el).animationDelay)).toBe(
+      '0.112s',
+    );
+  });
+
+  test("the poster's letters rise in each line", async ({ page }) => {
+    await page.goto('/');
+    const lines = page.locator('.poster > span:not(.sr-only)');
+    await expect(lines).toHaveCount(2);
+    for (const line of await lines.all()) {
+      expect(await line.locator('.letter').count()).toBeGreaterThan(0);
+    }
+    expect(await animationName(lines.first().locator('.letter').first())).toBe('letter');
   });
 
   test('sections rise in with the shared rise as they scroll in', async ({ page }) => {
@@ -108,6 +139,8 @@ test.describe('reduced motion', () => {
     expect(await animationName(page.locator('.work-row').first())).toBe('none');
     await page.goto('/resume');
     expect(await animationName(page.locator('.resume-list > li').first())).toBe('none');
+    await page.goto('/about');
+    expect(await animationName(page.locator('main header h1 .letter').first())).toBe('none');
   });
 });
 
@@ -153,13 +186,17 @@ test.describe('one rhythm', () => {
   test('arrivals share one rise and one timing; rows share one hover', async ({ page }) => {
     await page.goto('/about');
     const header = await page
-      .locator('main header > *')
+      .locator('main header > :not(h1)')
       .evaluateAll((els) =>
         els.map(
           (el) => `${getComputedStyle(el).animationName} ${getComputedStyle(el).animationDuration}`,
         ),
       );
     expect(new Set(header)).toEqual(new Set(['rise 0.4s']));
+    const letters = await page
+      .locator('main header > h1 .letter')
+      .evaluateAll((els) => els.map((el) => getComputedStyle(el).animationName));
+    expect(new Set(letters)).toEqual(new Set(['letter']));
     const sections = await page
       .locator('main section')
       .evaluateAll((els) => els.map((el) => getComputedStyle(el).animationName));

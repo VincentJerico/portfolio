@@ -7,6 +7,7 @@ import { ButtonLink } from '@/components/ui/Button';
 import { certifications, education, experience, profile, skills } from '@/content';
 import { projectsInOrder, visible } from '@/lib/content';
 import { formatCertDate, formatMonth, formatPeriod } from '@/lib/format';
+import { LetterTitle } from '@/components/motion/Letters';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Resume',
@@ -33,7 +34,7 @@ export default function ResumePage() {
     <article className="resume mx-auto flex max-w-3xl flex-col gap-8 print:max-w-none print:gap-4">
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-start justify-between gap-4">
-          <h1>{profile.fullName}</h1>
+          <LetterTitle text={profile.fullName} />
           <span data-print-hide>
             <ButtonLink href={profile.cvPdf} variant="primary" download>
               <Download aria-hidden="true" className="size-4" />

@@ -17,6 +17,7 @@ import { projectBySlug, visible } from '@/lib/content';
 import { formatCertDate, formatDay, formatMonth, formatPeriod } from '@/lib/format';
 import { pageMetadata } from '@/lib/seo';
 import { projectItem } from '@/lib/work-items';
+import { LetterTitle } from '@/components/motion/Letters';
 
 export const metadata: Metadata = pageMetadata({
   title: 'About',
@@ -36,7 +37,7 @@ export default function AboutPage() {
     <div className="flex flex-col gap-rhythm">
       <header className="flex flex-col gap-6">
         <p className="label-mono text-ink-muted">About</p>
-        <h1>About</h1>
+        <LetterTitle text="About" />
       </header>
 
       <div className="grid items-start gap-8 md:grid-cols-[minmax(0,1fr)_14rem] lg:grid-cols-[minmax(0,1fr)_18rem]">

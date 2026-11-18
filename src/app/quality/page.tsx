@@ -6,6 +6,7 @@ import type { CSSProperties } from 'react';
 import { formatDay } from '@/lib/format';
 import { qualityReport } from '@/lib/quality-report';
 import { pageMetadata } from '@/lib/seo';
+import { LetterTitle } from '@/components/motion/Letters';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Quality',
@@ -77,7 +78,7 @@ export default function QualityPage() {
     <div className="flex flex-col gap-rhythm">
       <header className="flex flex-col gap-6">
         <p className="label-mono text-ink-muted">How this site is tested</p>
-        <h1>Quality</h1>
+        <LetterTitle text="Quality" />
         <p className="measure text-lg text-ink-muted">
           This site is tested like the software I test for clients. Every push runs the gates below,
           and each gate has a self-test, because a gate that can&apos;t fail isn&apos;t a gate.

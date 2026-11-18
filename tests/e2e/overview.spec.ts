@@ -35,6 +35,12 @@ test.describe('poster', () => {
     test(`fills the page without spilling at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       await page.goto('/');
+      // Measure the settled poster: while its letters lean in they are briefly wider (C52).
+      await page
+        .locator('h1.poster')
+        .evaluate((h1) =>
+          Promise.all(h1.getAnimations({ subtree: true }).map((animation) => animation.finished)),
+        );
       const fit = await page.locator('h1.poster').evaluate((h1) => {
         const box = h1.getBoundingClientRect();
         const lines = [...h1.querySelectorAll(':scope > span:not(.sr-only)')].map((span) => {

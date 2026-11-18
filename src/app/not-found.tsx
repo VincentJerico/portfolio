@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { LetterTitle } from '@/components/motion/Letters';
 
 export const metadata: Metadata = { title: 'Page not found' };
 
@@ -9,7 +10,7 @@ export default function NotFound() {
       {/* A header, so the page arrives like every other page (globals.css header rise). */}
       <header className="flex flex-col gap-6">
         <p className="label-mono text-ink-muted">404 · Not found</p>
-        <h1>Page not found</h1>
+        <LetterTitle text="Page not found" />
         <p className="measure text-lg text-ink-muted">There is nothing at this address.</p>
       </header>
       <ul className="flex flex-wrap gap-3">
