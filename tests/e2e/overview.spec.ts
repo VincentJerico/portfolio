@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '../helpers/test';
-import { profile } from '../../src/content';
 import { approvedCaseStudies, projectsInOrder } from '../../src/lib/content';
+import { profile, skills } from '../../src/content';
+import { skillRows } from '../../src/lib/motion-text';
 import { categoryLabel } from '../../src/lib/labels';
 import { waitForHydration } from '../helpers/hydration';
 import { tabKey } from '../helpers/keys';
@@ -73,6 +74,31 @@ test.describe('poster', () => {
     await expect(details.locator('[data-local-time]')).toHaveText(
       /^Local time \d{1,2}:\d{2} (am|pm)$/,
     );
+  });
+});
+
+test.describe('intro and skills', () => {
+  test('the intro reads in full under the poster', async ({ page }) => {
+    await page.goto('/');
+    const intro = page.locator('.ink-text');
+    expect(await intro.evaluate((el) => el.textContent!.replace(/\s+/g, ' ').trim())).toBe(
+      profile.intro,
+    );
+    const after = await page.evaluate(() => {
+      const poster = document.querySelector('[data-poster]')!;
+      const ink = document.querySelector('.ink-text')!;
+      return Boolean(poster.compareDocumentPosition(ink) & Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+    expect(after).toBe(true);
+  });
+
+  test('the skills strip lists every proven skill once to assistive tech', async ({ page }) => {
+    await page.goto('/');
+    const strip = page.getByRole('region', { name: 'Skills', exact: true });
+    const items = await strip.getByRole('listitem').allTextContents();
+    expect(items.map((item) => item.trim())).toEqual(skillRows(skills).flat());
+    const copies = strip.locator('ul[aria-hidden="true"]');
+    await expect(copies).toHaveCount(2);
   });
 });
 

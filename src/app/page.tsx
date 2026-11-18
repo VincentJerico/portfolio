@@ -1,15 +1,18 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { WorkList } from '@/components/content/WorkList';
+import { InkText } from '@/components/motion/InkText';
 import { Letters } from '@/components/motion/Letters';
+import { Marquee } from '@/components/motion/Marquee';
 import { LocalTime } from '@/components/layout/LocalTime';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { ButtonLink } from '@/components/ui/Button';
 import { CopyButton } from '@/components/ui/CopyButton';
-import { education, experience, profile } from '@/content';
+import { education, experience, profile, skills } from '@/content';
 import { MANILA_UTC_OFFSET_MINUTES } from '@/lib/clock';
 import { approvedCaseStudies, projectsInOrder, visible } from '@/lib/content';
 import { getEnv } from '@/lib/env';
+import { skillRows } from '@/lib/motion-text';
 import { pageMetadata } from '@/lib/seo';
 import { caseStudyItem, projectItem } from '@/lib/work-items';
 
@@ -76,6 +79,8 @@ export default function HomePage() {
         </div>
       </header>
 
+      <InkText text={profile.intro} className="home-intro" />
+
       <section aria-labelledby="projects-heading">
         <div className="mb-6 flex flex-wrap items-baseline justify-between gap-x-6">
           <h2 id="projects-heading">Projects</h2>
@@ -85,6 +90,8 @@ export default function HomePage() {
         </div>
         <WorkList items={projects.map(projectItem)} />
       </section>
+
+      <Marquee rows={skillRows(skills)} />
 
       {caseStudies.length > 0 && role && (
         <section aria-labelledby="client-work-heading">

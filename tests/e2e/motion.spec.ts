@@ -129,6 +129,25 @@ test.describe('changes of shape', () => {
   });
 });
 
+// Every engine the suite runs (Chromium, WebKit) has scroll-driven animations; engines without them
+// are covered by motion-fallback.spec.ts.
+test.describe('scroll-linked', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  test('the intro inks in and the skills strip moves with the scroll', async ({ page }) => {
+    await page.goto('/');
+    const word = page.locator('.ink-text span').first();
+    expect(await animationName(word)).toBe('ink');
+    expect(await word.evaluate((el) => getComputedStyle(el).animationTimeline)).toBe('--ink');
+    const rows = page.locator('.marquee-row');
+    expect(await animationName(rows.first())).toBe('marquee');
+    expect(await animationName(rows.nth(1))).toBe('marquee-back');
+    expect(await rows.first().evaluate((el) => getComputedStyle(el).animationTimeline)).toMatch(
+      /^scroll\(root/,
+    );
+  });
+});
+
 test.describe('reduced motion', () => {
   test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
 
@@ -141,6 +160,29 @@ test.describe('reduced motion', () => {
     expect(await animationName(page.locator('.resume-list > li').first())).toBe('none');
     await page.goto('/about');
     expect(await animationName(page.locator('main header h1 .letter').first())).toBe('none');
+    await page.goto('/');
+    const ink = await page.evaluate(() => {
+      const el = document.createElement('span');
+      el.style.color = 'var(--text)';
+      document.body.append(el);
+      const rgb = getComputedStyle(el).color;
+      el.remove();
+      return rgb;
+    });
+    expect(
+      await page
+        .locator('.ink-text span')
+        .first()
+        .evaluate((el) => getComputedStyle(el).color),
+    ).toBe(ink);
+    const copy = page.locator('.marquee-row ul[aria-hidden="true"]').first();
+    expect(await copy.evaluate((el) => getComputedStyle(el).display)).toBe('none');
+    expect(
+      await page
+        .locator('.marquee-row')
+        .first()
+        .evaluate((el) => getComputedStyle(el).flexWrap),
+    ).toBe('wrap');
   });
 });
 

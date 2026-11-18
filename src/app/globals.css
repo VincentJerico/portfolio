@@ -388,6 +388,56 @@
   }
 
   /* Pending placeholder for the moments a visitor actually waits (an external badge). */
+  /* C52 move 3: the home intro, set large under the poster; its words ink in where scroll-driven
+     animation runs (see the motion section), and read fully ink everywhere else. */
+  .home-intro {
+    max-width: 30ch;
+    font-size: clamp(1.5rem, 1rem + 2vw, 2.75rem);
+    font-weight: 500;
+    line-height: 1.2;
+    text-wrap: pretty;
+  }
+
+  /* C52 move 6: the skills strip. By default (no scroll-driven animation, or reduced motion) the rows
+     wrap and the hidden copies stay out, so every skill is on screen; the motion section turns each
+     row into one sliding line. */
+  .marquee {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow-x: clip;
+    border-block: 1px solid var(--border);
+    padding-block: 1.25rem;
+  }
+  .marquee-row,
+  .marquee-row > ul {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .marquee-row > ul[aria-hidden='true'] {
+    display: none;
+  }
+  .marquee li {
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    font-weight: 800;
+    font-variation-settings:
+      'opsz' 96,
+      'wdth' 75;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+  .marquee li:nth-child(even) {
+    color: var(--text-muted);
+  }
+  .marquee li + li::before,
+  .marquee-row > ul + ul > li:first-child::before {
+    content: '/' / '';
+    margin-inline: 0.35em;
+    color: var(--accent);
+    font-weight: 400;
+  }
+
   .skeleton {
     position: relative;
     overflow: hidden;
@@ -654,6 +704,37 @@
       animation-timeline: view();
       animation-range: entry 0% entry 100%;
     }
+    /* C52 move 3: the intro's words ink in, each on its own slice of one paragraph timeline. */
+    .ink-text {
+      view-timeline: --ink block;
+    }
+    .ink-text > span {
+      color: var(--text-muted);
+      animation: ink linear both;
+      animation-timeline: --ink;
+      animation-range: cover var(--from) cover var(--to);
+    }
+    /* C52 move 6: each skills row is one line sliding as the page scrolls, the second the other way;
+       the copy keeps its edges filled. */
+    .marquee-row,
+    .marquee-row > ul {
+      flex-wrap: nowrap;
+    }
+    .marquee-row {
+      width: max-content;
+      animation: marquee linear both;
+      animation-timeline: scroll(root);
+    }
+    .marquee-row[data-dir='right'] {
+      animation-name: marquee-back;
+    }
+    .marquee-row > ul[aria-hidden='true'] {
+      display: flex;
+    }
+    .marquee li {
+      font-size: clamp(2rem, 1rem + 4vw, 4.5rem);
+      line-height: 1;
+    }
     .resume-list {
       view-timeline: --resume block;
     }
@@ -665,6 +746,24 @@
       animation-timeline: --resume;
       animation-range: entry 0% cover 25%;
     }
+  }
+}
+@keyframes ink {
+  to {
+    color: var(--text);
+  }
+}
+@keyframes marquee {
+  to {
+    translate: -50% 0;
+  }
+}
+@keyframes marquee-back {
+  from {
+    translate: -50% 0;
+  }
+  to {
+    translate: 0 0;
   }
 }
 @property --rise {
