@@ -1,21 +1,17 @@
 import type { CSSProperties } from 'react';
-import { inkRanges } from '@/lib/motion-text';
 
 /**
- * A paragraph whose words ink in, muted to ink, as it crosses the screen (C52, move 3). One view
- * timeline for the paragraph; each word takes its own slice of it. Muted and ink are both AA colours,
- * so every frame reads. Fully ink without scroll-driven animations or under reduced motion.
+ * A paragraph whose words ink in one after another, muted to ink, just after the page title's letters
+ * (C52, move 3). About's intro sits on screen at load, where a scroll-linked ink would either show
+ * nothing or leave words muted, so this one runs on time. Muted and ink are both AA colours, so every
+ * frame reads; under reduced motion it is simply ink.
  */
 export function InkText({ text, className = '' }: { text: string; className?: string }) {
   const words = text.split(/\s+/).filter(Boolean);
-  const ranges = inkRanges(words.length);
   return (
     <p className={`ink-text ${className}`}>
       {words.map((word, i) => (
-        <span
-          key={i}
-          style={{ '--from': `${ranges[i]!.from}%`, '--to': `${ranges[i]!.to}%` } as CSSProperties}
-        >
+        <span key={i} style={{ '--i': i } as CSSProperties}>
           {i > 0 && ' '}
           {word}
         </span>

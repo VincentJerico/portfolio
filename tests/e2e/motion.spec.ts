@@ -1,4 +1,5 @@
 import { expect, test, type Locator } from '../helpers/test';
+import { metrics, profile } from '../../src/content';
 import { waitForHydration } from '../helpers/hydration';
 
 // C50's one rhythm, kept by the minimal reset (C51): everything that arrives rises 16 px over 400 ms,
@@ -134,17 +135,115 @@ test.describe('changes of shape', () => {
 test.describe('scroll-linked', () => {
   test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
 
-  test('the intro inks in and the skills strip moves with the scroll', async ({ page }) => {
+  test('the skills strip moves with the scroll', async ({ page }) => {
     await page.goto('/');
-    const word = page.locator('.ink-text span').first();
-    expect(await animationName(word)).toBe('ink');
-    expect(await word.evaluate((el) => getComputedStyle(el).animationTimeline)).toBe('--ink');
     const rows = page.locator('.marquee-row');
     expect(await animationName(rows.first())).toBe('marquee');
     expect(await animationName(rows.nth(1))).toBe('marquee-back');
     expect(await rows.first().evaluate((el) => getComputedStyle(el).animationTimeline)).toMatch(
       /^scroll\(root/,
     );
+  });
+});
+
+test.describe('about', () => {
+  const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  test('the intro reads in full and inks in word by word', async ({ page }) => {
+    await page.goto('/about');
+    const intro = page.locator('.ink-text');
+    await expect(intro).toHaveCount(1);
+    expect(await intro.evaluate((el) => el.textContent!.replace(/\s+/g, ' ').trim())).toBe(
+      profile.intro,
+    );
+    const words = intro.locator('> span');
+    expect(await animationName(words.first())).toBe('ink');
+    const delays = await words.evaluateAll((els) =>
+      els.slice(0, 3).map((el) => parseFloat(getComputedStyle(el).animationDelay)),
+    );
+    expect(delays[1]).toBeGreaterThan(delays[0]!);
+    expect(delays[2]).toBeGreaterThan(delays[1]!);
+  });
+
+  test('each number lands on its recorded value', async ({ page }) => {
+    await page.goto('/about');
+    const values = page.locator('#numbers .metric-value');
+    await expect(values).toHaveCount(metrics.length);
+    for (const [i, metric] of metrics.entries()) {
+      const value = values.nth(i);
+      expect(await value.evaluate((el) => el.textContent)).toBe(metric.value);
+      // The rolling digits above each real digit are never read out.
+      expect(await value.ariaSnapshot()).toMatch(
+        new RegExp(`^- paragraph: "?${escape(metric.value)}"?$`),
+      );
+    }
+  });
+
+  test('the numbers roll on one timeline for the list', async ({ page }) => {
+    await page.goto('/about');
+    const list = page.locator('#numbers ul');
+    expect(await list.evaluate((el) => getComputedStyle(el).viewTimelineName)).toBe('--numbers');
+    const reel = page.locator('#numbers .odo-reel').first();
+    expect(await animationName(reel)).toBe('odo');
+    expect(await reel.evaluate((el) => getComputedStyle(el).animationTimeline)).toBe('--numbers');
+  });
+
+  test.describe('on a wide screen', () => {
+    test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+    test('the career path slides sideways', async ({ page }) => {
+      await page.goto('/about');
+      const track = page.locator('.career-track');
+      const steps = track.locator('ol > li');
+      expect(await animationName(track.locator('ol'))).toBe('career');
+      await track.evaluate((el) =>
+        window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY),
+      );
+      await expect.poll(async () => (await steps.first().boundingBox())!.x).toBeLessThan(1280);
+      await track.evaluate((el) =>
+        window.scrollTo(0, el.getBoundingClientRect().bottom + window.scrollY - window.innerHeight),
+      );
+      await expect
+        .poll(async () => {
+          const box = (await steps.last().boundingBox())!;
+          return box.x + box.width;
+        })
+        .toBeLessThanOrEqual(1280);
+    });
+
+    test('the checklist piles up as you read', async ({ page }) => {
+      await page.goto('/about');
+      const list = page.locator('#method ol');
+      const items = list.locator('> li');
+      await list.evaluate((el) => {
+        const first = el.children[0] as HTMLElement;
+        const top = el.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo(0, top - 56 + first.offsetHeight * 5);
+      });
+      await expect
+        .poll(async () => {
+          const a = (await items.nth(0).boundingBox())!;
+          const b = (await items.nth(1).boundingBox())!;
+          return Math.round(b.y - a.y);
+        })
+        .toBe(8);
+      expect((await items.nth(1).boundingBox())!.y).toBeLessThan(200);
+    });
+  });
+
+  test.describe('on a phone', () => {
+    test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+    test('the career path is a plain list', async ({ page }) => {
+      await page.goto('/about');
+      const list = page.locator('.career-track ol');
+      expect(await animationName(list)).toBe('none');
+      const tops = await list
+        .locator('> li')
+        .evaluateAll((els) => els.map((el) => el.getBoundingClientRect().top));
+      expect(tops).toEqual([...tops].sort((a, b) => a - b));
+      expect(new Set(tops).size).toBe(tops.length);
+    });
   });
 });
 
@@ -160,7 +259,6 @@ test.describe('reduced motion', () => {
     expect(await animationName(page.locator('.resume-list > li').first())).toBe('none');
     await page.goto('/about');
     expect(await animationName(page.locator('main header h1 .letter').first())).toBe('none');
-    await page.goto('/');
     const ink = await page.evaluate(() => {
       const el = document.createElement('span');
       el.style.color = 'var(--text)';
@@ -175,6 +273,7 @@ test.describe('reduced motion', () => {
         .first()
         .evaluate((el) => getComputedStyle(el).color),
     ).toBe(ink);
+    await page.goto('/');
     const copy = page.locator('.marquee-row ul[aria-hidden="true"]').first();
     expect(await copy.evaluate((el) => getComputedStyle(el).display)).toBe('none');
     expect(
@@ -183,6 +282,15 @@ test.describe('reduced motion', () => {
         .first()
         .evaluate((el) => getComputedStyle(el).flexWrap),
     ).toBe('wrap');
+    await page.goto('/about');
+    expect(await animationName(page.locator('#numbers .odo-reel').first())).toBe('none');
+    expect(await animationName(page.locator('.career-track ol'))).toBe('none');
+    expect(
+      await page
+        .locator('#method ol > li')
+        .first()
+        .evaluate((el) => getComputedStyle(el).position),
+    ).toBe('static');
   });
 });
 

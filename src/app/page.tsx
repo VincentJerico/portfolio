@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { WorkList } from '@/components/content/WorkList';
-import { InkText } from '@/components/motion/InkText';
 import { Letters } from '@/components/motion/Letters';
 import { Marquee } from '@/components/motion/Marquee';
 import { LocalTime } from '@/components/layout/LocalTime';
@@ -78,8 +77,6 @@ export default function HomePage() {
           </div>
         </div>
       </header>
-
-      <InkText text={profile.intro} className="home-intro" />
 
       <section aria-labelledby="projects-heading">
         <div className="mb-6 flex flex-wrap items-baseline justify-between gap-x-6">

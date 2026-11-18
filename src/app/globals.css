@@ -388,16 +388,6 @@
   }
 
   /* Pending placeholder for the moments a visitor actually waits (an external badge). */
-  /* C52 move 3: the home intro, set large under the poster; its words ink in where scroll-driven
-     animation runs (see the motion section), and read fully ink everywhere else. */
-  .home-intro {
-    max-width: 30ch;
-    font-size: clamp(1.5rem, 1rem + 2vw, 2.75rem);
-    font-weight: 500;
-    line-height: 1.2;
-    text-wrap: pretty;
-  }
-
   /* C52 move 6: the skills strip. By default (no scroll-driven animation, or reduced motion) the rows
      wrap and the hidden copies stay out, so every skill is on screen; the motion section turns each
      row into one sliding line. */
@@ -436,6 +426,15 @@
     margin-inline: 0.35em;
     color: var(--accent);
     font-weight: 400;
+  }
+
+  /* C52 move 4: rolling digits. At rest (and without scroll-driven animation, or under reduced
+     motion) a value is plain text; the motion section swaps in each digit's decorative window. */
+  .metric-value {
+    line-height: 1;
+  }
+  .odo-window {
+    display: none;
   }
 
   .skeleton {
@@ -681,6 +680,27 @@
     animation-delay: 120ms;
   }
 
+  /* C52 move 3: About's intro inks in word by word, muted to ink, just after the title's letters. */
+  .ink-text > span {
+    animation: ink var(--dur-base) var(--ease-snap) calc(240ms + var(--i) * 24ms) backwards;
+  }
+
+  /* C52 move 8: "How I test" piles up as you read, each area sticking 8 px below the one before. */
+  .deck > li {
+    position: sticky;
+    top: calc(3.5rem + var(--i) * 0.5rem);
+  }
+  /* Each row's rule moves to its top edge, so every 8 px peek of the pile shows a line, like the edges
+     of stacked sheets; the list closes with a rule underneath instead. */
+  .deck {
+    border-top-width: 0;
+    border-bottom-width: 1px;
+  }
+  .deck > li {
+    border-top-width: 1px;
+    border-bottom-width: 0;
+  }
+
   /* Feedback: anything that appears in answer to the visitor (errors, alerts, statuses) rises in. */
   .reveal-in,
   .pop-in,
@@ -704,16 +724,6 @@
       animation-timeline: view();
       animation-range: entry 0% entry 100%;
     }
-    /* C52 move 3: the intro's words ink in, each on its own slice of one paragraph timeline. */
-    .ink-text {
-      view-timeline: --ink block;
-    }
-    .ink-text > span {
-      color: var(--text-muted);
-      animation: ink linear both;
-      animation-timeline: --ink;
-      animation-range: cover var(--from) cover var(--to);
-    }
     /* C52 move 6: each skills row is one line sliding as the page scrolls, the second the other way;
        the copy keeps its edges filled. */
     .marquee-row,
@@ -735,6 +745,42 @@
       font-size: clamp(2rem, 1rem + 4vw, 4.5rem);
       line-height: 1;
     }
+    /* C52 move 4: the digits roll in as the numbers come on screen, on one timeline for the list. */
+    .odo-list {
+      view-timeline: --numbers block;
+    }
+    /* The real digit is clipped out of sight (still read out); a 1em window centred on its line shows
+       a reel of 1em lines ending in the same digit, and rolls it up into place. */
+    .odo-digit {
+      position: relative;
+    }
+    .odo-real {
+      clip-path: inset(0 0 100% 0);
+    }
+    .odo-window {
+      display: block;
+      position: absolute;
+      inset: 50% 0 auto;
+      height: 1em;
+      translate: 0 -50%;
+      overflow: clip;
+    }
+    .odo-reel {
+      position: absolute;
+      inset: 0;
+      translate: 0 calc(var(--roll) * 1em);
+      animation: odo linear both;
+      animation-timeline: --numbers;
+      animation-range: entry 10% cover 35%;
+    }
+    .odo-reel::before {
+      content: attr(data-reel) / '';
+      position: absolute;
+      inset: auto 0 0;
+      line-height: 1;
+      text-align: center;
+      white-space: pre;
+    }
     .resume-list {
       view-timeline: --resume block;
     }
@@ -749,8 +795,8 @@
   }
 }
 @keyframes ink {
-  to {
-    color: var(--text);
+  from {
+    color: var(--text-muted);
   }
 }
 @keyframes marquee {
@@ -765,6 +811,67 @@
   to {
     translate: 0 0;
   }
+}
+/* C52 move 7: on wide screens the career path pins under the top bar and its steps slide sideways as
+   the page scrolls down. 3.5rem is the top bar (h-14). Elsewhere it stays the ruled list. */
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) and (min-width: 768px) {
+    .career-track {
+      view-timeline: --career block;
+      height: 260svh;
+    }
+    .career-sticky {
+      position: sticky;
+      top: 3.5rem;
+      display: flex;
+      align-items: center;
+      height: calc(100svh - 3.5rem);
+      container-type: inline-size;
+      overflow-x: clip;
+    }
+    .career-track ol {
+      display: flex;
+      width: max-content;
+      border-top: 0;
+      animation: career linear both;
+      animation-timeline: --career;
+      animation-range: contain 0% contain 100%;
+    }
+    .career-track li {
+      display: flex;
+      flex: none;
+      flex-direction: column;
+      gap: 1rem;
+      width: min(44rem, 70cqw);
+      border-bottom: 0;
+      border-left: 1px solid var(--border);
+      padding: 0 3rem;
+    }
+    .career-track .career-label {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 1rem + 5vw, 6rem);
+      font-weight: 800;
+      font-variation-settings:
+        'opsz' 96,
+        'wdth' 75;
+      line-height: 0.95;
+    }
+  }
+}
+@keyframes career {
+  to {
+    translate: calc(-100% + 100cqw) 0;
+  }
+}
+@keyframes odo {
+  from {
+    --roll: var(--steps);
+  }
+}
+@property --roll {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
 }
 @property --rise {
   syntax: '<length>';

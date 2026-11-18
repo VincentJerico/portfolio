@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { skills } from '@/content';
-import { inkRanges, skillRows, splitLetters } from '@/lib/motion-text';
+import { reel, skillRows, splitLetters } from '@/lib/motion-text';
 
 describe('splitLetters', () => {
   it('numbers every letter of a single word', () => {
@@ -22,20 +22,6 @@ describe('splitLetters', () => {
   });
 });
 
-describe('inkRanges', () => {
-  it('spreads the words evenly between 15% and 60% of the paragraph crossing the screen', () => {
-    expect(inkRanges(3)).toEqual([
-      { from: 15, to: 30 },
-      { from: 30, to: 45 },
-      { from: 45, to: 60 },
-    ]);
-  });
-
-  it('rounds to two decimals', () => {
-    expect(inkRanges(7)[1]).toEqual({ from: 21.43, to: 27.86 });
-  });
-});
-
 describe('skillRows', () => {
   it('holds every proven skill once, in data order, and no skill still being learned', () => {
     const proven = skills.filter((group) => !group.learning).flatMap((group) => group.skills);
@@ -46,5 +32,16 @@ describe('skillRows', () => {
     for (const skill of learning.filter((s) => !proven.includes(s))) {
       expect([...a, ...b]).not.toContain(skill);
     }
+  });
+});
+
+describe('reel', () => {
+  it('rolls a digit up from 0, one step per number passed', () => {
+    expect(reel(3)).toEqual({ lines: '0\n1\n2', steps: 3 });
+  });
+
+  it('turns a 0 a full circle', () => {
+    expect(reel(0).steps).toBe(10);
+    expect(reel(0).lines.split('\n')).toHaveLength(10);
   });
 });
