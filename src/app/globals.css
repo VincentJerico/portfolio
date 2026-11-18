@@ -483,6 +483,9 @@
     border-radius: 50%;
     color: var(--text);
     text-decoration: none;
+    /* The turning square of the svg would swing its corners past the page edge; the text itself
+       sits well inside the circle, so clipping to it cuts nothing visible. */
+    overflow: clip;
   }
   .cv-ring svg {
     position: absolute;
@@ -805,6 +808,41 @@
     animation: ink var(--dur-base) var(--ease-snap) calc(240ms + var(--i) * 24ms) backwards;
   }
 
+  /* C52 move 4: each number's digits roll up into place once, as it comes into view (RollOnView marks
+     it data-roll). The real digit is clipped out of sight (still read out); a 1em window centred on
+     its line shows a reel of 1em lines ending in the same digit. Before the roll, and without
+     JavaScript, the window rests on the real digit, so a number never shows a wrong value at rest. */
+  .odo-digit {
+    position: relative;
+  }
+  .odo-real {
+    clip-path: inset(0 0 100% 0);
+  }
+  .odo-window {
+    display: block;
+    position: absolute;
+    inset: 50% 0 auto;
+    height: 1em;
+    translate: 0 -50%;
+    overflow: clip;
+  }
+  .odo-reel {
+    position: absolute;
+    inset: 0;
+    translate: 0 calc(var(--roll) * 1em);
+  }
+  .odo-reel::before {
+    content: attr(data-reel) / '';
+    position: absolute;
+    inset: auto 0 0;
+    line-height: 1;
+    text-align: center;
+    white-space: pre;
+  }
+  .odo-list > li[data-roll] .odo-reel {
+    animation: odo 700ms var(--ease-snap) both;
+  }
+
   /* C52 move 8: "How I test" piles up as you read, each area sticking 8 px below the one before. */
   .deck > li {
     position: sticky;
@@ -844,16 +882,21 @@
       animation-timeline: view();
       animation-range: entry 0% entry 100%;
     }
-    /* C52 move 6: each skills row is one line sliding as the page scrolls, the second the other way;
-       the copy keeps its edges filled. */
+    /* C52 move 6: each skills row is one line drifting while the strip crosses the screen, the
+       second the other way: 60vw over the strip's own view, under a pixel per pixel scrolled. The
+       copy keeps the edges filled. */
     .marquee-row,
     .marquee-row > ul {
       flex-wrap: nowrap;
     }
+    .marquee {
+      view-timeline: --strip block;
+    }
     .marquee-row {
       width: max-content;
       animation: marquee linear both;
-      animation-timeline: scroll(root);
+      animation-timeline: --strip;
+      animation-range: cover 0% cover 100%;
     }
     .marquee-row[data-dir='right'] {
       animation-name: marquee-back;
@@ -864,42 +907,6 @@
     .marquee li {
       font-size: clamp(2rem, 1rem + 4vw, 4.5rem);
       line-height: 1;
-    }
-    /* C52 move 4: the digits roll in as the numbers come on screen, on one timeline for the list. */
-    .odo-list {
-      view-timeline: --numbers block;
-    }
-    /* The real digit is clipped out of sight (still read out); a 1em window centred on its line shows
-       a reel of 1em lines ending in the same digit, and rolls it up into place. */
-    .odo-digit {
-      position: relative;
-    }
-    .odo-real {
-      clip-path: inset(0 0 100% 0);
-    }
-    .odo-window {
-      display: block;
-      position: absolute;
-      inset: 50% 0 auto;
-      height: 1em;
-      translate: 0 -50%;
-      overflow: clip;
-    }
-    .odo-reel {
-      position: absolute;
-      inset: 0;
-      translate: 0 calc(var(--roll) * 1em);
-      animation: odo linear both;
-      animation-timeline: --numbers;
-      animation-range: entry 10% cover 35%;
-    }
-    .odo-reel::before {
-      content: attr(data-reel) / '';
-      position: absolute;
-      inset: auto 0 0;
-      line-height: 1;
-      text-align: center;
-      white-space: pre;
     }
     /* C52 moves 5 and 11: the ending grows from a rounded card to full bleed as it scrolls in, its
        arrow draws itself, and the CV ring turns with the page's scroll. */
@@ -942,12 +949,12 @@
 }
 @keyframes marquee {
   to {
-    translate: -50% 0;
+    translate: -60vw 0;
   }
 }
 @keyframes marquee-back {
   from {
-    translate: -50% 0;
+    translate: -60vw 0;
   }
   to {
     translate: 0 0;

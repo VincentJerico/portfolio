@@ -24,6 +24,9 @@ export function SmoothScroll() {
         lerp: 0.12,
         anchors: true,
         stopInertiaOnNavigate: true,
+        // A wheel or swipe over something that can scroll that way itself (a wide table, a code
+        // block) scrolls it natively instead of the page.
+        allowNestedScroll: true,
         prevent: (node) => node.closest('dialog[open], [data-lenis-prevent]') !== null,
       });
     };

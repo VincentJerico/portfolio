@@ -21,6 +21,7 @@ import { projectItem } from '@/lib/work-items';
 import { InkText } from '@/components/motion/InkText';
 import { LetterTitle } from '@/components/motion/Letters';
 import { Odometer } from '@/components/motion/Odometer';
+import { RollOnView } from '@/components/motion/RollOnView';
 
 export const metadata: Metadata = pageMetadata({
   title: 'About',
@@ -66,7 +67,7 @@ export default function AboutPage() {
           title="In numbers"
           kicker={asOf ? `As of ${formatDay(asOf)}` : undefined}
         >
-          <ul className="odo-list grid border-t border-line sm:grid-cols-2 lg:grid-cols-5">
+          <RollOnView className="odo-list grid border-t border-line sm:grid-cols-2 lg:grid-cols-5">
             {metrics.map((metric) => (
               <li key={metric.id} className="flex flex-col gap-1 border-b border-line py-4 pr-6">
                 <p className="metric-value text-4xl font-extrabold tracking-tight text-ink [font-variation-settings:'opsz'_96,'wdth'_75]">
@@ -81,7 +82,7 @@ export default function AboutPage() {
                 </a>
               </li>
             ))}
-          </ul>
+          </RollOnView>
         </Section>
       )}
 

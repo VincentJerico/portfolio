@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { skills } from '@/content';
-import { reel, ringText, skillRows, splitLetters } from '@/lib/motion-text';
+import { odoParts, reel, ringText, skillRows, splitLetters } from '@/lib/motion-text';
 
 describe('splitLetters', () => {
   it('numbers every letter of a single word', () => {
@@ -49,5 +49,30 @@ describe('reel', () => {
 describe('ringText', () => {
   it('joins the parts with a dot and closes the loop', () => {
     expect(ringText(['A', 'B'])).toBe('A · B · ');
+  });
+});
+
+describe('odoParts', () => {
+  const rolling = (value: string) =>
+    odoParts(value)
+      .filter((part) => part.roll)
+      .map((part) => part.char)
+      .join('');
+
+  it('rolls the digits of the numbers', () => {
+    expect(rolling('7 of 7')).toBe('77');
+    expect(rolling('over 7,000 requests/s')).toBe('7000');
+  });
+
+  it('keeps digits that belong to a word still', () => {
+    expect(rolling('12 s p95')).toBe('12');
+  });
+
+  it('keeps every character, in order', () => {
+    expect(
+      odoParts('12 s p95')
+        .map((part) => part.char)
+        .join(''),
+    ).toBe('12 s p95');
   });
 });

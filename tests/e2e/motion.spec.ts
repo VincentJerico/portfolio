@@ -176,13 +176,39 @@ test.describe('scroll-linked', () => {
     expect(rule.timeline).toMatch(/^scroll\(root/);
   });
 
+  // Final review #3: the strip drifts, at most a pixel of travel per pixel scrolled.
+  test('the skills strip drifts gently with the scroll', async ({ page }) => {
+    await page.goto('/');
+    const strip = page.locator('.marquee');
+    const row = strip.locator('.marquee-row').first();
+    await strip.evaluate((el) =>
+      window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - window.innerHeight / 2),
+    );
+    // Scroll-driven styles update on the next frame; read only once two have passed.
+    const settle = () =>
+      page.evaluate(
+        () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+      );
+    await settle();
+    const x1 = await row.evaluate((el) => el.getBoundingClientRect().left);
+    await page.evaluate(() => window.scrollBy(0, 200));
+    await settle();
+    await expect
+      .poll(async () =>
+        Math.abs((await row.evaluate((el) => el.getBoundingClientRect().left)) - x1),
+      )
+      .toBeGreaterThan(0);
+    const x2 = await row.evaluate((el) => el.getBoundingClientRect().left);
+    expect(Math.abs(x2 - x1)).toBeLessThanOrEqual(200);
+  });
+
   test('the skills strip moves with the scroll', async ({ page }) => {
     await page.goto('/');
     const rows = page.locator('.marquee-row');
     expect(await animationName(rows.first())).toBe('marquee');
     expect(await animationName(rows.nth(1))).toBe('marquee-back');
-    expect(await rows.first().evaluate((el) => getComputedStyle(el).animationTimeline)).toMatch(
-      /^scroll\(root/,
+    expect(await rows.first().evaluate((el) => getComputedStyle(el).animationTimeline)).toBe(
+      '--strip',
     );
   });
 });
@@ -220,13 +246,36 @@ test.describe('about', () => {
     }
   });
 
-  test('the numbers roll on one timeline for the list', async ({ page }) => {
+  // Final review #1: a scrubbed odometer rests on wrong digits wherever the list is on screen at
+  // load, so the digits roll once as each number comes into view and then rest on the data.
+  test('the numbers roll once as they come into view, then rest on their values', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/about');
-    const list = page.locator('#numbers ul');
-    expect(await list.evaluate((el) => getComputedStyle(el).viewTimelineName)).toBe('--numbers');
-    const reel = page.locator('#numbers .odo-reel').first();
-    expect(await animationName(reel)).toBe('odo');
-    expect(await reel.evaluate((el) => getComputedStyle(el).animationTimeline)).toBe('--numbers');
+    await waitForHydration(page);
+    const items = page.locator('#numbers li');
+    const last = items.last();
+    expect(await last.getAttribute('data-roll')).toBeNull();
+    await last.scrollIntoViewIfNeeded();
+    await expect(last).toHaveAttribute('data-roll', '');
+    expect(await animationName(last.locator('.odo-reel').first())).toBe('odo');
+  });
+
+  test.describe('on a big screen', () => {
+    test.use({ viewport: { width: 1920, height: 1080 }, isMobile: false, hasTouch: false });
+
+    test('numbers on screen at load rest on their values without scrolling', async ({ page }) => {
+      await page.goto('/about');
+      await waitForHydration(page);
+      const rolls = () =>
+        page
+          .locator('#numbers .odo-reel')
+          .evaluateAll((els) => els.map((el) => getComputedStyle(el).getPropertyValue('--roll')));
+      await expect
+        .poll(async () => (await rolls()).every((roll) => Number(roll) === 0), { timeout: 5000 })
+        .toBe(true);
+    });
   });
 
   test.describe('on a wide screen', () => {
@@ -481,6 +530,26 @@ test.describe('smooth scrolling', () => {
       await page.mouse.wheel(0, 2000);
       await frames(page, 30);
       expect(await page.evaluate(() => window.scrollY)).toBe(before);
+    });
+  });
+
+  test.describe('in a narrow mouse window', () => {
+    test.use({ viewport: { width: 420, height: 800 }, isMobile: false, hasTouch: false });
+
+    // Final review #4: a sideways trackpad swipe over a wide table scrolls the table, not the page.
+    test('a sideways swipe over a wide table scrolls the table', async ({ page }) => {
+      await page.goto('/quality');
+      await waitForHydration(page);
+      await expect.poll(() => smooth(page)).toBe(true);
+      const scroller = page.locator('main .overflow-x-auto').first();
+      await scroller.scrollIntoViewIfNeeded();
+      const max = await scroller.evaluate((el) => el.scrollWidth - el.clientWidth);
+      expect(max).toBeGreaterThan(0);
+      const box = (await scroller.boundingBox())!;
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.mouse.wheel(120, 8);
+      // Natively, the table takes the whole sideways swipe (up to its end).
+      await expect.poll(() => scroller.evaluate((el) => el.scrollLeft)).toBe(Math.min(120, max));
     });
   });
 

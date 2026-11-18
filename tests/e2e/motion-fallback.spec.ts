@@ -43,16 +43,12 @@ test.describe('without scroll-driven animations', () => {
     ).toBe('wrap');
   });
 
-  test('about: the numbers show their values and the career path is a list', async ({ page }) => {
+  test('about: the numbers read their values and the career path is a list', async ({ page }) => {
     await page.goto('/about');
     const values = page.locator('#numbers .metric-value');
     for (const [i, metric] of metrics.entries()) {
       expect(await values.nth(i).evaluate((el) => el.textContent)).toBe(metric.value);
     }
-    const windows = await page
-      .locator('#numbers .odo-window')
-      .evaluateAll((els) => els.map((el) => getComputedStyle(el).display));
-    expect(new Set(windows)).toEqual(new Set(['none']));
     const tops = await page
       .locator('.career-track ol > li')
       .evaluateAll((els) => els.map((el) => el.getBoundingClientRect().top));

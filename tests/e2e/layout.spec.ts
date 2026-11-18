@@ -61,18 +61,25 @@ test.describe('layout', () => {
     });
   }
 
-  // C52: the skills strip, the career strip and the full-bleed Contact never push the page sideways.
+  // C52: the skills strip, the career strip, the turning CV ring and the full-bleed Contact never push
+  // the page sideways, at any point of the scroll (the ring's corners swing as it turns).
   for (const route of ['/', '/about']) {
-    for (const width of [320, 1280]) {
+    for (const width of [320, 390, 768, 1280]) {
       test(`${route} never scrolls sideways at ${width}px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 800 });
         await page.goto(route);
-        await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-        expect(
-          await page.evaluate(
-            () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-          ),
-        ).toBeLessThanOrEqual(0);
+        const overflow = await page.evaluate(async () => {
+          const root = document.documentElement;
+          const max = root.scrollHeight - root.clientHeight;
+          let worst = 0;
+          for (let k = 0; k <= 40; k++) {
+            window.scrollTo(0, (max * k) / 40);
+            await new Promise(requestAnimationFrame);
+            worst = Math.max(worst, root.scrollWidth - root.clientWidth);
+          }
+          return worst;
+        });
+        expect(overflow).toBeLessThanOrEqual(0);
       });
     }
   }

@@ -43,3 +43,16 @@ export function reel(digit: number): { lines: string; steps: number } {
 export function ringText(parts: string[]): string {
   return `${parts.join(' · ')} · `;
 }
+
+/**
+ * The odometer's characters, each marked whether it rolls: the digits of a number roll; digits that
+ * belong to a word (the "95" in "p95") and every other character stay still.
+ */
+export function odoParts(value: string): { char: string; roll: boolean }[] {
+  let attached = false;
+  return Array.from(value, (char) => {
+    if (/[0-9]/.test(char)) return { char, roll: !attached };
+    attached = /\p{L}/u.test(char);
+    return { char, roll: false };
+  });
+}
