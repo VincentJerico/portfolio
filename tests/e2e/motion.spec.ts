@@ -59,14 +59,13 @@ test.describe('arrivals', () => {
     );
   });
 
-  test("the poster's letters rise in each line", async ({ page }) => {
+  // The poster's lines stay whole text, so the name is the page's largest paint (LCP budget); split into
+  // letters, the headline became the largest paint and CI measured it late. It rises in as one.
+  test('the poster rises in whole, its lines unsplit', async ({ page }) => {
     await page.goto('/');
-    const lines = page.locator('.poster > span:not(.sr-only)');
-    await expect(lines).toHaveCount(2);
-    for (const line of await lines.all()) {
-      expect(await line.locator('.letter').count()).toBeGreaterThan(0);
-    }
-    expect(await animationName(lines.first().locator('.letter').first())).toBe('letter');
+    const poster = page.locator('h1.poster');
+    await expect(poster.locator('.letter')).toHaveCount(0);
+    expect(await animationName(poster)).toBe('rise');
   });
 
   test('sections rise in with the shared rise as they scroll in', async ({ page }) => {
