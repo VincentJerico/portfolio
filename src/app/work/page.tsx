@@ -6,6 +6,7 @@ import { approvedCaseStudies, visible } from '@/lib/content';
 import { formatPeriod } from '@/lib/format';
 import { pageMetadata } from '@/lib/seo';
 import { caseStudyItem } from '@/lib/work-items';
+import { LetterTitle } from '@/components/motion/Letters';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Client work',
@@ -21,7 +22,7 @@ export default function ClientWorkPage() {
     <div className="flex flex-col gap-rhythm">
       <header className="flex flex-col gap-6">
         <p className="label-mono text-ink-muted">Work</p>
-        <h1>Client work</h1>
+        <LetterTitle text="Client work" />
       </header>
 
       {role && (

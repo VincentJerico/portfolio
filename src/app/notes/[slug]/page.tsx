@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { visibleNotes } from '@/content/notes';
 import { formatDay } from '@/lib/format';
 import { pageMetadata } from '@/lib/seo';
+import { LetterTitle } from '@/components/motion/Letters';
 
 export const dynamicParams = false;
 
@@ -45,7 +46,7 @@ export default async function NotePage({ params }: PageProps<'/notes/[slug]'>) {
             </li>
           </ol>
         </nav>
-        <h1>{note.title}</h1>
+        <LetterTitle text={note.title} />
         <p className="label-mono text-ink-muted">
           <time dateTime={note.date}>{formatDay(note.date)}</time>
         </p>

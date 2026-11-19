@@ -4,6 +4,7 @@ import { WorkList } from '@/components/content/WorkList';
 import { visibleNotes } from '@/content/notes';
 import { formatDay } from '@/lib/format';
 import { pageMetadata } from '@/lib/seo';
+import { LetterTitle } from '@/components/motion/Letters';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Notes',
@@ -20,7 +21,7 @@ export default function NotesPage() {
     <div className="flex flex-col gap-rhythm">
       <header className="flex flex-col gap-6">
         <p className="label-mono text-ink-muted">Notes</p>
-        <h1>Notes</h1>
+        <LetterTitle text="Notes" />
       </header>
       <WorkList
         headingLevel="h2"

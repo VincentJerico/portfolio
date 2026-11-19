@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { CSSProperties } from 'react';
 import Image from 'next/image';
 import { CareerPath } from '@/components/content/CareerPath';
 import { Section } from '@/components/content/Section';
@@ -17,6 +18,10 @@ import { projectBySlug, visible } from '@/lib/content';
 import { formatCertDate, formatDay, formatMonth, formatPeriod } from '@/lib/format';
 import { pageMetadata } from '@/lib/seo';
 import { projectItem } from '@/lib/work-items';
+import { InkText } from '@/components/motion/InkText';
+import { LetterTitle } from '@/components/motion/Letters';
+import { Odometer } from '@/components/motion/Odometer';
+import { RollOnView } from '@/components/motion/RollOnView';
 
 export const metadata: Metadata = pageMetadata({
   title: 'About',
@@ -36,12 +41,12 @@ export default function AboutPage() {
     <div className="flex flex-col gap-rhythm">
       <header className="flex flex-col gap-6">
         <p className="label-mono text-ink-muted">About</p>
-        <h1>About</h1>
+        <LetterTitle text="About" />
       </header>
 
       <div className="grid items-start gap-8 md:grid-cols-[minmax(0,1fr)_14rem] lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="measure flex flex-col gap-4">
-          <p className="text-xl text-ink lg:text-2xl">{profile.intro}</p>
+          <InkText text={profile.intro} className="text-xl text-ink lg:text-2xl" />
           {profile.background && <p className="text-ink-muted">{profile.background}</p>}
         </div>
         {profile.photo && (
@@ -62,11 +67,11 @@ export default function AboutPage() {
           title="In numbers"
           kicker={asOf ? `As of ${formatDay(asOf)}` : undefined}
         >
-          <ul className="grid border-t border-line sm:grid-cols-2 lg:grid-cols-5">
+          <RollOnView className="odo-list grid border-t border-line sm:grid-cols-2 lg:grid-cols-5">
             {metrics.map((metric) => (
               <li key={metric.id} className="flex flex-col gap-1 border-b border-line py-4 pr-6">
-                <p className="text-4xl font-extrabold tracking-tight text-ink [font-variation-settings:'opsz'_96,'wdth'_75]">
-                  {metric.value}
+                <p className="metric-value text-4xl font-extrabold tracking-tight text-ink [font-variation-settings:'opsz'_96,'wdth'_75]">
+                  <Odometer value={metric.value} />
                 </p>
                 <p className="text-sm text-ink">{metric.label}</p>
                 <a
@@ -77,7 +82,7 @@ export default function AboutPage() {
                 </a>
               </li>
             ))}
-          </ul>
+          </RollOnView>
         </Section>
       )}
 
@@ -165,16 +170,17 @@ export default function AboutPage() {
       )}
 
       <Section id="method" title="How I test" kicker="Checklist for every client build">
-        <ol className="grid border-t border-line sm:grid-cols-2">
+        <ol className="deck border-t border-line">
           {qaAreas.map((area, i) => (
             <li
               key={area}
-              className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-4 border-b border-line py-3 sm:pr-6"
+              style={{ '--i': i } as CSSProperties}
+              className="grid grid-cols-[3rem_minmax(0,1fr)] items-baseline gap-x-4 border-b border-line bg-bg py-4"
             >
-              <span aria-hidden="true" className="label-mono pt-0.5 text-ink-muted">
+              <span aria-hidden="true" className="font-mono text-xl text-ink-muted">
                 {String(i + 1).padStart(2, '0')}
               </span>
-              <span className="text-ink">{area}</span>
+              <span className="text-2xl font-semibold text-ink">{area}</span>
             </li>
           ))}
         </ol>

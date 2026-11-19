@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { SkillGroup } from '@/content/schema';
 import { skills } from '@/content';
 import { pageMetadata } from '@/lib/seo';
+import { LetterTitle } from '@/components/motion/Letters';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Skills',
@@ -56,7 +57,7 @@ export default function SkillsPage() {
     <div className="flex flex-col gap-rhythm">
       <header className="flex flex-col gap-6">
         <p className="label-mono text-ink-muted">Skills</p>
-        <h1>Skills</h1>
+        <LetterTitle text="Skills" />
         <p className="measure text-lg text-ink-muted">
           Only tools actually used in the repos, client work or listed on the CV.
         </p>

@@ -1,4 +1,5 @@
-import { expect, test, type Locator } from '../helpers/test';
+import { expect, test, type Locator, type Page } from '../helpers/test';
+import { metrics, profile } from '../../src/content';
 import { waitForHydration } from '../helpers/hydration';
 
 // C50's one rhythm, kept by the minimal reset (C51): everything that arrives rises 16 px over 400 ms,
@@ -6,6 +7,25 @@ import { waitForHydration } from '../helpers/hydration';
 
 const animationName = (locator: Locator) =>
   locator.evaluate((el) => getComputedStyle(el).animationName);
+
+test('the paper has a still grain behind the content', async ({ page }) => {
+  await page.goto('/');
+  const grain = await page.evaluate(() => {
+    const style = getComputedStyle(document.body, '::before');
+    return {
+      position: style.position,
+      zIndex: style.zIndex,
+      pointerEvents: style.pointerEvents,
+      image: style.backgroundImage,
+      animation: style.animationName,
+    };
+  });
+  expect(grain.position).toBe('fixed');
+  expect(grain.zIndex).toBe('-1');
+  expect(grain.pointerEvents).toBe('none');
+  expect(grain.image).toContain('data:image/svg+xml');
+  expect(grain.animation).toBe('none');
+});
 
 test.describe('arrivals', () => {
   test('the poster rises in on the home page', async ({ page }) => {
@@ -15,7 +35,37 @@ test.describe('arrivals', () => {
 
   test('the 404 page arrives like every other page', async ({ page }) => {
     await page.goto('/no-such-page');
-    expect(await animationName(page.locator('main header > h1'))).toBe('rise');
+    expect(await animationName(page.locator('main header > h1 .letter').first())).toBe('letter');
+  });
+
+  test('page titles arrive letter by letter', async ({ page }) => {
+    await page.goto('/about');
+    const h1 = page.locator('main header h1');
+    const letters = h1.locator('.letter');
+    await expect(letters).toHaveCount(5);
+    expect(await h1.evaluate((el) => el.textContent)).toBe('About');
+    // Inline-block letters read as separate words, so the heading must carry its text as its name.
+    await expect(h1).toHaveAccessibleName('About');
+    // Nothing starts hidden, so the largest paint is never held back by the motion.
+    expect(await letters.first().evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+    expect(
+      await letters.evaluateAll((els) =>
+        els.map((el) => getComputedStyle(el).getPropertyValue('--i').trim()),
+      ),
+    ).toEqual(['0', '1', '2', '3', '4']);
+    expect(await animationName(letters.first())).toBe('letter');
+    expect(await letters.nth(4).evaluate((el) => getComputedStyle(el).animationDelay)).toBe(
+      '0.112s',
+    );
+  });
+
+  // The poster's lines stay whole text, so the name is the page's largest paint (LCP budget); split into
+  // letters, the headline became the largest paint and CI measured it late. It rises in as one.
+  test('the poster rises in whole, its lines unsplit', async ({ page }) => {
+    await page.goto('/');
+    const poster = page.locator('h1.poster');
+    await expect(poster.locator('.letter')).toHaveCount(0);
+    expect(await animationName(poster)).toBe('rise');
   });
 
   test('sections rise in with the shared rise as they scroll in', async ({ page }) => {
@@ -98,6 +148,194 @@ test.describe('changes of shape', () => {
   });
 });
 
+// Every engine the suite runs (Chromium, WebKit) has scroll-driven animations; engines without them
+// are covered by motion-fallback.spec.ts.
+test.describe('scroll-linked', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  test('the ending grows into a sheet, the CV ring turns and the arrow draws', async ({ page }) => {
+    await page.goto('/');
+    const contact = page.getByRole('region', { name: 'Contact' });
+    expect(await animationName(contact)).toBe('sheet');
+    const ring = contact.locator('.cv-ring svg');
+    expect(await animationName(ring)).toBe('ring-turn');
+    expect(await ring.evaluate((el) => getComputedStyle(el).animationTimeline)).toMatch(
+      /^scroll\(root/,
+    );
+    expect(await animationName(contact.locator('.contact-arrow path'))).toBe('draw');
+  });
+
+  test('a rule draws under the top bar once you scroll', async ({ page }) => {
+    await page.goto('/');
+    const rule = await page.evaluate(() => {
+      const style = getComputedStyle(document.querySelector('[data-site-header]')!, '::after');
+      return { name: style.animationName, timeline: style.animationTimeline };
+    });
+    expect(rule.name).toBe('header-rule');
+    expect(rule.timeline).toMatch(/^scroll\(root/);
+  });
+
+  // Final review #3: the strip drifts, at most a pixel of travel per pixel scrolled.
+  test('the skills strip drifts gently with the scroll', async ({ page }) => {
+    await page.goto('/');
+    const strip = page.locator('.marquee');
+    const row = strip.locator('.marquee-row').first();
+    await strip.evaluate((el) =>
+      window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - window.innerHeight / 2),
+    );
+    // Scroll-driven styles update on the next frame; read only once two have passed.
+    const settle = () =>
+      page.evaluate(
+        () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+      );
+    await settle();
+    const x1 = await row.evaluate((el) => el.getBoundingClientRect().left);
+    await page.evaluate(() => window.scrollBy(0, 200));
+    await settle();
+    await expect
+      .poll(async () =>
+        Math.abs((await row.evaluate((el) => el.getBoundingClientRect().left)) - x1),
+      )
+      .toBeGreaterThan(0);
+    const x2 = await row.evaluate((el) => el.getBoundingClientRect().left);
+    expect(Math.abs(x2 - x1)).toBeLessThanOrEqual(200);
+  });
+
+  test('the skills strip moves with the scroll', async ({ page }) => {
+    await page.goto('/');
+    const rows = page.locator('.marquee-row');
+    expect(await animationName(rows.first())).toBe('marquee');
+    expect(await animationName(rows.nth(1))).toBe('marquee-back');
+    expect(await rows.first().evaluate((el) => getComputedStyle(el).animationTimeline)).toBe(
+      '--strip',
+    );
+  });
+});
+
+test.describe('about', () => {
+  const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  test('the intro reads in full and inks in word by word', async ({ page }) => {
+    await page.goto('/about');
+    const intro = page.locator('.ink-text');
+    await expect(intro).toHaveCount(1);
+    expect(await intro.evaluate((el) => el.textContent!.replace(/\s+/g, ' ').trim())).toBe(
+      profile.intro,
+    );
+    const words = intro.locator('> span');
+    expect(await animationName(words.first())).toBe('ink');
+    const delays = await words.evaluateAll((els) =>
+      els.slice(0, 3).map((el) => parseFloat(getComputedStyle(el).animationDelay)),
+    );
+    expect(delays[1]).toBeGreaterThan(delays[0]!);
+    expect(delays[2]).toBeGreaterThan(delays[1]!);
+  });
+
+  test('each number lands on its recorded value', async ({ page }) => {
+    await page.goto('/about');
+    const values = page.locator('#numbers .metric-value');
+    await expect(values).toHaveCount(metrics.length);
+    for (const [i, metric] of metrics.entries()) {
+      const value = values.nth(i);
+      expect(await value.evaluate((el) => el.textContent)).toBe(metric.value);
+      // The rolling digits above each real digit are never read out.
+      expect(await value.ariaSnapshot()).toMatch(
+        new RegExp(`^- paragraph: "?${escape(metric.value)}"?$`),
+      );
+    }
+  });
+
+  // Final review #1: a scrubbed odometer rests on wrong digits wherever the list is on screen at
+  // load, so the digits roll once as each number comes into view and then rest on the data.
+  test('the numbers roll once as they come into view, then rest on their values', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/about');
+    await waitForHydration(page);
+    const items = page.locator('#numbers li');
+    const last = items.last();
+    expect(await last.getAttribute('data-roll')).toBeNull();
+    await last.scrollIntoViewIfNeeded();
+    await expect(last).toHaveAttribute('data-roll', '');
+    expect(await animationName(last.locator('.odo-reel').first())).toBe('odo');
+  });
+
+  test.describe('on a big screen', () => {
+    test.use({ viewport: { width: 1920, height: 1080 }, isMobile: false, hasTouch: false });
+
+    test('numbers on screen at load rest on their values without scrolling', async ({ page }) => {
+      await page.goto('/about');
+      await waitForHydration(page);
+      const rolls = () =>
+        page
+          .locator('#numbers .odo-reel')
+          .evaluateAll((els) => els.map((el) => getComputedStyle(el).getPropertyValue('--roll')));
+      await expect
+        .poll(async () => (await rolls()).every((roll) => Number(roll) === 0), { timeout: 5000 })
+        .toBe(true);
+    });
+  });
+
+  test.describe('on a wide screen', () => {
+    test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+    test('the career path slides sideways', async ({ page }) => {
+      await page.goto('/about');
+      const track = page.locator('.career-track');
+      const steps = track.locator('ol > li');
+      expect(await animationName(track.locator('ol'))).toBe('career');
+      await track.evaluate((el) =>
+        window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY),
+      );
+      await expect.poll(async () => (await steps.first().boundingBox())!.x).toBeLessThan(1280);
+      await track.evaluate((el) =>
+        window.scrollTo(0, el.getBoundingClientRect().bottom + window.scrollY - window.innerHeight),
+      );
+      await expect
+        .poll(async () => {
+          const box = (await steps.last().boundingBox())!;
+          return box.x + box.width;
+        })
+        .toBeLessThanOrEqual(1280);
+    });
+
+    test('the checklist piles up as you read', async ({ page }) => {
+      await page.goto('/about');
+      const list = page.locator('#method ol');
+      const items = list.locator('> li');
+      await list.evaluate((el) => {
+        const first = el.children[0] as HTMLElement;
+        const top = el.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo(0, top - 56 + first.offsetHeight * 5);
+      });
+      await expect
+        .poll(async () => {
+          const a = (await items.nth(0).boundingBox())!;
+          const b = (await items.nth(1).boundingBox())!;
+          return Math.round(b.y - a.y);
+        })
+        .toBe(8);
+      expect((await items.nth(1).boundingBox())!.y).toBeLessThan(200);
+    });
+  });
+
+  test.describe('on a phone', () => {
+    test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+    test('the career path is a plain list', async ({ page }) => {
+      await page.goto('/about');
+      const list = page.locator('.career-track ol');
+      expect(await animationName(list)).toBe('none');
+      const tops = await list
+        .locator('> li')
+        .evaluateAll((els) => els.map((el) => el.getBoundingClientRect().top));
+      expect(tops).toEqual([...tops].sort((a, b) => a - b));
+      expect(new Set(tops).size).toBe(tops.length);
+    });
+  });
+});
+
 test.describe('reduced motion', () => {
   test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
 
@@ -108,6 +346,51 @@ test.describe('reduced motion', () => {
     expect(await animationName(page.locator('.work-row').first())).toBe('none');
     await page.goto('/resume');
     expect(await animationName(page.locator('.resume-list > li').first())).toBe('none');
+    await page.goto('/about');
+    expect(await animationName(page.locator('main header h1 .letter').first())).toBe('none');
+    const ink = await page.evaluate(() => {
+      const el = document.createElement('span');
+      el.style.color = 'var(--text)';
+      document.body.append(el);
+      const rgb = getComputedStyle(el).color;
+      el.remove();
+      return rgb;
+    });
+    expect(
+      await page
+        .locator('.ink-text span')
+        .first()
+        .evaluate((el) => getComputedStyle(el).color),
+    ).toBe(ink);
+    await page.goto('/');
+    const copy = page.locator('.marquee-row ul[aria-hidden="true"]').first();
+    expect(await copy.evaluate((el) => getComputedStyle(el).display)).toBe('none');
+    expect(
+      await page
+        .locator('.marquee-row')
+        .first()
+        .evaluate((el) => getComputedStyle(el).flexWrap),
+    ).toBe('wrap');
+    await page.goto('/about');
+    expect(await animationName(page.locator('#numbers .odo-reel').first())).toBe('none');
+    expect(await animationName(page.locator('.career-track ol'))).toBe('none');
+    await page.goto('/');
+    const contact = page.getByRole('region', { name: 'Contact' });
+    expect(await animationName(contact)).toBe('none');
+    expect(await animationName(contact.locator('.cv-ring svg'))).toBe('none');
+    expect(await animationName(contact.locator('.contact-arrow path'))).toBe('none');
+    expect(
+      await page.evaluate(
+        () => getComputedStyle(document.querySelector('[data-site-header]')!, '::after').scale,
+      ),
+    ).toMatch(/^(none|1( 1)?)$/);
+    await page.goto('/about');
+    expect(
+      await page
+        .locator('#method ol > li')
+        .first()
+        .evaluate((el) => getComputedStyle(el).position),
+    ).toBe('static');
   });
 });
 
@@ -153,13 +436,17 @@ test.describe('one rhythm', () => {
   test('arrivals share one rise and one timing; rows share one hover', async ({ page }) => {
     await page.goto('/about');
     const header = await page
-      .locator('main header > *')
+      .locator('main header > :not(h1)')
       .evaluateAll((els) =>
         els.map(
           (el) => `${getComputedStyle(el).animationName} ${getComputedStyle(el).animationDuration}`,
         ),
       );
     expect(new Set(header)).toEqual(new Set(['rise 0.4s']));
+    const letters = await page
+      .locator('main header > h1 .letter')
+      .evaluateAll((els) => els.map((el) => getComputedStyle(el).animationName));
+    expect(new Set(letters)).toEqual(new Set(['letter']));
     const sections = await page
       .locator('main section')
       .evaluateAll((els) => els.map((el) => getComputedStyle(el).animationName));
@@ -172,5 +459,115 @@ test.describe('one rhythm', () => {
         row.locator('.work-row-link > span').evaluate((el) => getComputedStyle(el).translate),
       )
       .toBe('12px');
+  });
+});
+
+// C52 move 9: smooth scrolling for mouse and trackpad only; touch, keyboard, reduced motion and open
+// dialogs keep native scrolling.
+test.describe('smooth scrolling', () => {
+  const smooth = (page: Page) =>
+    page.evaluate(() => document.documentElement.classList.contains('lenis'));
+  // The component decides on an idle callback; once one has run here, its decision is made.
+  const afterIdle = (page: Page) =>
+    page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          (window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 200)))(() =>
+            window.setTimeout(resolve, 50),
+          ),
+        ),
+    );
+  const frames = (page: Page, count: number) =>
+    page.evaluate(
+      (n) =>
+        new Promise<void>((resolve) => {
+          const tick = () => (n-- > 0 ? requestAnimationFrame(tick) : resolve());
+          tick();
+        }),
+      count,
+    );
+  const atBottom = (page: Page) =>
+    page.evaluate(
+      () => window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2,
+    );
+
+  test.describe('with a mouse', () => {
+    test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+    test('the wheel glides, and still reaches the bottom', async ({ page }) => {
+      await page.goto('/');
+      await waitForHydration(page);
+      await expect.poll(() => smooth(page)).toBe(true);
+      await page.mouse.move(640, 400);
+      await page.mouse.wheel(0, 30000);
+      await expect.poll(() => atBottom(page), { timeout: 10_000 }).toBe(true);
+    });
+
+    test('the keyboard still scrolls natively', async ({ page }) => {
+      await page.goto('/');
+      await waitForHydration(page);
+      await expect.poll(() => smooth(page)).toBe(true);
+      await page.keyboard.press('End');
+      await expect.poll(() => atBottom(page), { timeout: 10_000 }).toBe(true);
+    });
+  });
+
+  test.describe('with a narrow mouse window', () => {
+    test.use({ viewport: { width: 700, height: 800 }, isMobile: false, hasTouch: false });
+
+    test('an open menu keeps the page still under the wheel', async ({ page }) => {
+      await page.goto('/');
+      await waitForHydration(page);
+      await expect.poll(() => smooth(page)).toBe(true);
+      await page
+        .locator('[data-site-header]')
+        .getByRole('button', { name: 'Menu', exact: true })
+        .click();
+      await expect(page.getByRole('dialog', { name: 'Site menu' })).toBeVisible();
+      const before = await page.evaluate(() => window.scrollY);
+      await page.mouse.move(350, 400);
+      await page.mouse.wheel(0, 2000);
+      await frames(page, 30);
+      expect(await page.evaluate(() => window.scrollY)).toBe(before);
+    });
+  });
+
+  test.describe('in a narrow mouse window', () => {
+    test.use({ viewport: { width: 420, height: 800 }, isMobile: false, hasTouch: false });
+
+    // Final review #4: a sideways trackpad swipe over a wide table scrolls the table, not the page.
+    test('a sideways swipe over a wide table scrolls the table', async ({ page }) => {
+      await page.goto('/quality');
+      await waitForHydration(page);
+      await expect.poll(() => smooth(page)).toBe(true);
+      const scroller = page.locator('main .overflow-x-auto').first();
+      await scroller.scrollIntoViewIfNeeded();
+      const max = await scroller.evaluate((el) => el.scrollWidth - el.clientWidth);
+      expect(max).toBeGreaterThan(0);
+      const box = (await scroller.boundingBox())!;
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.mouse.wheel(120, 8);
+      // Natively, the table takes the whole sideways swipe (up to its end).
+      await expect.poll(() => scroller.evaluate((el) => el.scrollLeft)).toBe(Math.min(120, max));
+    });
+  });
+
+  test.describe('on a touch screen', () => {
+    test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+    test('scrolling stays native', async ({ page }) => {
+      await page.goto('/');
+      await waitForHydration(page);
+      await afterIdle(page);
+      expect(await smooth(page)).toBe(false);
+    });
+  });
+
+  test('reduced motion keeps native scrolling', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    await waitForHydration(page);
+    await afterIdle(page);
+    expect(await smooth(page)).toBe(false);
   });
 });

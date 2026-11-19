@@ -39,6 +39,14 @@
     -webkit-text-size-adjust: 100%;
     /* Keep focused elements clear of the 56 px sticky top bar (SC 2.4.11). */
     scroll-padding-top: 4.5rem;
+    /* The scrollbar's room is kept even while a modal dialog locks the page (below), so nothing
+       shifts sideways as one opens. */
+    scrollbar-gutter: stable;
+  }
+  /* While a modal dialog (the phone menu, an evidence image) is open, the page under it holds still:
+     the wheel would otherwise chain through the dialog and scroll it (C52, with smooth scrolling). */
+  html:has(dialog:modal) {
+    overflow: hidden;
   }
 
   body {
@@ -53,6 +61,8 @@
   :root {
     --dur-fast: 180ms;
     --dur-base: 400ms;
+    /* A page change: the new page's sheet sliding up over the old (C52). */
+    --dur-sheet: 460ms;
   }
 
   /* Page titles: Bricolage at its narrowest, heaviest display cut, the poster's voice on every page. */
@@ -386,6 +396,159 @@
   }
 
   /* Pending placeholder for the moments a visitor actually waits (an external badge). */
+  /* C52 move 6: the skills strip. By default (no scroll-driven animation, or reduced motion) the rows
+     wrap and the hidden copies stay out, so every skill is on screen; the motion section turns each
+     row into one sliding line. */
+  .marquee {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow-x: clip;
+    border-block: 1px solid var(--border);
+    padding-block: 1.25rem;
+  }
+  .marquee-row,
+  .marquee-row > ul {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .marquee-row > ul[aria-hidden='true'] {
+    display: none;
+  }
+  .marquee li {
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    font-weight: 800;
+    font-variation-settings:
+      'opsz' 96,
+      'wdth' 75;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+  .marquee li:nth-child(even) {
+    color: var(--text-muted);
+  }
+  .marquee li + li::before,
+  .marquee-row > ul + ul > li:first-child::before {
+    content: '/' / '';
+    margin-inline: 0.35em;
+    color: var(--accent);
+    font-weight: 400;
+  }
+
+  /* C52 move 4: rolling digits. At rest (and without scroll-driven animation, or under reduced
+     motion) a value is plain text; the motion section swaps in each digit's decorative window. */
+  .metric-value {
+    line-height: 1;
+  }
+  .odo-window {
+    display: none;
+  }
+
+  /* C52 move 11: home's Contact is the ending, set in the other theme (.theme-flip, tokens.css) and full
+     bleed: the shadow paints the band edge to edge and the clip shows it out to the viewport's edges
+     without widening the page. The motion section grows it from a rounded card as it scrolls in. */
+  .contact-sheet {
+    background: var(--bg);
+    color: var(--text);
+    box-shadow: 0 0 0 100vmax var(--bg);
+    /* Out to the viewport's edges exactly, so the grow-in (below) widens visibly all the way. */
+    clip-path: inset(0 calc(50% - 50vw));
+    padding-block: clamp(4rem, 3rem + 5vw, 8rem);
+  }
+  .contact-arrow {
+    flex: none;
+    width: clamp(2.5rem, 1.5rem + 3vw, 4.5rem);
+    height: auto;
+    color: var(--accent);
+    view-timeline: --arrow block;
+  }
+  .contact-arrow path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 4;
+    stroke-linecap: square;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+
+  /* C52 move 5: the CV link as a ring of text around a filled centre. */
+  .cv-ring {
+    position: relative;
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 9rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    color: var(--text);
+    text-decoration: none;
+    /* The turning square of the svg would swing its corners past the page edge; the text itself
+       sits well inside the circle, so clipping to it cuts nothing visible. */
+    overflow: clip;
+  }
+  .cv-ring svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .cv-ring text {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    fill: currentColor;
+  }
+  .cv-ring-label {
+    display: grid;
+    place-items: center;
+    width: 58%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--text);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.2;
+    text-align: center;
+    transition: background-color var(--dur-fast) var(--ease-snap);
+  }
+  .cv-ring:is(:hover, :focus-visible) .cv-ring-label {
+    background: var(--accent);
+  }
+  @media (max-width: 639px) {
+    .cv-ring {
+      width: 7rem;
+    }
+  }
+
+  /* C52 move 10: a still paper grain behind the content, never over text. Body is its own stacking
+     context, so the grain sits between its paper colour and everything on it. Screens only. */
+  body {
+    isolation: isolate;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: var(--grain);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px;
+  }
+
+  /* C52 move 10: a hairline under the top bar. Drawn and still by default; the motion section draws
+     it out from the centre over the first 120 px of scroll. */
+  [data-site-header]::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 1px;
+    background: var(--border);
+    transform-origin: center;
+  }
+
   .skeleton {
     position: relative;
     overflow: hidden;
@@ -450,7 +613,9 @@
 @media print {
   :root,
   .light,
-  .dark {
+  .dark,
+  :root:not(.dark) .theme-flip,
+  .dark .theme-flip {
     color-scheme: light;
     --bg: #ffffff;
     --surface: #ffffff;
@@ -464,6 +629,15 @@
     --warn: #000000;
     --fail: #000000;
     --shadow: none;
+  }
+
+  body::before {
+    display: none;
+  }
+  .contact-sheet {
+    box-shadow: none;
+    clip-path: none;
+    padding-block: 0;
   }
 
   @page {
@@ -521,6 +695,16 @@
   from {
     translate: 0 16px;
   }
+}
+@keyframes letter {
+  from {
+    translate: 0 0.35em;
+    rotate: 6deg;
+  }
+}
+/* A word never breaks between its letters (they are inline blocks while they move). */
+.word {
+  white-space: nowrap;
 }
 
 /* P5: view transitions are motion too. */
@@ -597,8 +781,17 @@
 
   /* Page headers, and the poster on the home page, rise in once, line by line, on load. No opacity:
      the title paints at once, so LCP is unaffected and axe never scans faded text. */
-  main header > :not([data-morph-title]) {
+  main header > :not([data-morph-title], :has(.letter)) {
     animation: rise var(--dur-base) var(--ease-snap) backwards;
+  }
+
+  /* C52 move 2: page titles arrive letter by letter, each rising 0.35 em and straightening from a
+     slight lean, 28 ms apart. Transform only and nothing starts hidden, so the title still paints at
+     once (LCP) and its text is the plain heading text. */
+  .letter {
+    display: inline-block;
+    transform-origin: 0 100%;
+    animation: letter 520ms var(--ease-snap) calc(var(--i) * 28ms) backwards;
   }
   main header > :nth-child(2) {
     animation-delay: 40ms;
@@ -608,6 +801,62 @@
   }
   main header > :nth-child(n + 4) {
     animation-delay: 120ms;
+  }
+
+  /* C52 move 3: About's intro inks in word by word, muted to ink, just after the title's letters. */
+  .ink-text > span {
+    animation: ink var(--dur-base) var(--ease-snap) calc(240ms + var(--i) * 24ms) backwards;
+  }
+
+  /* C52 move 4: each number's digits roll up into place once, as it comes into view (RollOnView marks
+     it data-roll). The real digit is clipped out of sight (still read out); a 1em window centred on
+     its line shows a reel of 1em lines ending in the same digit. Before the roll, and without
+     JavaScript, the window rests on the real digit, so a number never shows a wrong value at rest. */
+  .odo-digit {
+    position: relative;
+  }
+  .odo-real {
+    clip-path: inset(0 0 100% 0);
+  }
+  .odo-window {
+    display: block;
+    position: absolute;
+    inset: 50% 0 auto;
+    height: 1em;
+    translate: 0 -50%;
+    overflow: clip;
+  }
+  .odo-reel {
+    position: absolute;
+    inset: 0;
+    translate: 0 calc(var(--roll) * 1em);
+  }
+  .odo-reel::before {
+    content: attr(data-reel) / '';
+    position: absolute;
+    inset: auto 0 0;
+    line-height: 1;
+    text-align: center;
+    white-space: pre;
+  }
+  .odo-list > li[data-roll] .odo-reel {
+    animation: odo 700ms var(--ease-snap) both;
+  }
+
+  /* C52 move 8: "How I test" piles up as you read, each area sticking 8 px below the one before. */
+  .deck > li {
+    position: sticky;
+    top: calc(3.5rem + var(--i) * 0.5rem);
+  }
+  /* Each row's rule moves to its top edge, so every 8 px peek of the pile shows a line, like the edges
+     of stacked sheets; the list closes with a rule underneath instead. */
+  .deck {
+    border-top-width: 0;
+    border-bottom-width: 1px;
+  }
+  .deck > li {
+    border-top-width: 1px;
+    border-bottom-width: 0;
   }
 
   /* Feedback: anything that appears in answer to the visitor (errors, alerts, statuses) rises in. */
@@ -633,6 +882,53 @@
       animation-timeline: view();
       animation-range: entry 0% entry 100%;
     }
+    /* C52 move 6: each skills row is one line drifting while the strip crosses the screen, the
+       second the other way: 60vw over the strip's own view, under a pixel per pixel scrolled. The
+       copy keeps the edges filled. */
+    .marquee-row,
+    .marquee-row > ul {
+      flex-wrap: nowrap;
+    }
+    .marquee {
+      view-timeline: --strip block;
+    }
+    .marquee-row {
+      width: max-content;
+      animation: marquee linear both;
+      animation-timeline: --strip;
+      animation-range: cover 0% cover 100%;
+    }
+    .marquee-row[data-dir='right'] {
+      animation-name: marquee-back;
+    }
+    .marquee-row > ul[aria-hidden='true'] {
+      display: flex;
+    }
+    .marquee li {
+      font-size: clamp(2rem, 1rem + 4vw, 4.5rem);
+      line-height: 1;
+    }
+    /* C52 moves 5 and 11: the ending grows from a rounded card to full bleed as it scrolls in, its
+       arrow draws itself, and the CV ring turns with the page's scroll. */
+    .contact-sheet {
+      animation: sheet linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 35%;
+    }
+    .contact-arrow path {
+      animation: draw linear both;
+      animation-timeline: --arrow;
+      animation-range: entry 20% cover 40%;
+    }
+    .cv-ring svg {
+      animation: ring-turn linear both;
+      animation-timeline: scroll(root);
+    }
+    [data-site-header]::after {
+      animation: header-rule linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0px 120px;
+    }
     .resume-list {
       view-timeline: --resume block;
     }
@@ -644,6 +940,108 @@
       animation-timeline: --resume;
       animation-range: entry 0% cover 25%;
     }
+  }
+}
+@keyframes ink {
+  from {
+    color: var(--text-muted);
+  }
+}
+@keyframes marquee {
+  to {
+    translate: -60vw 0;
+  }
+}
+@keyframes marquee-back {
+  from {
+    translate: -60vw 0;
+  }
+  to {
+    translate: 0 0;
+  }
+}
+/* C52 move 7: on wide screens the career path pins under the top bar and its steps slide sideways as
+   the page scrolls down. 3.5rem is the top bar (h-14). Elsewhere it stays the ruled list. */
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) and (min-width: 768px) {
+    .career-track {
+      view-timeline: --career block;
+      height: 260svh;
+    }
+    .career-sticky {
+      position: sticky;
+      top: 3.5rem;
+      display: flex;
+      align-items: center;
+      height: calc(100svh - 3.5rem);
+      container-type: inline-size;
+      overflow-x: clip;
+    }
+    .career-track ol {
+      display: flex;
+      width: max-content;
+      border-top: 0;
+      animation: career linear both;
+      animation-timeline: --career;
+      animation-range: contain 0% contain 100%;
+    }
+    .career-track li {
+      display: flex;
+      flex: none;
+      flex-direction: column;
+      gap: 1rem;
+      width: min(44rem, 70cqw);
+      border-bottom: 0;
+      border-left: 1px solid var(--border);
+      padding: 0 3rem;
+    }
+    .career-track .career-label {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 1rem + 5vw, 6rem);
+      font-weight: 800;
+      font-variation-settings:
+        'opsz' 96,
+        'wdth' 75;
+      line-height: 0.95;
+    }
+  }
+}
+@keyframes career {
+  to {
+    translate: calc(-100% + 100cqw) 0;
+  }
+}
+@keyframes odo {
+  from {
+    --roll: var(--steps);
+  }
+}
+@property --roll {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+@keyframes sheet {
+  from {
+    clip-path: inset(3rem 1rem round 1.5rem);
+  }
+  to {
+    clip-path: inset(0 calc(50% - 50vw) round 0);
+  }
+}
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+@keyframes ring-turn {
+  to {
+    rotate: 2turn;
+  }
+}
+@keyframes header-rule {
+  from {
+    scale: 0 1;
   }
 }
 @property --rise {
@@ -660,29 +1058,39 @@
   }
 }
 
-/* Route change: quick and light, one page at a time. The old page lifts away in 120 ms, then the new
-   one rises into place over 240 ms, so the two never overlap; the top bar never moves. A project's
-   name morphs from its row into the report title (.morph). */
-::view-transition-old(.page-exit) {
-  animation: 120ms var(--ease-snap) both vt-out;
+/* Route change (C52 move 1): the new page slides up over the old like a sheet of paper, clipped from
+   its bottom edge, while the old page sinks 32 px under it; the new title's letters then rise in. The
+   sheet is opaque (the paper colour), so the two pages never show through each other. The top bar
+   never moves. A project's name morphs from its row into the report title (.morph) in step. */
+::view-transition-group(.page-enter) {
+  background: var(--bg);
+  animation: var(--dur-sheet) var(--ease-snap) both vt-sheet;
 }
 ::view-transition-new(.page-enter) {
-  animation: 240ms var(--ease-snap) 110ms both vt-in;
+  animation: var(--dur-sheet) var(--ease-snap) both rise;
+}
+::view-transition-old(.page-exit) {
+  animation: var(--dur-sheet) var(--ease-snap) both vt-sink;
 }
 ::view-transition-group(.morph) {
-  animation-duration: var(--dur-base);
+  animation-duration: var(--dur-sheet);
   animation-timing-function: var(--ease-snap);
 }
-@keyframes vt-out {
+/* The edge travels one screen height, not the page's: a tall page's sheet still sweeps the whole
+   screen over the full duration instead of arriving at the end. */
+@keyframes vt-sheet {
+  from {
+    clip-path: inset(100vh 0 0 0);
+  }
   to {
-    opacity: 0;
-    translate: 0 -8px;
+    clip-path: inset(0);
   }
 }
-@keyframes vt-in {
-  from {
-    opacity: 0;
-    translate: 0 16px;
+/* The old page is a snapshot on its way out, so fading it is not the faded-text case C50 rules out. */
+@keyframes vt-sink {
+  to {
+    translate: 0 -32px;
+    opacity: 0.4;
   }
 }
 

@@ -6,6 +6,7 @@ import { projectsInOrder } from '@/lib/content';
 import { categoryLabel } from '@/lib/labels';
 import { pageMetadata } from '@/lib/seo';
 import { projectItem } from '@/lib/work-items';
+import { LetterTitle } from '@/components/motion/Letters';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Projects',
@@ -24,7 +25,7 @@ export default function ProjectsPage() {
     <div className="flex flex-col gap-rhythm">
       <header>
         <p className="label-mono text-ink-muted">{projects.length} projects</p>
-        <h1 className="mt-4">Projects</h1>
+        <LetterTitle text="Projects" className="mt-4" />
         <p className="measure mt-6 text-lg text-ink-muted">{profile.tagline}</p>
       </header>
       <section aria-labelledby="all-projects-heading">

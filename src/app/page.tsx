@@ -1,14 +1,17 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { WorkList } from '@/components/content/WorkList';
+import { CvRing } from '@/components/motion/CvRing';
+import { Marquee } from '@/components/motion/Marquee';
 import { LocalTime } from '@/components/layout/LocalTime';
 import { JsonLd } from '@/components/seo/JsonLd';
 import { ButtonLink } from '@/components/ui/Button';
 import { CopyButton } from '@/components/ui/CopyButton';
-import { education, experience, profile } from '@/content';
+import { education, experience, profile, skills } from '@/content';
 import { MANILA_UTC_OFFSET_MINUTES } from '@/lib/clock';
 import { approvedCaseStudies, projectsInOrder, visible } from '@/lib/content';
 import { getEnv } from '@/lib/env';
+import { skillRows } from '@/lib/motion-text';
 import { pageMetadata } from '@/lib/seo';
 import { caseStudyItem, projectItem } from '@/lib/work-items';
 
@@ -51,6 +54,7 @@ export default function HomePage() {
       />
 
       <header data-poster className="poster-hero">
+        {/* Whole lines, not letters: the name stays the page's largest paint (C52 ruling). */}
         <h1 className="poster">
           <span>{first}</span> <span>{second}</span>
           {surname && <span className="sr-only"> {surname}</span>}
@@ -80,6 +84,8 @@ export default function HomePage() {
         <WorkList items={projects.map(projectItem)} />
       </section>
 
+      <Marquee rows={skillRows(skills)} />
+
       {caseStudies.length > 0 && role && (
         <section aria-labelledby="client-work-heading">
           <div className="mb-6 flex flex-wrap items-baseline justify-between gap-x-6">
@@ -92,8 +98,16 @@ export default function HomePage() {
         </section>
       )}
 
-      <section aria-labelledby="contact-heading">
-        <h2 id="contact-heading">Contact</h2>
+      <section aria-labelledby="contact-heading" className="theme-flip contact-sheet">
+        <div className="flex flex-wrap items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <h2 id="contact-heading">Contact</h2>
+            <svg className="contact-arrow" aria-hidden="true" focusable="false" viewBox="0 0 48 48">
+              <path pathLength={1} d="M8 40 L40 8 M14 8 H40 V34" />
+            </svg>
+          </div>
+          <CvRing href={profile.cvPdf} parts={[profile.role, profile.location]} />
+        </div>
         <p className="mt-6">
           <a href={`mailto:${profile.email}`} className="contact-email">
             {profile.email}
@@ -101,9 +115,6 @@ export default function HomePage() {
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <CopyButton value={profile.email} label="Copy email" />
-          <ButtonLink href={profile.cvPdf} download>
-            Download CV
-          </ButtonLink>
           <ButtonLink href={profile.github} variant="ghost">
             GitHub
           </ButtonLink>

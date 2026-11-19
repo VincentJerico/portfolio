@@ -3,6 +3,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata } from 'next';
 import { RouteTransition } from '@/components/layout/RouteTransition';
 import { SiteFooter } from '@/components/layout/SiteFooter';
+import { SmoothScroll } from '@/components/motion/SmoothScroll';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import { SkipLink } from '@/components/layout/SkipLink';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             </div>
           </main>
           <SiteFooter />
+          <SmoothScroll />
           {/* Cookieless analytics, only on Vercel builds: elsewhere their first-party scripts 404. */}
           {process.env.VERCEL === '1' && (
             <>

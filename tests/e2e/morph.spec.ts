@@ -47,6 +47,33 @@ async function recordMorphs(page: Page) {
   });
 }
 
+/** Records the CSS animation names on view-transition pseudo-elements, as each transition is ready. */
+async function recordSheetAnimations(page: Page) {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __vtNames: string[] };
+    w.__vtNames = [];
+    const start = document.startViewTransition?.bind(document);
+    if (!start) return;
+    document.startViewTransition = ((arg: never) => {
+      const transition = start(arg);
+      transition.ready
+        .then(() => {
+          for (const animation of document.getAnimations()) {
+            if (
+              (animation.effect as KeyframeEffect | null)?.pseudoElement &&
+              'animationName' in animation
+            )
+              w.__vtNames.push((animation as CSSAnimation).animationName);
+          }
+        })
+        .catch(() => {});
+      return transition;
+    }) as typeof document.startViewTransition;
+  });
+}
+const sheetAnimations = (page: Page) =>
+  page.evaluate(() => (window as unknown as { __vtNames: string[] }).__vtNames);
+
 const darkToggle = (page: Page) =>
   page.locator('[data-site-header]').getByRole('button', { name: 'Dark theme' });
 
@@ -114,5 +141,39 @@ test.describe('evidence grows into its dialog', () => {
     await expect(thumb).toBeFocused();
     const morphs = (await transitions(page)).filter((types) => types.includes('dialog-morph'));
     expect(morphs).toHaveLength(2);
+  });
+});
+
+test.describe('page change', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  test('a page change slides the new page up over the old', async ({ page }) => {
+    await recordSheetAnimations(page);
+    await page.goto('/');
+    await waitForHydration(page);
+    await page
+      .locator('[data-site-header] nav[aria-label="Site"]')
+      .getByRole('link', { name: 'About' })
+      .click();
+    await expect(page).toHaveURL(/\/about$/);
+    await expect
+      .poll(() => sheetAnimations(page))
+      .toEqual(expect.arrayContaining(['vt-sheet', 'vt-sink']));
+  });
+
+  test('under reduced motion a page change does not slide', async ({ page }) => {
+    await recordSheetAnimations(page);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    await waitForHydration(page);
+    await page
+      .locator('[data-site-header] nav[aria-label="Site"]')
+      .getByRole('link', { name: 'About' })
+      .click();
+    await expect(page).toHaveURL(/\/about$/);
+    await expect(page.locator('main header h1')).toHaveAccessibleName('About');
+    const names = await sheetAnimations(page);
+    expect(names).not.toContain('vt-sheet');
+    expect(names).not.toContain('vt-sink');
   });
 });

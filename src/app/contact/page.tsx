@@ -7,6 +7,7 @@ import { CopyButton } from '@/components/ui/CopyButton';
 import { ContactForm } from '@/components/contact/ContactForm';
 import { isContactConfigured } from '@/lib/contact/config';
 import { profile } from '@/content';
+import { LetterTitle } from '@/components/motion/Letters';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Contact',
@@ -19,7 +20,7 @@ export default function ContactPage() {
     <div className="flex flex-col gap-rhythm">
       <header className="flex flex-col gap-6">
         <p className="label-mono text-ink-muted">{profile.location}</p>
-        <h1>Contact</h1>
+        <LetterTitle text="Contact" />
       </header>
 
       <section aria-labelledby="email-heading" className="border-t border-line pt-4">
