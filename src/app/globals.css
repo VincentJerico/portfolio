@@ -69,6 +69,18 @@
     --dur-hover: 320ms;
     --arrive-rise: 40px;
     --dur-sheet: 700ms;
+    /* A hovered or focused row's nudge, always inside the page's side gutter (1rem, 1.5rem, 2.5rem). */
+    --row-nudge: 0.75rem;
+  }
+  @media (width >= 40rem) {
+    :root {
+      --row-nudge: 1.25rem;
+    }
+  }
+  @media (width >= 64rem) {
+    :root {
+      --row-nudge: 1.75rem;
+    }
   }
 
   /* Page titles: Bricolage at its narrowest, heaviest display cut, the poster's voice on every page. */
@@ -158,10 +170,12 @@
   width: 100%;
   max-width: 1440px;
   padding-inline: 1rem;
-  @media (min-width: 640px) {
+  /* In rem, like Tailwind's sm and lg, so the gutter, the row nudge and the theme switch change
+     together whatever the browser's default font size (C53). */
+  @media (width >= 40rem) {
     padding-inline: 1.5rem;
   }
-  @media (min-width: 1024px) {
+  @media (width >= 64rem) {
     padding-inline: 2.5rem;
   }
 }
@@ -396,7 +410,7 @@
     }
   }
   .work-row:is(:hover, :focus-within) :is(.work-row-link > span, .work-row-hook, .work-row-num) {
-    translate: 1.75rem 0;
+    translate: var(--row-nudge) 0;
   }
   .work-row:is(:hover, :focus-within) .work-row-link {
     color: var(--accent);
@@ -556,9 +570,14 @@
     transform-origin: center;
   }
 
-  /* C53: the pull cord, hanging from the top bar's right end from 1024 px up. A 44 px wide column from
-     3rem above the viewport down to the knob, so it is easy to hit; the knob lights up on hover and
+  /* C53: the pull cord, hanging from the top bar's right end from 64rem up. A column from 3rem above
+     the viewport down to the knob, so it is easy to hit; the knob lights up on hover and
      glows like a lit bulb in the dark theme. */
+  /* The cord's swing carries the knob past the screen edge; the top bar clips it there sideways only,
+     so the page never scrolls sideways and the cord still hangs below the bar. */
+  [data-site-header] {
+    overflow-x: clip;
+  }
   .pull-cord-hang {
     position: absolute;
     top: -3rem;
@@ -566,16 +585,18 @@
     display: none;
     pointer-events: none;
   }
-  @media (min-width: 1024px) {
+  /* 64rem, the same breakpoint as the top bar button's lg:hidden, so exactly one switch shows. */
+  @media (width >= 64rem) {
     .pull-cord-hang {
       display: flex;
     }
   }
+  /* 2rem wide: inside the 2.5rem gutter, never over the content beside it, and still a wide target. */
   .pull-cord-button {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 2.75rem;
+    width: 2rem;
     border-radius: 0 0 999px 999px;
     pointer-events: auto;
   }
@@ -616,6 +637,20 @@
     box-shadow:
       0 0 12px 2px color-mix(in srgb, var(--accent) 55%, transparent),
       0 0 36px 8px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+  /* Forced colours replace backgrounds, which would erase the string: draw it in the system text
+     colour instead. */
+  @media (forced-colors: active) {
+    .cord-line,
+    .cord-tip {
+      forced-color-adjust: none;
+      background: CanvasText;
+    }
+    .cord-knob {
+      forced-color-adjust: none;
+      border-color: CanvasText;
+      background: Canvas;
+    }
   }
   .cord-knob::after {
     content: '';
@@ -1270,6 +1305,20 @@
 :active-view-transition-type(dialog-morph)::view-transition-old(root),
 :active-view-transition-type(dialog-morph)::view-transition-new(root) {
   animation-duration: var(--dur-base);
+}
+
+/* The top bar is its own group, painted above the page groups, so a sliding page never covers it
+   (C53). It never moves; the theme flood's circle covers it like the rest of the page. */
+[data-site-header] {
+  view-transition-name: site-header;
+}
+::view-transition-group(site-header) {
+  z-index: 1;
+}
+:active-view-transition-type(theme)::view-transition-old(site-header),
+:active-view-transition-type(theme)::view-transition-new(site-header) {
+  animation: none;
+  mix-blend-mode: normal;
 }
 
 /* Theme flood (lib/theme-switch.ts): the new theme is revealed by a growing circle animated from

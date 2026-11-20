@@ -179,3 +179,67 @@ test.describe('page change', () => {
     expect(names.some((name) => name.startsWith('vt-'))).toBe(false);
   });
 });
+
+// Final review (C53) #3: the top bar is its own transition group, painted above the pages, so the old
+// page never slides over it; and the theme flood's circle covers it like the rest of the page.
+test.describe('the top bar in transitions', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  const recordScripted = (page: Page) =>
+    page.addInitScript(() => {
+      const w = window as unknown as { __pseudo: string[]; __headerZ: string[] };
+      w.__pseudo = [];
+      w.__headerZ = [];
+      const animate = Element.prototype.animate;
+      Element.prototype.animate = function (keyframes, options) {
+        const pseudo = typeof options === 'object' ? options?.pseudoElement : undefined;
+        if (pseudo) w.__pseudo.push(pseudo);
+        return animate.call(this, keyframes, options);
+      };
+      const start = document.startViewTransition?.bind(document);
+      if (!start) return;
+      document.startViewTransition = ((arg: never) => {
+        const transition = start(arg);
+        transition.ready
+          .then(() =>
+            w.__headerZ.push(
+              getComputedStyle(document.documentElement, '::view-transition-group(site-header)')
+                .zIndex,
+            ),
+          )
+          .catch(() => {});
+        return transition;
+      }) as typeof document.startViewTransition;
+    });
+
+  test('a page change keeps the top bar above the sliding pages', async ({ page }) => {
+    await recordScripted(page);
+    await page.goto('/');
+    await waitForHydration(page);
+    await page
+      .locator('[data-site-header] nav[aria-label="Site"]')
+      .getByRole('link', { name: 'About' })
+      .click();
+    await expect(page).toHaveURL(/\/about$/);
+    await expect
+      .poll(() => page.evaluate(() => (window as unknown as { __headerZ: string[] }).__headerZ))
+      .toEqual(['1']);
+  });
+
+  test('the theme flood covers the top bar too', async ({ page }) => {
+    await recordScripted(page);
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.goto('/');
+    await waitForHydration(page);
+    await darkToggle(page).click();
+    await expect(page.locator('html')).toHaveClass(/\bdark\b/);
+    await expect
+      .poll(() => page.evaluate(() => (window as unknown as { __pseudo: string[] }).__pseudo))
+      .toEqual(
+        expect.arrayContaining([
+          '::view-transition-new(root)',
+          '::view-transition-new(site-header)',
+        ]),
+      );
+  });
+});

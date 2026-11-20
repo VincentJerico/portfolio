@@ -84,6 +84,29 @@ test.describe('layout', () => {
     }
   }
 
+  // Final review (C53) #1: a hovered or focused row's nudge stays inside the page's side gutter.
+  for (const route of ['/', '/projects', '/work']) {
+    for (const width of [320, 768]) {
+      test(`focusing a row on ${route} never scrolls sideways at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 800 });
+        await page.goto(route);
+        const link = page.locator('main .work-row-link').first();
+        await link.focus();
+        await expect
+          .poll(() => link.locator('> span').evaluate((el) => getComputedStyle(el).translate))
+          .not.toBe('none');
+        await page.evaluate(
+          () => new Promise((resolve) => setTimeout(resolve, 400)), // the nudge's 320 ms, settled
+        );
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          ),
+        ).toBeLessThanOrEqual(0);
+      });
+    }
+  }
+
   test('the inline-block utility sets display only, never a width', async ({ page }) => {
     await page.goto('/');
     // A spacing token named "block" once made Tailwind emit inline-block as an inline-size rule.

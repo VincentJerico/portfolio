@@ -19,7 +19,27 @@ test.describe('on a wide screen', () => {
     await expect(visibleSwitch(page)).toHaveCount(1);
     await expect(visibleSwitch(page).locator('[data-pull-cord]')).toHaveCount(1);
     // Easy to hit: at least 44 px tall.
-    expect((await visibleSwitch(page).boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    const box = (await visibleSwitch(page).boundingBox())!;
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    // Final review (C53) #5: it stays in the 40 px side gutter, never over the content beside it.
+    const width = await page.evaluate(() => document.documentElement.clientWidth);
+    expect(box.x).toBeGreaterThanOrEqual(width - 40);
+    expect(box.width).toBeGreaterThanOrEqual(24);
+  });
+
+  // Final review (C53) #6: in forced colours (Windows high contrast) the cord stays drawn. Forced
+  // colours exist only in Windows browsers (Chromium, Firefox); WebKit has no such mode.
+  test('the cord stays drawn in forced colours', { tag: '@chromium-only' }, async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active' });
+    await page.goto('/');
+    const line = await header(page)
+      .locator('.cord-line')
+      .evaluate((el) => {
+        const style = getComputedStyle(el);
+        return { adjust: style.forcedColorAdjust, background: style.backgroundColor };
+      });
+    expect(line.adjust).toBe('none');
+    expect(line.background).not.toBe('rgba(0, 0, 0, 0)');
   });
 
   test('a tug switches the theme, floods it and swings the cord', async ({ page }) => {
@@ -36,13 +56,15 @@ test.describe('on a wide screen', () => {
       .toContain('cord-tug');
   });
 
+  // Clicks during the flood land on the page, not the cord, so the race is driven from the keyboard.
   test('two quick tugs end in a consistent state', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
     await page.goto('/');
     await waitForHydration(page);
     const toggle = visibleSwitch(page);
-    await toggle.click();
-    await toggle.click();
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Enter');
     await expect
       .poll(async () => {
         const dark = await page.evaluate(() => document.documentElement.classList.contains('dark'));
@@ -117,4 +139,24 @@ test.describe('below 1024 px', () => {
     await expect(visibleSwitch(page).locator('[data-pull-cord]')).toHaveCount(0);
     await expect(cord(page)).toBeHidden();
   });
+});
+
+// Final review (C53) #2: the cord and the top bar button switch at the same width whatever the
+// browser's default font size, so exactly one theme switch shows. Chromium sets font sizes over CDP.
+test.describe('at other default font sizes', { tag: '@chromium-only' }, () => {
+  for (const size of [12, 20]) {
+    for (const width of [900, 1100]) {
+      test(`exactly one theme switch shows at ${size} px text and ${width} px`, async ({
+        page,
+      }) => {
+        const cdp = await page.context().newCDPSession(page);
+        await cdp.send('Page.enable');
+        await cdp.send('Page.setFontSizes', { fontSizes: { standard: size } });
+        await page.setViewportSize({ width, height: 800 });
+        await page.goto('/');
+        await waitForHydration(page);
+        await expect(visibleSwitch(page)).toHaveCount(1);
+      });
+    }
+  }
 });
