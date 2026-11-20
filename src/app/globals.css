@@ -556,6 +556,77 @@
     transform-origin: center;
   }
 
+  /* C53: the pull cord, hanging from the top bar's right end from 1024 px up. A 44 px wide column from
+     3rem above the viewport down to the knob, so it is easy to hit; the knob lights up on hover and
+     glows like a lit bulb in the dark theme. */
+  .pull-cord-hang {
+    position: absolute;
+    top: -3rem;
+    right: 0.25rem;
+    display: none;
+    pointer-events: none;
+  }
+  @media (min-width: 1024px) {
+    .pull-cord-hang {
+      display: flex;
+    }
+  }
+  .pull-cord-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 2.75rem;
+    border-radius: 0 0 999px 999px;
+    pointer-events: auto;
+  }
+  .cord-sway,
+  .pull-cord {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform-origin: top center;
+  }
+  .cord-line {
+    width: 1px;
+    height: 10rem;
+    background: var(--text-muted);
+  }
+  .cord-knob {
+    position: relative;
+    width: 0.875rem;
+    height: 0.875rem;
+    border: 1px solid var(--text-muted);
+    border-radius: 50%;
+    background: var(--surface);
+    transition:
+      background-color var(--dur-fast) var(--ease-snap),
+      box-shadow var(--dur-base) var(--ease-glide);
+  }
+  .cord-tip {
+    width: 0.375rem;
+    height: 0.75rem;
+    border-radius: 0 0 999px 999px;
+    background: var(--text-muted);
+  }
+  .pull-cord-button:is(:hover, :focus-visible) .cord-knob {
+    background: var(--accent);
+  }
+  .dark .cord-knob {
+    background: var(--accent);
+    box-shadow:
+      0 0 12px 2px color-mix(in srgb, var(--accent) 55%, transparent),
+      0 0 36px 8px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+  .cord-knob::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+  }
+
   .skeleton {
     position: relative;
     overflow: hidden;
@@ -828,6 +899,27 @@
     animation-delay: 240ms;
   }
 
+  /* C53: the cord settles from a short swing on arrival (one run, under 3 s, then still: WCAG 2.2.2),
+     dips on hover, and a tug stretches it, springs it back and swings it to rest while the knob sends
+     out a ring. */
+  .cord-sway {
+    animation: cord-settle 2.4s ease-out 1;
+  }
+  .pull-cord {
+    transition: translate var(--dur-hover) var(--ease-glide);
+  }
+  .pull-cord-button:is(:hover, :focus-visible) .pull-cord {
+    translate: 0 0.75rem;
+  }
+  .pull-cord-tug {
+    animation:
+      cord-tug 700ms var(--ease-glide),
+      cord-swing 1.6s ease-out 280ms;
+  }
+  .pull-cord-tug .cord-knob::after {
+    animation: knob-ring 700ms ease-out 180ms;
+  }
+
   /* C52 move 3: About's intro inks in word by word, muted to ink, just after the title's letters. */
   .ink-text > span {
     animation: ink var(--dur-base) var(--ease-snap) calc(240ms + var(--i) * 24ms) backwards;
@@ -1072,6 +1164,52 @@
 @keyframes header-rule {
   from {
     scale: 0 1;
+  }
+}
+@keyframes cord-settle {
+  0% {
+    rotate: 7deg;
+  }
+  25% {
+    rotate: -5deg;
+  }
+  50% {
+    rotate: 3deg;
+  }
+  75% {
+    rotate: -1.5deg;
+  }
+  100% {
+    rotate: 0deg;
+  }
+}
+@keyframes cord-tug {
+  30% {
+    translate: 0 2.25rem;
+    scale: 1 1.04;
+  }
+  60% {
+    translate: 0 -0.25rem;
+  }
+}
+@keyframes cord-swing {
+  20% {
+    rotate: 6deg;
+  }
+  45% {
+    rotate: -4deg;
+  }
+  70% {
+    rotate: 2deg;
+  }
+}
+@keyframes knob-ring {
+  from {
+    opacity: 0.9;
+  }
+  to {
+    opacity: 0;
+    scale: 2.6;
   }
 }
 @property --rise {

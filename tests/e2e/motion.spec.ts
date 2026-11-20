@@ -106,12 +106,13 @@ test.describe('answers', () => {
   test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
 
   test('buttons press in while held', async ({ page }) => {
-    await page.goto('/');
+    // The theme switch is the pull cord on wide screens (it is tugged, not pressed), so press a button.
+    await page.goto('/contact');
     await waitForHydration(page);
-    const toggle = page.locator('[data-site-header]').getByRole('button', { name: 'Dark theme' });
-    await toggle.hover();
+    const button = page.getByRole('button', { name: 'Copy email' });
+    await button.hover();
     await page.mouse.down();
-    await expect.poll(() => toggle.evaluate((el) => getComputedStyle(el).scale)).toBe('0.96');
+    await expect.poll(() => button.evaluate((el) => getComputedStyle(el).scale)).toBe('0.96');
     await page.mouse.up();
   });
 
