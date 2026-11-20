@@ -63,7 +63,9 @@ async function recordSheetAnimations(page: Page) {
               (animation.effect as KeyframeEffect | null)?.pseudoElement &&
               'animationName' in animation
             )
-              w.__vtNames.push((animation as CSSAnimation).animationName);
+              w.__vtNames.push(
+                `${(animation as CSSAnimation).animationName} ${(animation.effect as KeyframeEffect).getComputedTiming().duration}`,
+              );
           }
         })
         .catch(() => {});
@@ -156,9 +158,10 @@ test.describe('page change', () => {
       .getByRole('link', { name: 'About' })
       .click();
     await expect(page).toHaveURL(/\/about$/);
+    // C53: the sheet takes 0.7 s, so it is seen sliding up.
     await expect
       .poll(() => sheetAnimations(page))
-      .toEqual(expect.arrayContaining(['vt-sheet', 'vt-sink']));
+      .toEqual(expect.arrayContaining(['vt-sheet 700', 'vt-sink 700']));
   });
 
   test('under reduced motion a page change does not slide', async ({ page }) => {
@@ -173,7 +176,6 @@ test.describe('page change', () => {
     await expect(page).toHaveURL(/\/about$/);
     await expect(page.locator('main header h1')).toHaveAccessibleName('About');
     const names = await sheetAnimations(page);
-    expect(names).not.toContain('vt-sheet');
-    expect(names).not.toContain('vt-sink');
+    expect(names.some((name) => name.startsWith('vt-'))).toBe(false);
   });
 });

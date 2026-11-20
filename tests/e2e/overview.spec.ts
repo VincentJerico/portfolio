@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '../helpers/test';
+import { pointAt } from '../helpers/pointer';
 import { approvedCaseStudies, projectsInOrder } from '../../src/lib/content';
 import { profile, skills } from '../../src/content';
 import { skillRows } from '../../src/lib/motion-text';
@@ -124,7 +125,7 @@ test.describe('projects', () => {
       const hook = row.locator('.work-row-hook > p');
       const height = () => hook.evaluate((el) => el.getBoundingClientRect().height);
       expect(await height()).toBeLessThan(1);
-      await row.getByRole('link').hover();
+      await pointAt(page, row.getByRole('link'));
       await expect.poll(height).toBeGreaterThan(10);
       const accent = await page.evaluate(() => {
         const el = document.createElement('span');
@@ -145,7 +146,7 @@ test.describe('projects', () => {
       await page.goto('/');
       const row = projectsRegion(page).getByRole('listitem').first();
       const href = (await row.getByRole('link').getAttribute('href'))!;
-      await row.getByRole('link').hover();
+      await pointAt(page, row.getByRole('link'));
       // The row number sits under the link's overlay; once hovered it must still be covered.
       const box = (await row.locator('.work-row-num').boundingBox())!;
       await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);

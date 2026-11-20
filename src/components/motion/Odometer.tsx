@@ -12,9 +12,11 @@ import { odoParts, reel } from '@/lib/motion-text';
  * (RollOnView), never on the scroll position, so it can never rest on a wrong digit.
  */
 export function Odometer({ value }: { value: string }) {
+  let n = 0;
   return odoParts(value).map(({ char, roll }, i) => {
     if (!roll) return char;
     const { lines, steps } = reel(Number(char));
+    const order = n++;
     return (
       <span key={i} className="odo-digit">
         <span className="odo-real">{char}</span>
@@ -22,7 +24,7 @@ export function Odometer({ value }: { value: string }) {
           <span
             className="odo-reel"
             data-reel={`${lines}\n${char}`}
-            style={{ '--steps': steps } as CSSProperties}
+            style={{ '--steps': steps, '--n': order } as CSSProperties}
           />
         </span>
       </span>

@@ -20,6 +20,8 @@
   --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
 
   --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* C53: a long, soft settle for arrivals and page changes; snap stays for hover and press. */
+  --ease-glide: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Fluid rhythm, 375 to 1440 px: between page blocks, and between home sections. Not named
      "block": Tailwind would turn that into an inline-block width utility. */
@@ -61,8 +63,12 @@
   :root {
     --dur-fast: 180ms;
     --dur-base: 400ms;
-    /* A page change: the new page's sheet sliding up over the old (C52). */
-    --dur-sheet: 460ms;
+    /* C53: arrivals rise 40 px over 700 ms; a row answers the pointer over 320 ms; a page change's
+       sheet slides up over 700 ms. */
+    --dur-arrive: 700ms;
+    --dur-hover: 320ms;
+    --arrive-rise: 40px;
+    --dur-sheet: 700ms;
   }
 
   /* Page titles: Bricolage at its narrowest, heaviest display cut, the poster's voice on every page. */
@@ -356,17 +362,18 @@
   }
   /* The nudge moves the name's text, never an ancestor of the link: a transform on one would become
      the overlay's containing block and shrink the clickable area to the name. */
-  .work-row-link > span {
+  .work-row-link > span,
+  .work-row-num {
     display: inline-block;
-    transition: translate var(--dur-fast) var(--ease-snap);
+    transition: translate var(--dur-hover) var(--ease-glide);
   }
   .work-row-hook {
     grid-column: 2 / -1;
     display: grid;
     grid-template-rows: 1fr;
     transition:
-      grid-template-rows var(--dur-fast) var(--ease-snap),
-      translate var(--dur-fast) var(--ease-snap);
+      grid-template-rows var(--dur-hover) var(--ease-glide),
+      translate var(--dur-hover) var(--ease-glide);
   }
   .work-row-hook > p {
     min-height: 0;
@@ -388,8 +395,8 @@
       grid-template-rows: 1fr;
     }
   }
-  .work-row:is(:hover, :focus-within) :is(.work-row-link > span, .work-row-hook) {
-    translate: 0.75rem 0;
+  .work-row:is(:hover, :focus-within) :is(.work-row-link > span, .work-row-hook, .work-row-num) {
+    translate: 1.75rem 0;
   }
   .work-row:is(:hover, :focus-within) .work-row-link {
     color: var(--accent);
@@ -687,19 +694,30 @@
   }
 }
 
-/* Motion: C50's one rhythm. Everything that arrives rises 16 px over 400 ms on the shared easing,
-   on load or as it scrolls in; list rows answer the pointer over 180 ms; page changes take 120 ms out
-   and 240 ms in. Transform only, never opacity, so text contrast never drops. Screen only, and off
-   under reduced motion. */
+/* Motion: C50's one rhythm, made smoother and more obvious by C53. Everything that arrives rises
+   40 px over 700 ms on the glide, on load or as it scrolls in; list rows answer the pointer over
+   320 ms, 28 px; a page change's sheet slides up over 700 ms. Transform only, never opacity on content that
+   stays, so text contrast never drops. Screen only, and off under reduced motion. */
 @keyframes rise {
   from {
-    translate: 0 16px;
+    translate: 0 var(--arrive-rise);
   }
 }
 @keyframes letter {
   from {
-    translate: 0 0.35em;
-    rotate: 6deg;
+    translate: 0 0.9em;
+    rotate: 12deg;
+  }
+}
+/* The poster's lines slide in from opposite sides, each still whole text (the page's largest paint). */
+@keyframes poster-left {
+  from {
+    translate: -6vw 0;
+  }
+}
+@keyframes poster-right {
+  from {
+    translate: 6vw 0;
   }
 }
 /* A word never breaks between its letters (they are inline blocks while they move). */
@@ -779,28 +797,35 @@
     block-size: auto;
   }
 
-  /* Page headers, and the poster on the home page, rise in once, line by line, on load. No opacity:
-     the title paints at once, so LCP is unaffected and axe never scans faded text. */
-  main header > :not([data-morph-title], :has(.letter)) {
-    animation: rise var(--dur-base) var(--ease-snap) backwards;
+  /* Page headers rise in once, line by line, on load. No opacity: the title paints at once, so LCP
+     is unaffected and axe never scans faded text. */
+  main header > :not([data-morph-title], :has(.letter), .poster) {
+    animation: rise var(--dur-arrive) var(--ease-glide) backwards;
+  }
+  /* C53: the home poster's first line slides in from the left, the second from the right. */
+  .poster > span:not(.sr-only) {
+    animation: poster-left 900ms var(--ease-glide) backwards;
+  }
+  .poster > span:not(.sr-only) + span:not(.sr-only) {
+    animation-name: poster-right;
   }
 
-  /* C52 move 2: page titles arrive letter by letter, each rising 0.35 em and straightening from a
-     slight lean, 28 ms apart. Transform only and nothing starts hidden, so the title still paints at
-     once (LCP) and its text is the plain heading text. */
+  /* C52 move 2, C53: page titles arrive letter by letter, each rising 0.9 em and straightening from
+     a 12 degree lean, 45 ms apart. Transform only and nothing starts hidden, so the title still paints
+     at once (LCP) and its text is the plain heading text. */
   .letter {
     display: inline-block;
     transform-origin: 0 100%;
-    animation: letter 520ms var(--ease-snap) calc(var(--i) * 28ms) backwards;
+    animation: letter 800ms var(--ease-glide) calc(var(--i) * 45ms) backwards;
   }
   main header > :nth-child(2) {
-    animation-delay: 40ms;
-  }
-  main header > :nth-child(3) {
     animation-delay: 80ms;
   }
+  main header > :nth-child(3) {
+    animation-delay: 160ms;
+  }
   main header > :nth-child(n + 4) {
-    animation-delay: 120ms;
+    animation-delay: 240ms;
   }
 
   /* C52 move 3: About's intro inks in word by word, muted to ink, just after the title's letters. */
@@ -840,7 +865,7 @@
     white-space: pre;
   }
   .odo-list > li[data-roll] .odo-reel {
-    animation: odo 700ms var(--ease-snap) both;
+    animation: odo 1200ms var(--ease-glide) calc(var(--n) * 80ms) both;
   }
 
   /* C52 move 8: "How I test" piles up as you read, each area sticking 8 px below the one before. */
@@ -863,6 +888,8 @@
   .reveal-in,
   .pop-in,
   .count-roll {
+    /* Small things in answer to the visitor rise a short way. */
+    --arrive-rise: 12px;
     animation: rise var(--dur-base) var(--ease-snap) backwards;
   }
 }
@@ -877,13 +904,16 @@
       animation-range: cover 0px cover 380px;
     }
     /* Scoped, not every li: one scroll timeline per list item costs blocking time. */
+    /* A fixed 160 px from the moment a row's top edge comes on screen, never a share of its own
+       height: a hovered row's hook makes it taller, and a height-based range then moved the row out
+       from under the pointer and back (C53). */
     main :is(.work-row, tbody > tr) {
       animation: rise linear both;
       animation-timeline: view();
-      animation-range: entry 0% entry 100%;
+      animation-range: cover 0px cover 160px;
     }
     /* C52 move 6: each skills row is one line drifting while the strip crosses the screen, the
-       second the other way: 60vw over the strip's own view, under a pixel per pixel scrolled. The
+       second the other way: 100vw over the strip's own view, under 1.5 px per px scrolled (C53). The
        copy keeps the edges filled. */
     .marquee-row,
     .marquee-row > ul {
@@ -949,12 +979,12 @@
 }
 @keyframes marquee {
   to {
-    translate: -60vw 0;
+    translate: -100vw 0;
   }
 }
 @keyframes marquee-back {
   from {
-    translate: -60vw 0;
+    translate: -100vw 0;
   }
   to {
     translate: 0 0;
@@ -1051,7 +1081,7 @@
 }
 @keyframes rise-var {
   from {
-    --rise: 16px;
+    --rise: 40px;
   }
   to {
     --rise: 0px;
@@ -1059,22 +1089,22 @@
 }
 
 /* Route change (C52 move 1): the new page slides up over the old like a sheet of paper, clipped from
-   its bottom edge, while the old page sinks 32 px under it; the new title's letters then rise in. The
+   its bottom edge, while the old page sinks 80 px under it (C53: over 700 ms, so it is seen); the new title's letters then rise in. The
    sheet is opaque (the paper colour), so the two pages never show through each other. The top bar
    never moves. A project's name morphs from its row into the report title (.morph) in step. */
 ::view-transition-group(.page-enter) {
   background: var(--bg);
-  animation: var(--dur-sheet) var(--ease-snap) both vt-sheet;
+  animation: var(--dur-sheet) var(--ease-glide) both vt-sheet;
 }
 ::view-transition-new(.page-enter) {
-  animation: var(--dur-sheet) var(--ease-snap) both rise;
+  animation: var(--dur-sheet) var(--ease-glide) both rise;
 }
 ::view-transition-old(.page-exit) {
-  animation: var(--dur-sheet) var(--ease-snap) both vt-sink;
+  animation: var(--dur-sheet) var(--ease-glide) both vt-sink;
 }
 ::view-transition-group(.morph) {
   animation-duration: var(--dur-sheet);
-  animation-timing-function: var(--ease-snap);
+  animation-timing-function: var(--ease-glide);
 }
 /* The edge travels one screen height, not the page's: a tall page's sheet still sweeps the whole
    screen over the full duration instead of arriving at the end. */
@@ -1089,8 +1119,8 @@
 /* The old page is a snapshot on its way out, so fading it is not the faded-text case C50 rules out. */
 @keyframes vt-sink {
   to {
-    translate: 0 -32px;
-    opacity: 0.4;
+    translate: 0 -80px;
+    opacity: 0.3;
   }
 }
 
