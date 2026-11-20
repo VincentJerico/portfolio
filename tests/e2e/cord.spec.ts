@@ -21,9 +21,14 @@ test.describe('on a wide screen', () => {
     // Easy to hit: at least 44 px tall.
     const box = (await visibleSwitch(page).boundingBox())!;
     expect(box.height).toBeGreaterThanOrEqual(44);
-    // Final review (C53) #5: it stays in the 40 px side gutter, never over the content beside it.
-    const width = await page.evaluate(() => document.documentElement.clientWidth);
-    expect(box.x).toBeGreaterThanOrEqual(width - 40);
+    // Final review (C53) #5: it stays in the side gutter, never over the content beside it. Measured
+    // from the top bar's content edge: with classic scrollbars the page is narrower than the window.
+    const contentRight = await header(page)
+      .locator('> .shell')
+      .evaluate(
+        (el) => el.getBoundingClientRect().right - parseFloat(getComputedStyle(el).paddingRight),
+      );
+    expect(box.x).toBeGreaterThanOrEqual(contentRight);
     expect(box.width).toBeGreaterThanOrEqual(24);
   });
 

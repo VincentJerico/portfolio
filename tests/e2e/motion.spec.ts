@@ -198,21 +198,24 @@ test.describe('scroll-linked', () => {
     await strip.evaluate((el) =>
       window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - window.innerHeight / 2),
     );
-    // Scroll-driven styles update on the next frame; read only once two have passed.
-    const settle = () =>
-      page.evaluate(
-        () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
-      );
-    await settle();
-    const x1 = await row.evaluate((el) => el.getBoundingClientRect().left);
+    // Scroll-driven styles land a frame or more after the scroll (later on Linux WebKit): read a
+    // position only once it holds still across frames.
+    const settledLeft = () =>
+      row.evaluate(async (el) => {
+        const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+        let last = NaN;
+        for (let i = 0; i < 30; i++) {
+          await frame();
+          await frame();
+          const left = el.getBoundingClientRect().left;
+          if (left === last) return left;
+          last = left;
+        }
+        return last;
+      });
+    const x1 = await settledLeft();
     await page.evaluate(() => window.scrollBy(0, 200));
-    await settle();
-    await expect
-      .poll(async () =>
-        Math.abs((await row.evaluate((el) => el.getBoundingClientRect().left)) - x1),
-      )
-      .toBeGreaterThan(0);
-    const x2 = await row.evaluate((el) => el.getBoundingClientRect().left);
+    const x2 = await settledLeft();
     // C53: more travel, still a drift: over a pixel per pixel scrolled, at most 1.5.
     expect(Math.abs(x2 - x1)).toBeGreaterThan(200);
     expect(Math.abs(x2 - x1)).toBeLessThanOrEqual(300);
