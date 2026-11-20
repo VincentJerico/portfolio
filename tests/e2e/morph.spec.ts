@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '../helpers/test';
 import { waitForHydration } from '../helpers/hydration';
+import { bringToCentre } from '../helpers/pointer';
 import { settleTransitions } from '../helpers/transitions';
 
 // The signatures the minimal reset keeps (C51): the theme flood, a project row flying into its report
@@ -117,6 +118,8 @@ test.describe('project to report', () => {
       .getByRole('link');
     const href = (await row.getAttribute('href'))!;
     const slug = href.split('/').pop()!;
+    // Click it where a person would, in the middle of the screen, not mid-rise at the bottom edge.
+    await bringToCentre(row);
     await row.click();
     await expect(page).toHaveURL(new RegExp(`${href}$`));
     await expect
