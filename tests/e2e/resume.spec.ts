@@ -17,6 +17,7 @@ test('print layout drops the site chrome and prints black on white', async ({ pa
   await page.goto('/resume');
   await page.emulateMedia({ media: 'print' });
   await expect(page.locator('[data-site-header]')).toBeHidden();
+  await expect(page.locator('[data-pull-cord]')).toBeHidden();
   await expect(page.locator('[data-site-footer]')).toBeHidden();
   await expect(page.getByRole('button', { name: 'Menu', exact: true })).toBeHidden();
   await expect(page.getByRole('link', { name: 'Download PDF' })).toBeHidden();

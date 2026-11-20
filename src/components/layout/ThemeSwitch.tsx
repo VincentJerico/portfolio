@@ -7,7 +7,8 @@ import { switchTheme } from '@/lib/theme-switch';
 const subscribe = () => () => {};
 
 /**
- * The theme switch (C51): a small "Dark" toggle in the top bar. aria-pressed means the dark theme is
+ * The theme switch (C51): a small "Dark" toggle in the top bar, below 1024 px (the pull cord takes over
+ * from there, C53). aria-pressed means the dark theme is
  * on; its dot fills from CSS (the `.dark` class next-themes sets before paint), so it is right before
  * hydration too. Switching floods the page with the new theme from the button (lib/theme-switch.ts).
  */
@@ -26,7 +27,7 @@ export function ThemeSwitch() {
       type="button"
       aria-pressed={hydrated ? isDark : undefined}
       onClick={(event) => switchTheme(isDark ? 'light' : 'dark', setTheme, event.currentTarget)}
-      className="inline-flex min-h-11 items-center gap-2 px-2 font-mono text-[0.8125rem] text-ink hover:text-accent"
+      className="inline-flex min-h-11 items-center gap-2 px-2 font-mono text-[0.8125rem] text-ink hover:text-accent lg:hidden"
     >
       <span
         aria-hidden="true"

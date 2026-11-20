@@ -1,13 +1,15 @@
 import Link from 'next/link';
 import { profile } from '@/content';
 import { footerNavItems, primaryNavItems } from '@/lib/nav-items';
+import { PullCord } from './PullCord';
 import { SiteMenu } from './SiteMenu';
 import { SiteNav } from './SiteNav';
 import { ThemeSwitch } from './ThemeSwitch';
 
 /**
  * The top bar (C51): the name on the left; the main pages, the theme switch and (on phones) Menu on
- * the right. Small mono type on the page's own paper, so it reads as part of the poster.
+ * the right. Small mono type on the page's own paper, so it reads as part of the poster. From 1024 px
+ * up the theme switch is the pull cord hanging from its right end (C53).
  */
 export function SiteHeader() {
   const items = primaryNavItems();
@@ -33,6 +35,7 @@ export function SiteHeader() {
           <SiteMenu items={items} more={footerNavItems()} />
         </div>
       </div>
+      <PullCord />
     </header>
   );
 }

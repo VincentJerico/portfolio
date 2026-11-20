@@ -31,14 +31,17 @@ export function switchTheme(next: Theme, setTheme: (theme: Theme) => void, from?
   const transition = document.startViewTransition({ update: apply, types: ['theme'] });
   transition.ready
     .then(() => {
-      document.documentElement.animate(
-        { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
-        {
-          duration: 400,
-          easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
-          pseudoElement: '::view-transition-new(root)',
-        },
-      );
+      // The top bar is its own transition group (C53); it sits at the viewport's top-left, so the same
+      // circle, in the same coordinates, floods it with the rest of the page.
+      for (const pseudoElement of [
+        '::view-transition-new(root)',
+        '::view-transition-new(site-header)',
+      ]) {
+        document.documentElement.animate(
+          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+          { duration: 400, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', pseudoElement },
+        );
+      }
     })
     .catch(() => {});
 }

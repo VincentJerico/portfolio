@@ -1,4 +1,5 @@
 import { expect, test } from '../helpers/test';
+import { pointAt } from '../helpers/pointer';
 import { expectNoViolations } from '../helpers/a11y';
 import { waitForHydration } from '../helpers/hydration';
 import { visibleNotes } from '../../src/content/notes';
@@ -16,7 +17,7 @@ test('the notes index lists the selftest note and the footer links to Notes', as
   );
   // The summary is the row's hook: always in the page, opened on hover (C51).
   await expect(page.getByText(note!.summary)).toBeAttached();
-  await page.getByRole('link', { name: note!.title }).hover();
+  await pointAt(page, page.getByRole('link', { name: note!.title }));
   await expect(page.getByText(note!.summary)).toBeVisible();
   await expect(
     page.locator('[data-site-footer]').getByRole('link', { name: 'Notes', exact: true }),

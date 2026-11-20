@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '../helpers/test';
+import { pointAt } from '../helpers/pointer';
 import { metrics, profile } from '../../src/content';
 import { waitForHydration } from '../helpers/hydration';
 
@@ -54,18 +55,31 @@ test.describe('arrivals', () => {
       ),
     ).toEqual(['0', '1', '2', '3', '4']);
     expect(await animationName(letters.first())).toBe('letter');
+    // C53: clearly letter by letter: 45 ms apart, 0.8 s each, on the glide.
     expect(await letters.nth(4).evaluate((el) => getComputedStyle(el).animationDelay)).toBe(
-      '0.112s',
+      '0.18s',
     );
+    expect(await letters.first().evaluate((el) => getComputedStyle(el).animationDuration)).toBe(
+      '0.8s',
+    );
+    expect(
+      await letters.first().evaluate((el) => getComputedStyle(el).animationTimingFunction),
+    ).toBe('cubic-bezier(0.16, 1, 0.3, 1)');
   });
 
   // The poster's lines stay whole text, so the name is the page's largest paint (LCP budget); split into
   // letters, the headline became the largest paint and CI measured it late. It rises in as one.
-  test('the poster rises in whole, its lines unsplit', async ({ page }) => {
+  // C53: line one slides in from the left and line two from the right, each still whole text.
+  test('the poster slides in line by line, its lines unsplit', async ({ page }) => {
     await page.goto('/');
     const poster = page.locator('h1.poster');
     await expect(poster.locator('.letter')).toHaveCount(0);
-    expect(await animationName(poster)).toBe('rise');
+    const lines = poster.locator('> span:not(.sr-only)');
+    expect(await animationName(lines.nth(0))).toBe('poster-left');
+    expect(await animationName(lines.nth(1))).toBe('poster-right');
+    expect(await lines.nth(0).evaluate((el) => getComputedStyle(el).animationDuration)).toBe(
+      '0.9s',
+    );
   });
 
   test('sections rise in with the shared rise as they scroll in', async ({ page }) => {
@@ -92,12 +106,13 @@ test.describe('answers', () => {
   test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
 
   test('buttons press in while held', async ({ page }) => {
-    await page.goto('/');
+    // The theme switch is the pull cord on wide screens (it is tugged, not pressed), so press a button.
+    await page.goto('/contact');
     await waitForHydration(page);
-    const toggle = page.locator('[data-site-header]').getByRole('button', { name: 'Dark theme' });
-    await toggle.hover();
+    const button = page.getByRole('button', { name: 'Copy email' });
+    await button.hover();
     await page.mouse.down();
-    await expect.poll(() => toggle.evaluate((el) => getComputedStyle(el).scale)).toBe('0.96');
+    await expect.poll(() => button.evaluate((el) => getComputedStyle(el).scale)).toBe('0.96');
     await page.mouse.up();
   });
 
@@ -183,22 +198,27 @@ test.describe('scroll-linked', () => {
     await strip.evaluate((el) =>
       window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - window.innerHeight / 2),
     );
-    // Scroll-driven styles update on the next frame; read only once two have passed.
-    const settle = () =>
-      page.evaluate(
-        () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
-      );
-    await settle();
-    const x1 = await row.evaluate((el) => el.getBoundingClientRect().left);
+    // Scroll-driven styles land a frame or more after the scroll (later on Linux WebKit): read a
+    // position only once it holds still across frames.
+    const settledLeft = () =>
+      row.evaluate(async (el) => {
+        const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+        let last = NaN;
+        for (let i = 0; i < 30; i++) {
+          await frame();
+          await frame();
+          const left = el.getBoundingClientRect().left;
+          if (left === last) return left;
+          last = left;
+        }
+        return last;
+      });
+    const x1 = await settledLeft();
     await page.evaluate(() => window.scrollBy(0, 200));
-    await settle();
-    await expect
-      .poll(async () =>
-        Math.abs((await row.evaluate((el) => el.getBoundingClientRect().left)) - x1),
-      )
-      .toBeGreaterThan(0);
-    const x2 = await row.evaluate((el) => el.getBoundingClientRect().left);
-    expect(Math.abs(x2 - x1)).toBeLessThanOrEqual(200);
+    const x2 = await settledLeft();
+    // C53: more travel, still a drift: over a pixel per pixel scrolled, at most 1.5.
+    expect(Math.abs(x2 - x1)).toBeGreaterThan(200);
+    expect(Math.abs(x2 - x1)).toBeLessThanOrEqual(300);
   });
 
   test('the skills strip moves with the scroll', async ({ page }) => {
@@ -247,6 +267,21 @@ test.describe('about', () => {
 
   // Final review #1: a scrubbed odometer rests on wrong digits wherever the list is on screen at
   // load, so the digits roll once as each number comes into view and then rest on the data.
+  test('the digits roll for 1.2 s, left to right', async ({ page }) => {
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto('/about');
+    await waitForHydration(page);
+    const value = page.locator('#numbers .metric-value').filter({ hasText: /^108$/ });
+    await expect(value.locator('xpath=ancestor::li[1]')).toHaveAttribute('data-roll', '');
+    const reels = value.locator('.odo-reel');
+    const timing = await reels.evaluateAll((els) =>
+      els.map(
+        (el) => `${getComputedStyle(el).animationDuration} ${getComputedStyle(el).animationDelay}`,
+      ),
+    );
+    expect(timing).toEqual(['1.2s 0s', '1.2s 0.08s', '1.2s 0.16s']);
+  });
+
   test('the numbers roll once as they come into view, then rest on their values', async ({
     page,
   }) => {
@@ -442,7 +477,36 @@ test.describe('one rhythm', () => {
           (el) => `${getComputedStyle(el).animationName} ${getComputedStyle(el).animationDuration}`,
         ),
       );
-    expect(new Set(header)).toEqual(new Set(['rise 0.4s']));
+    expect(new Set(header)).toEqual(new Set(['rise 0.7s']));
+    // C53: the glide, and 40 px of travel.
+    const label = page.locator('main header > :not(h1)').first();
+    expect(await label.evaluate((el) => getComputedStyle(el).animationTimingFunction)).toBe(
+      'cubic-bezier(0.16, 1, 0.3, 1)',
+    );
+    // Read from the stylesheet, not a running animation: on a slow machine the arrival has finished
+    // by the time the test looks.
+    const rise = await page.evaluate(() => {
+      const find = (rules: CSSRuleList): string | undefined => {
+        for (const rule of Array.from(rules)) {
+          if (rule instanceof CSSKeyframesRule && rule.name === 'rise')
+            return (rule.cssRules[0] as CSSKeyframeRule).style.translate;
+          if ('cssRules' in rule) {
+            const found = find((rule as CSSGroupingRule).cssRules);
+            if (found) return found;
+          }
+        }
+        return undefined;
+      };
+      for (const sheet of Array.from(document.styleSheets)) {
+        const found = find(sheet.cssRules);
+        if (found) return found;
+      }
+      return undefined;
+    });
+    expect(rise).toBe('0 var(--arrive-rise)');
+    expect(
+      await label.evaluate((el) => getComputedStyle(el).getPropertyValue('--arrive-rise').trim()),
+    ).toBe('40px');
     const letters = await page
       .locator('main header > h1 .letter')
       .evaluateAll((els) => els.map((el) => getComputedStyle(el).animationName));
@@ -453,12 +517,16 @@ test.describe('one rhythm', () => {
     expect(new Set(sections)).toEqual(new Set(['rise']));
     await page.goto('/');
     const row = page.locator('.work-row').first();
-    await row.getByRole('link').hover();
+    await pointAt(page, row.getByRole('link'));
     await expect
       .poll(() =>
         row.locator('.work-row-link > span').evaluate((el) => getComputedStyle(el).translate),
       )
-      .toBe('12px');
+      .toBe('28px');
+    // C53: the row number slides with the name.
+    await expect
+      .poll(() => row.locator('.work-row-num').evaluate((el) => getComputedStyle(el).translate))
+      .toBe('28px');
   });
 });
 
