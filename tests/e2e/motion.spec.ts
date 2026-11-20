@@ -11,8 +11,8 @@ const animationName = (locator: Locator) =>
 
 test('the paper has a still grain behind the content', async ({ page }) => {
   await page.goto('/');
-  const grain = await page.evaluate(() => {
-    const style = getComputedStyle(document.body, '::before');
+  const grain = await page.locator('[data-paper-grain]').evaluate((el) => {
+    const style = getComputedStyle(el);
     return {
       position: style.position,
       zIndex: style.zIndex,

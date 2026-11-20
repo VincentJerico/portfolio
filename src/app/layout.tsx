@@ -37,6 +37,9 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
             </div>
           </main>
           <SiteFooter />
+          {/* Last in the body: Chrome can paint before it has parsed the content, and the grain alone
+              would then be the first contentful paint, which Lighthouse's LCP estimate punishes. */}
+          <div data-paper-grain data-print-hide />
           <SmoothScroll />
           {/* Cookieless analytics, only on Vercel builds: elsewhere their first-party scripts 404. */}
           {process.env.VERCEL === '1' && (
