@@ -483,12 +483,30 @@ test.describe('one rhythm', () => {
     expect(await label.evaluate((el) => getComputedStyle(el).animationTimingFunction)).toBe(
       'cubic-bezier(0.16, 1, 0.3, 1)',
     );
+    // Read from the stylesheet, not a running animation: on a slow machine the arrival has finished
+    // by the time the test looks.
+    const rise = await page.evaluate(() => {
+      const find = (rules: CSSRuleList): string | undefined => {
+        for (const rule of Array.from(rules)) {
+          if (rule instanceof CSSKeyframesRule && rule.name === 'rise')
+            return (rule.cssRules[0] as CSSKeyframeRule).style.translate;
+          if ('cssRules' in rule) {
+            const found = find((rule as CSSGroupingRule).cssRules);
+            if (found) return found;
+          }
+        }
+        return undefined;
+      };
+      for (const sheet of Array.from(document.styleSheets)) {
+        const found = find(sheet.cssRules);
+        if (found) return found;
+      }
+      return undefined;
+    });
+    expect(rise).toBe('0 var(--arrive-rise)');
     expect(
-      await label.evaluate((el) => {
-        const animation = el.getAnimations()[0] as CSSAnimation;
-        return (animation.effect as KeyframeEffect).getKeyframes()[0]!.translate;
-      }),
-    ).toBe('0px 40px');
+      await label.evaluate((el) => getComputedStyle(el).getPropertyValue('--arrive-rise').trim()),
+    ).toBe('40px');
     const letters = await page
       .locator('main header > h1 .letter')
       .evaluateAll((els) => els.map((el) => getComputedStyle(el).animationName));
