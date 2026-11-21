@@ -548,8 +548,7 @@
   body {
     isolation: isolate;
   }
-  body::before {
-    content: '';
+  [data-paper-grain] {
     position: fixed;
     inset: 0;
     z-index: -1;
@@ -744,9 +743,6 @@
     --shadow: none;
   }
 
-  body::before {
-    display: none;
-  }
   .contact-sheet {
     box-shadow: none;
     clip-path: none;
