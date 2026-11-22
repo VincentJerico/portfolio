@@ -103,6 +103,8 @@ test.describe('arrivals', () => {
 
   test('quality scores show with a bar filled to the score', async ({ page }) => {
     await page.goto('/quality');
+    // The tables are folded until asked for (C55 D19).
+    await page.getByText(/^Lighthouse · /).click();
     const table = page.getByRole('region', { name: /Lighthouse/ });
     const bar = table.locator('.score-bar').first();
     const fill = await bar.evaluate((el) => Number(el.style.getPropertyValue('--v')));
@@ -648,6 +650,7 @@ test.describe('smooth scrolling', () => {
       await page.goto('/quality');
       await waitForHydration(page);
       await expect.poll(() => smooth(page)).toBe(true);
+      await page.getByText(/^Gates · /).click(); // folded until asked for (C55 D19)
       const scroller = page.locator('main .overflow-x-auto').first();
       await scroller.scrollIntoViewIfNeeded();
       const max = await scroller.evaluate((el) => el.scrollWidth - el.clientWidth);

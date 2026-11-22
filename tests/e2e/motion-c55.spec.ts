@@ -53,9 +53,9 @@ test.describe('groups', () => {
 
   for (const [path, selector] of [
     ['/projects/accessibility-testing', '#evidence ~ * li[id^="evidence-"], li[id^="evidence-"]'],
-    ['/about', 'main .metric-value'],
+    ['/projects/accessibility-testing', '[data-ticket-severity]'],
   ] as const) {
-    test(`D14: a group arrives one after another, 40 px of scroll apart (${path})`, async ({
+    test(`D14: a group arrives one after another, 40 px of scroll apart (${selector})`, async ({
       page,
     }) => {
       await page.goto(path);
