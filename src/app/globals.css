@@ -560,8 +560,8 @@
     }
   }
 
-  /* C52 move 10: a still paper grain behind the content, never over text. Body is its own stacking
-     context, so the grain sits between its paper colour and everything on it. Screens only. */
+  /* C52 move 10: a still paper grain, screens only. Body is its own stacking context, and the grain
+     (below) blends inside it. */
   body {
     isolation: isolate;
   }
@@ -1143,8 +1143,9 @@
     }
     /* C52 moves 5 and 11: the ending grows from a rounded card to full bleed as it scrolls in, its
        arrow draws itself, and the CV ring turns with the page's scroll. */
-    /* Both finish inside `entry`, which the end of the page always reaches, even on a very tall
-       window (C54). */
+    /* Both finish early enough that the end of the page always reaches them, even on a very tall
+       window (C54): the card inside its own entry, the arrow over a fixed 240 px of scroll (its own
+       entry is only its height, too short to see it draw). */
     .contact-sheet {
       animation: sheet linear both;
       animation-timeline: view();
@@ -1153,7 +1154,7 @@
     .contact-arrow path {
       animation: draw linear both;
       animation-timeline: --arrow;
-      animation-range: entry 0% entry 100%;
+      animation-range: entry 0% entry 240px;
     }
     .cv-ring svg {
       animation: ring-turn linear both;

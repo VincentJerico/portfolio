@@ -686,6 +686,25 @@ test.describe('bugs left from the motion reviews', () => {
     });
   }
 
+  test('B1: the arrow still draws as it rises, not all at once', async ({ page }) => {
+    await page.goto('/');
+    const arrow = page.getByRole('region', { name: 'Contact' }).locator('.contact-arrow');
+    // 120 px of scroll after the arrow's top crosses the bottom edge: half of its 240 px draw.
+    await arrow.evaluate((el) =>
+      window.scrollTo(0, el.getBoundingClientRect().top + scrollY - innerHeight + 120),
+    );
+    await expect
+      .poll(() =>
+        arrow.locator('path').evaluate((el) => parseFloat(getComputedStyle(el).strokeDashoffset)),
+      )
+      .toBeGreaterThan(0.3);
+    expect(
+      await arrow
+        .locator('path')
+        .evaluate((el) => parseFloat(getComputedStyle(el).strokeDashoffset)),
+    ).toBeLessThan(0.7);
+  });
+
   test('B2: on a phone the growing ending never clips its heading', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
