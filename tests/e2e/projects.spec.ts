@@ -2,6 +2,7 @@ import { expect, test } from '../helpers/test';
 import { luminance, srgb } from '../helpers/colour';
 import { projectBySlug, projectsInOrder } from '../../src/lib/content';
 import { severityCounts } from '../../src/lib/labels';
+import { waitForHydration } from '../helpers/hydration';
 import { settleTransitions } from '../helpers/transitions';
 
 const all = projectsInOrder();
@@ -119,6 +120,7 @@ test.describe('test report pages', () => {
 
   test('evidence opens in a dialog that traps focus and returns it', async ({ page }) => {
     await page.goto('/projects/accessibility-testing');
+    await waitForHydration(page);
     const thumb = page.getByRole('button', { name: /^Enlarge image/ }).first();
     await thumb.focus();
     await page.keyboard.press('Enter');
@@ -135,6 +137,7 @@ test.describe('test report pages', () => {
 
   test('clicking the backdrop closes the dialog and refocuses the thumbnail', async ({ page }) => {
     await page.goto('/projects/accessibility-testing');
+    await waitForHydration(page);
     const thumb = page.getByRole('button', { name: /^Enlarge image/ }).first();
     await thumb.click();
     await expect(page.getByRole('dialog')).toBeVisible();

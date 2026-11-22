@@ -1016,6 +1016,10 @@
   inherits: false;
   initial-value: 0;
 }
+@counter-style intro-pad {
+  system: extends decimal;
+  pad: 3 '0';
+}
 @keyframes intro-count {
   to {
     --intro-n: 100;
@@ -1232,8 +1236,10 @@
     counter-reset: intro var(--intro-n);
     animation: intro-count 900ms var(--ease-sheet) both;
   }
+  /* Always three digits, like the site's 01, 02 numbering: a number that gains a digit moves its
+     neighbours, and Chrome counts that as layout shift. */
   .intro-count::after {
-    content: counter(intro);
+    content: counter(intro, intro-pad);
   }
 
   /* C53: the cord settles from a short swing on arrival (one run, under 3 s, then still: WCAG 2.2.2),
