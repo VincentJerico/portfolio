@@ -210,7 +210,7 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
           hydrated: it reserves its space, so the grid never jumps (spec 12.5 CLS). */}
       <div className={hydrated ? '' : 'invisible'}>
         <div className="mb-8 flex flex-col gap-6">
-          <div className="flex max-w-md flex-col gap-1.5">
+          <div className="relative flex max-w-md flex-col gap-1.5">
             <label htmlFor="project-search" className="label-mono text-ink">
               Search projects
             </label>
@@ -246,7 +246,8 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
               role="listbox"
               aria-label="Matching projects"
               hidden={!expanded}
-              className="border-b border-line"
+              // Over the page, not in its flow: typing never pushes the chips and results down.
+              className="absolute inset-x-0 top-[calc(100%-1.25rem)] z-20 border-b border-line bg-(--layer-2) shadow-(--layer-highlight)"
             >
               {matches.map((match, i) => (
                 <li
@@ -255,11 +256,10 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
                   role="option"
                   data-match={match.slug}
                   aria-selected={i === activeMatch}
-                  // Keeps focus in the field, so the list doesn't close before the choice lands.
-                  onMouseDown={(event) => {
-                    event.preventDefault();
-                    router.push(`/projects/${match.slug}`);
-                  }}
+                  // Keeps focus in the field, so the list doesn't close before the click lands.
+                  onMouseDown={(event) => event.preventDefault()}
+                  // A click from any source: a pointer, voice control or switch access.
+                  onClick={() => router.push(`/projects/${match.slug}`)}
                   className="flex min-h-11 cursor-pointer items-center font-mono text-[0.8125rem] text-ink aria-selected:text-accent aria-selected:underline"
                 >
                   {match.name}

@@ -50,6 +50,11 @@
     -webkit-text-size-adjust: 100%;
     /* C55 D1: kerning on at every size (browsers may drop it from small text under auto). */
     font-kerning: normal;
+    /* Keep focused elements clear of the 56 px sticky top bar (SC 2.4.11). */
+    scroll-padding-top: 4.5rem;
+    /* The scrollbar's room is kept even while a modal dialog locks the page (below), so nothing
+       shifts sideways as one opens. */
+    scrollbar-gutter: stable;
   }
   /* C55 D16: everything that acts on a click shows the pointer. */
   button:not(:disabled),
@@ -86,11 +91,6 @@
   /* C55 D15: no paragraph runs past 68 characters of its own size. */
   main p {
     max-inline-size: 68ch;
-    /* Keep focused elements clear of the 56 px sticky top bar (SC 2.4.11). */
-    scroll-padding-top: 4.5rem;
-    /* The scrollbar's room is kept even while a modal dialog locks the page (below), so nothing
-       shifts sideways as one opens. */
-    scrollbar-gutter: stable;
   }
   /* While a modal dialog (the phone menu, an evidence image) is open, the page under it holds still:
      the wheel would otherwise chain through the dialog and scroll it (C52, with smooth scrolling). */
@@ -741,6 +741,9 @@
     line-height: 1.4;
     color: var(--text);
     white-space: nowrap;
+    /* On its own paper, so it never sits over the text beside the gutter. */
+    background: var(--layer-1);
+    padding: 0.125rem 0.375rem;
     opacity: 0;
     translate: 0.25rem 0;
     transition:
@@ -916,6 +919,11 @@
 
   [data-print-hide] {
     display: none !important;
+  }
+
+  /* A work row's hook prints in full, never as the clipped room it keeps on screen (C55 D4). */
+  .work-row-hook {
+    clip-path: none !important;
   }
 
   /* C55 D19: on paper every disclosure is open, and its toggle is gone. */
