@@ -639,3 +639,135 @@ test.describe('smooth scrolling', () => {
     expect(await smooth(page)).toBe(false);
   });
 });
+
+// C54 bugs B1–B4, B8, B9 (the reviews' deferred list).
+test.describe('bugs left from the motion reviews', () => {
+  for (const [width, height] of [
+    [1440, 2400],
+    [1080, 1920],
+  ] as const) {
+    test(`B1: the ending finishes even on a ${width}×${height} window`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await page.goto('/');
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      const contact = page.getByRole('region', { name: 'Contact' });
+      await expect
+        .poll(() => contact.evaluate((el) => getComputedStyle(el).clipPath))
+        .not.toMatch(/round [1-9]/);
+      await expect
+        .poll(() =>
+          contact
+            .locator('.contact-arrow path')
+            .evaluate((el) => parseFloat(getComputedStyle(el).strokeDashoffset)),
+        )
+        .toBe(0);
+    });
+  }
+
+  test('B2: on a phone the growing ending never clips its heading', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    const contact = page.getByRole('region', { name: 'Contact' });
+    await contact.evaluate((el) =>
+      window.scrollTo(
+        0,
+        el.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.85,
+      ),
+    );
+    // Hit-testing honours clip-path: if the card's inset clipped the heading's first letter, the
+    // point just inside its left edge would not land on the heading.
+    const onHeading = await contact.evaluate(async (el) => {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const heading = el.querySelector('h2')!;
+      const box = heading.getBoundingClientRect();
+      const hit = document.elementFromPoint(box.left + 2, box.top + box.height / 2);
+      return hit !== null && heading.contains(hit);
+    });
+    expect(onHeading).toBe(true);
+  });
+
+  for (const [width, height] of [
+    [1280, 800],
+    [844, 390],
+  ] as const) {
+    test(`B3: the career strip has not moved when it pins at ${width}×${height}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height });
+      await page.goto('/about');
+      await waitForHydration(page);
+      await page.evaluate(() => document.fonts.ready);
+      const track = page.locator('.career-track');
+      // Where the first step sits before the strip is reached, and where it sits as the strip pins (its
+      // top at the 56 px top bar): measured on screen, since the computed translate is a calc().
+      const moved = await track.evaluate(async (el) => {
+        const frame = () =>
+          new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        // The section around the strip also rises as it scrolls in, so one scroll lands short or long:
+        // step until the strip's top really sits where it should.
+        const placeTop = async (y: number) => {
+          for (let i = 0; i < 8; i++) {
+            const delta = el.getBoundingClientRect().top - y;
+            if (Math.abs(delta) < 0.5) return;
+            window.scrollBy(0, delta);
+            await frame();
+          }
+        };
+        const first = el.querySelector('ol > li')!;
+        await placeTop(300);
+        const before = first.getBoundingClientRect().left;
+        await placeTop(56);
+        return first.getBoundingClientRect().left - before;
+      });
+      expect(Math.abs(moved)).toBeLessThanOrEqual(1);
+    });
+  }
+
+  test('B4: under reduced motion a title can break inside a long word', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/about');
+    expect(
+      await page
+        .locator('main header h1 .word')
+        .first()
+        .evaluate((el) => getComputedStyle(el).whiteSpace),
+    ).toBe('normal');
+  });
+
+  test('B8: the cord keeps a halo in the page colour', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+    expect(
+      await page
+        .locator('[data-site-header] [data-pull-cord]')
+        .evaluate((el) => getComputedStyle(el).filter),
+    ).toContain('drop-shadow');
+  });
+
+  test('B9: the phone menu links rise the short way', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto('/');
+    await waitForHydration(page);
+    await page
+      .locator('[data-site-header]')
+      .getByRole('button', { name: 'Menu', exact: true })
+      .click();
+    const item = page.getByRole('dialog', { name: 'Site menu' }).locator('nav > ul > li').first();
+    expect(
+      await item.evaluate((el) => getComputedStyle(el).getPropertyValue('--arrive-rise').trim()),
+    ).toBe('16px');
+  });
+
+  test('B7: the CV ring draws its text on its own path, fitted to the circle', async ({ page }) => {
+    await page.goto('/');
+    const fit = await page.locator('.cv-ring svg').evaluate((svg) => {
+      const textPath = svg.querySelector('textPath')!;
+      const id = (textPath.getAttribute('href') ?? '').slice(1);
+      const path = svg.querySelector(`[id="${CSS.escape(id)}"]`);
+      return { id, inside: path !== null, fitted: Number(textPath.getAttribute('textLength')) };
+    });
+    expect(fit.id).not.toBe('cv-ring-path');
+    expect(fit.inside).toBe(true);
+    expect(fit.fitted).toBe(Math.round(2 * Math.PI * 80 * 0.99));
+  });
+});

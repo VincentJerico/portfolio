@@ -23,6 +23,8 @@ export async function focusEntirelyObscured(page: Page): Promise<boolean> {
     const el = document.activeElement;
     if (!el || el === document.body) return false;
     const r = el.getBoundingClientRect();
+    // Focus somewhere off screen (moved by a transform the browser can't scroll to) is hidden too (C54).
+    if (r.bottom <= 0 || r.right <= 0 || r.top >= innerHeight || r.left >= innerWidth) return true;
     const points = [
       [r.left + r.width / 2, r.top + r.height / 2],
       [r.left + 1, r.top + 1],

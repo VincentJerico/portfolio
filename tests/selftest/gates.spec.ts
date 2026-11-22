@@ -25,3 +25,10 @@ test('the focus-obscured guard catches the planted focus-trap bug', async ({
   }
   expect(obscured).toContain(true);
 });
+
+test('the focus-obscured guard catches focus moved off screen', async ({ page }) => {
+  await page.goto('/selftest');
+  await waitForHydration(page);
+  await page.locator('[data-planted-offscreen]').focus();
+  expect(await focusEntirelyObscured(page)).toBe(true);
+});

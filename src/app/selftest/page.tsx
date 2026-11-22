@@ -20,6 +20,15 @@ export default function SelfTestPage() {
           </li>
         ))}
       </ul>
+      {/* Planted defect: a link moved off screen by a transform, which the browser can't scroll to, so
+          keyboard focus lands somewhere nobody can see (C54). */}
+      <a
+        href="#planted"
+        data-planted-offscreen
+        style={{ display: 'inline-block', transform: 'translateX(-200vw)' }}
+      >
+        Off-screen link
+      </a>
       {/* Planted defects: text far below 4.5:1 contrast, and an overlay that covers the links above
           without trapping focus, so Tab moves onto controls nobody can see (SC 2.4.11). */}
       <div

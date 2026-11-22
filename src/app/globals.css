@@ -476,6 +476,14 @@
     /* Out to the viewport's edges exactly, so the grow-in (below) widens visibly all the way. */
     clip-path: inset(0 calc(50% - 50vw));
     padding-block: clamp(4rem, 3rem + 5vw, 8rem);
+    /* The card's side inset as it starts growing: none on phones, where the content runs to the edge
+       and an inset would clip it (C54). */
+    --sheet-x: 0px;
+  }
+  @media (width >= 40rem) {
+    .contact-sheet {
+      --sheet-x: 1rem;
+    }
   }
   .contact-arrow {
     flex: none;
@@ -605,6 +613,11 @@
     flex-direction: column;
     align-items: center;
     transform-origin: top center;
+  }
+  /* A 1 px halo in the page colour, so the string and knob stay visible where the flipped Contact
+     band passes behind them (C54). */
+  .pull-cord {
+    filter: drop-shadow(0 0 1px var(--bg)) drop-shadow(0 0 1px var(--bg));
   }
   .cord-line {
     width: 1px;
@@ -822,10 +835,6 @@
     translate: 6vw 0;
   }
 }
-/* A word never breaks between its letters (they are inline blocks while they move). */
-.word {
-  white-space: nowrap;
-}
 
 /* P5: view transitions are motion too. */
 @media (prefers-reduced-motion: reduce) {
@@ -869,6 +878,8 @@
   }
   /* The phone menu's links arrive in turn. */
   dialog[open] nav > ul > li {
+    /* The short rise C52 gave them, not the 40 px page arrivals (C54). */
+    --arrive-rise: 16px;
     animation: rise var(--dur-base) var(--ease-snap) backwards;
   }
   dialog[open] nav > ul > li:nth-child(2) {
@@ -915,6 +926,11 @@
   /* C52 move 2, C53: page titles arrive letter by letter, each rising 0.9 em and straightening from
      a 12 degree lean, 45 ms apart. Transform only and nothing starts hidden, so the title still paints
      at once (LCP) and its text is the plain heading text. */
+  /* A word never breaks between its letters while they are inline blocks; elsewhere (reduced motion,
+     print) a long word may break as usual (C54). */
+  .word {
+    white-space: nowrap;
+  }
   .letter {
     display: inline-block;
     transform-origin: 0 100%;
@@ -1063,15 +1079,17 @@
     }
     /* C52 moves 5 and 11: the ending grows from a rounded card to full bleed as it scrolls in, its
        arrow draws itself, and the CV ring turns with the page's scroll. */
+    /* Both finish inside `entry`, which the end of the page always reaches, even on a very tall
+       window (C54). */
     .contact-sheet {
       animation: sheet linear both;
       animation-timeline: view();
-      animation-range: entry 0% cover 35%;
+      animation-range: entry 0% entry 100%;
     }
     .contact-arrow path {
       animation: draw linear both;
       animation-timeline: --arrow;
-      animation-range: entry 20% cover 40%;
+      animation-range: entry 0% entry 100%;
     }
     .cv-ring svg {
       animation: ring-turn linear both;
@@ -1119,6 +1137,9 @@
   @media screen and (prefers-reduced-motion: no-preference) and (min-width: 768px) {
     .career-track {
       view-timeline: --career block;
+      /* The range starts exactly when the strip pins under the 3.5rem top bar, not at the page's
+         scroll padding, so nothing slides before it pins (C54). */
+      view-timeline-inset: 3.5rem 0;
       height: 260svh;
     }
     .career-sticky {
@@ -1176,7 +1197,7 @@
 }
 @keyframes sheet {
   from {
-    clip-path: inset(3rem 1rem round 1.5rem);
+    clip-path: inset(3rem var(--sheet-x) round 1.5rem);
   }
   to {
     clip-path: inset(0 calc(50% - 50vw) round 0);

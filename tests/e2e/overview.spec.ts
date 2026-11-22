@@ -168,6 +168,24 @@ test.describe('projects', () => {
     });
   });
 
+  // C54 B10: the CSS hover itself, tested without the pointer helper: under reduced motion there is no
+  // smooth scrolling and no rise, so a plain hover is exact.
+  test.describe('with a mouse, reduced motion', () => {
+    test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+    test("a plain hover opens a row's hook", async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.goto('/');
+      const row = projectsRegion(page).getByRole('listitem').first();
+      await row.getByRole('link').hover();
+      await expect
+        .poll(() =>
+          row.locator('.work-row-hook > p').evaluate((el) => el.getBoundingClientRect().height),
+        )
+        .toBeGreaterThan(10);
+    });
+  });
+
   test.describe('on a touch screen', () => {
     test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
