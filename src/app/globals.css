@@ -1007,6 +1007,32 @@
   }
 }
 
+/* The intro exists only where it can move (C56): never under reduced motion or in print. */
+.intro {
+  display: none;
+}
+@property --intro-n {
+  syntax: '<integer>';
+  inherits: false;
+  initial-value: 0;
+}
+@keyframes intro-count {
+  to {
+    --intro-n: 100;
+  }
+}
+@keyframes intro-fill {
+  from {
+    scale: 0 1;
+  }
+}
+@keyframes intro-lift {
+  to {
+    clip-path: inset(0 0 100% 0);
+    visibility: hidden;
+  }
+}
+
 /* P5: view transitions are motion too. */
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*),
@@ -1115,11 +1141,11 @@
      is unaffected and axe never scans faded text. */
   main header > :not([data-morph-title], :has(.letter), .poster) {
     /* Shorter than other arrivals: the whole header is in within 0.7 s (Vincent, 2026-11-22). */
-    animation: rise 450ms var(--ease-glide) backwards;
+    animation: rise 450ms var(--ease-glide) var(--intro, 0s) backwards;
   }
   /* C53: the home poster's first line slides in from the left, the second from the right. */
   .poster > span:not(.sr-only) {
-    animation: poster-left 900ms var(--ease-glide) backwards;
+    animation: poster-left 900ms var(--ease-glide) var(--intro, 0s) backwards;
   }
   .poster > span:not(.sr-only) + span:not(.sr-only) {
     animation-name: poster-right;
@@ -1139,16 +1165,75 @@
     margin-inline-end: var(--k, 0em);
     transform-origin: 0 100%;
     /* 25 ms apart, the stagger capped at 0.2 s, so even a long title is in within 0.7 s. */
-    animation: letter 500ms var(--ease-glide) min(calc(var(--i) * 25ms), 200ms) backwards;
+    animation: letter 500ms var(--ease-glide)
+      calc(var(--intro, 0s) + min(calc(var(--i) * 25ms), 200ms)) backwards;
   }
   main header > :nth-child(2) {
-    animation-delay: 40ms;
+    animation-delay: calc(var(--intro, 0s) + 40ms);
   }
   main header > :nth-child(3) {
-    animation-delay: 80ms;
+    animation-delay: calc(var(--intro, 0s) + 80ms);
   }
   main header > :nth-child(n + 4) {
-    animation-delay: 120ms;
+    animation-delay: calc(var(--intro, 0s) + 120ms);
+  }
+
+  /* C56: the first-visit intro. It counts to 100 over 0.9 s, then lifts away like the page sheet;
+     the page's own arrivals wait for it (--intro), so the title still rises in view. */
+  :root:has([data-intro]) {
+    --intro: 1.1s;
+  }
+  /* Keyboard focus is never hidden under it (SC 2.4.11): the first Tab sends it away. */
+  :root:has(:focus-visible) .intro {
+    display: none;
+  }
+  .intro {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 1.25rem;
+    background: var(--bg);
+    color: var(--text);
+    pointer-events: none;
+    animation: intro-lift 550ms var(--ease-sheet) 1000ms both;
+  }
+  .intro-mark {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-variation-settings:
+      'opsz' 96,
+      'wdth' 75;
+    font-size: clamp(5rem, 3rem + 10vw, 11rem);
+    line-height: 0.8;
+    letter-spacing: -0.01em;
+  }
+  .intro-meter {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: min(16rem, 60vw);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .intro-line {
+    flex: 1;
+    height: 1px;
+    background: var(--accent);
+    transform-origin: left;
+    animation: intro-fill 900ms var(--ease-sheet) both;
+  }
+  .intro-count {
+    min-width: 3ch;
+    text-align: right;
+    counter-reset: intro var(--intro-n);
+    animation: intro-count 900ms var(--ease-sheet) both;
+  }
+  .intro-count::after {
+    content: counter(intro);
   }
 
   /* C53: the cord settles from a short swing on arrival (one run, under 3 s, then still: WCAG 2.2.2),

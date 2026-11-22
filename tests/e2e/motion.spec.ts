@@ -56,7 +56,13 @@ test.describe('arrivals', () => {
     ).toEqual(['0', '1', '2', '3', '4']);
     expect(await animationName(letters.first())).toBe('letter');
     // Vincent, 2026-11-22 ("the header is too long"): 25 ms apart, 0.5 s each, on the glide.
-    expect(await letters.nth(4).evaluate((el) => getComputedStyle(el).animationDelay)).toBe('0.1s');
+    // After the first-visit intro (C56), which every arrival on a fresh load waits for.
+    const intro = await page.evaluate(
+      () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--intro')) || 0,
+    );
+    expect(
+      await letters.nth(4).evaluate((el) => parseFloat(getComputedStyle(el).animationDelay)),
+    ).toBeCloseTo(intro + 0.1, 3);
     expect(await letters.first().evaluate((el) => getComputedStyle(el).animationDuration)).toBe(
       '0.5s',
     );
@@ -78,7 +84,11 @@ test.describe('arrivals', () => {
         }),
     );
     expect(ends.length).toBeGreaterThan(0);
-    expect(Math.max(...ends)).toBeLessThanOrEqual(700);
+    // Counted from the end of the first-visit intro (C56), which every arrival waits for.
+    const intro = await page.evaluate(
+      () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--intro')) || 0,
+    );
+    expect(Math.max(...ends) - intro * 1000).toBeLessThanOrEqual(700);
   });
 
   // The poster's lines stay whole text, so the name is the page's largest paint (LCP budget); split into

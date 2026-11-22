@@ -3,6 +3,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import type { Metadata, Viewport } from 'next';
 import { RouteTransition } from '@/components/layout/RouteTransition';
 import { SiteFooter } from '@/components/layout/SiteFooter';
+import { Intro } from '@/components/motion/Intro';
 import { SmoothScroll } from '@/components/motion/SmoothScroll';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import { SkipLink } from '@/components/layout/SkipLink';
@@ -55,6 +56,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           {/* Last in the body: Chrome can paint before it has parsed the content, and the grain alone
               would then be the first contentful paint, which Lighthouse's LCP estimate punishes. */}
           <div data-paper-grain data-print-hide />
+          <Intro />
           <SmoothScroll />
           {/* Cookieless analytics, only on Vercel builds: elsewhere their first-party scripts 404. */}
           {process.env.VERCEL === '1' && (
