@@ -278,10 +278,13 @@ test.describe('page change and theme flood, frame by frame', () => {
               cover: box && {
                 left: box.left <= 0,
                 // The page's width, not the window's: Linux browsers keep a scrollbar beside it.
-                right: box.right >= document.documentElement.clientWidth,
+                // clientWidth is rounded to a whole pixel.
+                right: box.right >= document.documentElement.clientWidth - 1,
                 top: box.top <= barBox.bottom,
                 bottom: box.bottom >= innerHeight,
               },
+              // Raw numbers, shown in a failure's diff.
+              edges: box && [box.left, box.right, document.documentElement.clientWidth, innerWidth],
               barName: getComputedStyle(bar).viewTransitionName,
               oldBar: getComputedStyle(
                 document.documentElement,
