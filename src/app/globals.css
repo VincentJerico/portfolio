@@ -1031,22 +1031,52 @@
     }
   }
   /* The phone menu's links arrive in turn. */
-  dialog[open] nav > ul > li {
-    /* The short rise C52 gave them, not the 40 px page arrivals (C54). */
-    --arrive-rise: 16px;
-    animation: rise var(--dur-base) var(--ease-snap) backwards;
+  /* C55 D10: the phone menu grows as a circle from its Menu button (the centre set on open) and
+     shrinks back into it; a transition, so a close mid-way reverses from where it is (D18). */
+  dialog.site-menu,
+  dialog.site-menu:not([open]) {
+    translate: none;
   }
-  dialog[open] nav > ul > li:nth-child(2) {
-    animation-delay: 40ms;
+  dialog.site-menu {
+    clip-path: circle(var(--menu-r, 150vmax) at var(--menu-x, 100%) var(--menu-y, 0px));
+    transition:
+      clip-path 480ms var(--ease-glide),
+      overlay 480ms allow-discrete,
+      display 480ms allow-discrete;
   }
-  dialog[open] nav > ul > li:nth-child(3) {
-    animation-delay: 80ms;
+  dialog.site-menu:not([open]) {
+    clip-path: circle(0px at var(--menu-x, 100%) var(--menu-y, 0px));
+    transition-duration: 320ms;
   }
-  dialog[open] nav > ul > li:nth-child(4) {
-    animation-delay: 120ms;
+  @starting-style {
+    dialog.site-menu[open] {
+      translate: none;
+      clip-path: circle(0px at var(--menu-x, 100%) var(--menu-y, 0px));
+    }
   }
-  dialog[open] nav > ul > li:nth-child(n + 5) {
-    animation-delay: 160ms;
+  /* Its links rise in turn, 16 px (C54), also as transitions (D18). */
+  dialog.site-menu nav > ul > li {
+    transition: translate var(--dur-base) var(--ease-snap) var(--d, 0ms);
+  }
+  dialog.site-menu:not([open]) nav > ul > li {
+    translate: 0 16px;
+  }
+  @starting-style {
+    dialog.site-menu[open] nav > ul > li {
+      translate: 0 16px;
+    }
+  }
+  dialog.site-menu nav > ul > li:nth-child(2) {
+    --d: 40ms;
+  }
+  dialog.site-menu nav > ul > li:nth-child(3) {
+    --d: 80ms;
+  }
+  dialog.site-menu nav > ul > li:nth-child(4) {
+    --d: 120ms;
+  }
+  dialog.site-menu nav > ul > li:nth-child(n + 5) {
+    --d: 160ms;
   }
 
   /* Findings and other disclosures open and close smoothly where details content can animate. */
@@ -1178,12 +1208,20 @@
   }
 
   /* Feedback: anything that appears in answer to the visitor (errors, alerts, statuses) rises in. */
-  .reveal-in,
   .pop-in,
   .count-roll {
     /* Small things in answer to the visitor rise a short way. */
     --arrive-rise: 12px;
     animation: rise var(--dur-base) var(--ease-snap) backwards;
+  }
+  /* C55 D18: the form's messages rise in as transitions, so a quick change reverses smoothly. */
+  .reveal-in {
+    transition: translate var(--dur-base) var(--ease-snap);
+  }
+  @starting-style {
+    .reveal-in {
+      translate: 0 12px;
+    }
   }
   /* An icon that arrives on its own (the form's "sent" check) sharpens in from a blur (C54). */
   .icon-in {
@@ -1208,6 +1246,31 @@
       animation: rise linear both;
       animation-timeline: view();
       animation-range: cover 0px cover 160px;
+    }
+    /* C55 D14: a group that comes into view together arrives one after another, 40 px of scroll
+       apart (the scroll's stand-in for 40 ms), capped at six steps. */
+    main .stagger > * {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: cover 0px cover 160px;
+    }
+    main .stagger > :nth-child(2) {
+      animation-range: cover 40px cover 200px;
+    }
+    main .stagger > :nth-child(3) {
+      animation-range: cover 80px cover 240px;
+    }
+    main .stagger > :nth-child(4) {
+      animation-range: cover 120px cover 280px;
+    }
+    main .stagger > :nth-child(5) {
+      animation-range: cover 160px cover 320px;
+    }
+    main .stagger > :nth-child(6) {
+      animation-range: cover 200px cover 360px;
+    }
+    main .stagger > :nth-child(n + 7) {
+      animation-range: cover 240px cover 400px;
     }
     /* C52 move 6: each skills row is one line drifting while the strip crosses the screen, the
        second the other way: 100vw over the strip's own view, under 1.5 px per px scrolled (C53). The

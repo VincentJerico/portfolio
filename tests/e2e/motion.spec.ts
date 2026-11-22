@@ -144,7 +144,8 @@ test.describe('changes of shape', () => {
     await page.getByRole('button', { name: 'Send message' }).click();
     const alert = page.locator('form').getByRole('alert');
     await expect(alert).toBeVisible();
-    expect(await animationName(alert)).toBe('rise');
+    // C55 D18: a transition from 12 px down (so a quick change reverses instead of restarting).
+    await expect(alert).toHaveCSS('transition-property', /translate/);
     await expect(page.locator('form')).toHaveAttribute('data-status', 'invalid');
   });
 
@@ -195,7 +196,9 @@ test.describe('changes of shape', () => {
       .getByRole('button', { name: 'Menu', exact: true })
       .click();
     const item = page.getByRole('dialog', { name: 'Site menu' }).locator('nav > ul > li').nth(1);
-    expect(await animationName(item)).toBe('rise');
+    // C55 D18: transitions, the second link 40 ms after the first.
+    await expect(item).toHaveCSS('transition-property', 'translate');
+    await expect(item).toHaveCSS('transition-delay', '0.04s');
   });
 });
 
@@ -822,9 +825,14 @@ test.describe('bugs left from the motion reviews', () => {
       .getByRole('button', { name: 'Menu', exact: true })
       .click();
     const item = page.getByRole('dialog', { name: 'Site menu' }).locator('nav > ul > li').first();
-    expect(
-      await item.evaluate((el) => getComputedStyle(el).getPropertyValue('--arrive-rise').trim()),
-    ).toBe('16px');
+    // C55 D18: they rise as a transition, starting 16 px below.
+    const from = await item.evaluate((el) =>
+      el
+        .getAnimations()
+        .map((a) => (a.effect as KeyframeEffect).getKeyframes()[0]?.translate)
+        .join(),
+    );
+    expect(from).toBe('0px 16px');
   });
 
   test('B7: the CV ring draws its text on its own path, fitted to the circle', async ({ page }) => {
