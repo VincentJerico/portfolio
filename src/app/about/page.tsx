@@ -5,6 +5,7 @@ import { CareerPath } from '@/components/content/CareerPath';
 import { Section } from '@/components/content/Section';
 import { Timeline } from '@/components/content/Timeline';
 import { WorkList } from '@/components/content/WorkList';
+import { Disclosure } from '@/components/ui/Disclosure';
 import {
   certifications,
   education,
@@ -70,7 +71,7 @@ export default function AboutPage() {
           <RollOnView className="odo-list grid border-t border-line sm:grid-cols-2 lg:grid-cols-5">
             {metrics.map((metric) => (
               <li key={metric.id} className="flex flex-col gap-1 border-b border-line py-4 pr-6">
-                <p className="metric-value text-4xl font-extrabold tracking-tight text-ink [font-variation-settings:'opsz'_96,'wdth'_75]">
+                <p className="metric-value text-4xl font-extrabold tracking-[-0.02em] text-ink [font-variation-settings:'opsz'_96,'wdth'_75]">
                   <Odometer value={metric.value} />
                 </p>
                 <p className="text-sm text-ink">{metric.label}</p>
@@ -137,20 +138,15 @@ export default function AboutPage() {
       )}
 
       <Section id="certifications" title="Certifications">
-        <ul className="border-t border-line">
-          {certifications.map((cert) => (
-            <li
-              key={cert.name}
-              className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-line py-3"
-            >
-              <span className="text-ink">
-                {cert.credentialUrl ? <a href={cert.credentialUrl}>{cert.name}</a> : cert.name}
-                <span className="text-ink-muted"> · {cert.issuer}</span>
-              </span>
-              <span className="label-mono text-ink-muted">{formatCertDate(cert.date)}</span>
-            </li>
-          ))}
-        </ul>
+        {/* The first three, then the rest on demand (C55 D19). */}
+        <ul className="border-t border-line">{certifications.slice(0, 3).map(certificationRow)}</ul>
+        {certifications.length > 3 && (
+          <Disclosure summary={`Show all ${certifications.length} certifications`}>
+            <ul className="border-t border-line">
+              {certifications.slice(3).map(certificationRow)}
+            </ul>
+          </Disclosure>
+        )}
       </Section>
 
       {profile.languages.length > 0 && (
@@ -190,5 +186,20 @@ export default function AboutPage() {
         <Timeline events={visible(timeline)} />
       </Section>
     </div>
+  );
+}
+
+function certificationRow(cert: (typeof certifications)[number]) {
+  return (
+    <li
+      key={cert.name}
+      className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-line py-3"
+    >
+      <span className="text-ink">
+        {cert.credentialUrl ? <a href={cert.credentialUrl}>{cert.name}</a> : cert.name}
+        <span className="text-ink-muted"> · {cert.issuer}</span>
+      </span>
+      <span className="label-mono text-ink-muted">{formatCertDate(cert.date)}</span>
+    </li>
   );
 }

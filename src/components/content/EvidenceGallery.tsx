@@ -88,7 +88,7 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
 
   return (
     <>
-      <ul className="grid gap-4 md:grid-cols-2">
+      <ul className="stagger grid gap-4 md:grid-cols-2">
         {images.map((image, i) => (
           <li key={image.src} id={`evidence-${i}`} className="scroll-mt-20">
             <figure className="flex h-full flex-col border-t border-line pt-3">

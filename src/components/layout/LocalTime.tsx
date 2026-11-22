@@ -40,7 +40,7 @@ export function LocalTime({
 
   return (
     <p data-local-time className="text-ink-muted">
-      Local time <span className="inline-block min-w-[7ch] text-ink tabular-nums">{time}</span>
+      Local time <span className="inline-block min-w-[8ch] text-ink tabular-nums">{time}</span>
       {place && ` · ${place}`}
     </p>
   );

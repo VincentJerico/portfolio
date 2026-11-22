@@ -128,6 +128,25 @@ test.describe('project to report', () => {
       )
       .toMatch(new RegExp(`project-title-${slug}`));
   });
+
+  test("D20: a report's Next link flies its name into the next report's title", async ({
+    page,
+  }) => {
+    await recordMorphs(page);
+    await page.goto('/projects/security-testing');
+    await waitForHydration(page);
+    const next = page.getByRole('navigation', { name: 'More projects' }).getByRole('link').last();
+    const href = (await next.getAttribute('href'))!;
+    const slug = href.split('/').pop()!;
+    await bringToCentre(next);
+    await next.click();
+    await expect(page).toHaveURL(new RegExp(`${href}$`));
+    await expect
+      .poll(() =>
+        page.evaluate(() => (window as unknown as { __morphs: string[] }).__morphs.join('|')),
+      )
+      .toMatch(new RegExp(`group\\(project-title-${slug}\\)`));
+  });
 });
 
 test.describe('evidence grows into its dialog', () => {

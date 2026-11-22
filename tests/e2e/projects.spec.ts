@@ -2,6 +2,7 @@ import { expect, test } from '../helpers/test';
 import { luminance, srgb } from '../helpers/colour';
 import { projectBySlug, projectsInOrder } from '../../src/lib/content';
 import { severityCounts } from '../../src/lib/labels';
+import { waitForHydration } from '../helpers/hydration';
 import { settleTransitions } from '../helpers/transitions';
 
 const all = projectsInOrder();
@@ -36,7 +37,7 @@ test.describe('projects index', () => {
 
   test('the search field has a boundary that stands out from the page', async ({ page }) => {
     await page.goto('/projects');
-    const search = page.getByRole('searchbox', { name: 'Search projects' });
+    const search = page.getByRole('combobox', { name: 'Search projects' });
     const [edgeCss, bgCss] = await search.evaluate((el) => [
       getComputedStyle(el).borderBottomColor,
       getComputedStyle(document.body).backgroundColor,
@@ -53,7 +54,7 @@ test.describe('projects index', () => {
   }) => {
     await page.goto('/projects');
     const cards = page.locator('main li[data-slug]:not([inert] *)');
-    const search = page.getByRole('searchbox', { name: 'Search projects' });
+    const search = page.getByRole('combobox', { name: 'Search projects' });
     const target = all.find((p) => p.category === 'security')!;
     const byStack = all.filter((p) =>
       [p.name, p.hook, p.summary, ...p.stack].join(' ').toLowerCase().includes('playwright'),
@@ -118,7 +119,15 @@ test.describe('test report pages', () => {
   });
 
   test('evidence opens in a dialog that traps focus and returns it', async ({ page }) => {
+    // Once on CI WebKit the dialog stayed shut with nothing in the trace: say why if it happens again.
+    const note = (type: string, description: string) =>
+      test.info().annotations.push({ type, description });
+    page.on('pageerror', (error) => note('page error', error.message));
+    page.on('console', (message) => {
+      if (message.type() === 'error') note('console error', message.text());
+    });
     await page.goto('/projects/accessibility-testing');
+    await waitForHydration(page);
     const thumb = page.getByRole('button', { name: /^Enlarge image/ }).first();
     await thumb.focus();
     await page.keyboard.press('Enter');
@@ -135,6 +144,7 @@ test.describe('test report pages', () => {
 
   test('clicking the backdrop closes the dialog and refocuses the thumbnail', async ({ page }) => {
     await page.goto('/projects/accessibility-testing');
+    await waitForHydration(page);
     const thumb = page.getByRole('button', { name: /^Enlarge image/ }).first();
     await thumb.click();
     await expect(page.getByRole('dialog')).toBeVisible();

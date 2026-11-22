@@ -33,6 +33,8 @@ test('a deep link to a ticket opens it and brings it into view', async ({ page }
 
 test('following a findings-table ID opens that ticket', async ({ page }) => {
   await page.goto('/projects/accessibility-testing');
+  // The table is the overview, folded until asked for (C55 D19).
+  await page.getByText(/^All findings as a table/).click();
   await page
     .getByRole('region', { name: 'Findings index' })
     .getByRole('link', { name: 'F-3' })

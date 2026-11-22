@@ -56,7 +56,13 @@ test.describe('arrivals', () => {
     ).toEqual(['0', '1', '2', '3', '4']);
     expect(await animationName(letters.first())).toBe('letter');
     // Vincent, 2026-11-22 ("the header is too long"): 25 ms apart, 0.5 s each, on the glide.
-    expect(await letters.nth(4).evaluate((el) => getComputedStyle(el).animationDelay)).toBe('0.1s');
+    // After the first-visit intro (C56), which every arrival on a fresh load waits for.
+    const intro = await page.evaluate(
+      () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--intro')) || 0,
+    );
+    expect(
+      await letters.nth(4).evaluate((el) => parseFloat(getComputedStyle(el).animationDelay)),
+    ).toBeCloseTo(intro + 0.1, 3);
     expect(await letters.first().evaluate((el) => getComputedStyle(el).animationDuration)).toBe(
       '0.5s',
     );
@@ -78,7 +84,11 @@ test.describe('arrivals', () => {
         }),
     );
     expect(ends.length).toBeGreaterThan(0);
-    expect(Math.max(...ends)).toBeLessThanOrEqual(700);
+    // Counted from the end of the first-visit intro (C56), which every arrival waits for.
+    const intro = await page.evaluate(
+      () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--intro')) || 0,
+    );
+    expect(Math.max(...ends) - intro * 1000).toBeLessThanOrEqual(700);
   });
 
   // The poster's lines stay whole text, so the name is the page's largest paint (LCP budget); split into
@@ -103,6 +113,8 @@ test.describe('arrivals', () => {
 
   test('quality scores show with a bar filled to the score', async ({ page }) => {
     await page.goto('/quality');
+    // The tables are folded until asked for (C55 D19).
+    await page.getByText(/^Lighthouse · /).click();
     const table = page.getByRole('region', { name: /Lighthouse/ });
     const bar = table.locator('.score-bar').first();
     const fill = await bar.evaluate((el) => Number(el.style.getPropertyValue('--v')));
@@ -144,7 +156,8 @@ test.describe('changes of shape', () => {
     await page.getByRole('button', { name: 'Send message' }).click();
     const alert = page.locator('form').getByRole('alert');
     await expect(alert).toBeVisible();
-    expect(await animationName(alert)).toBe('rise');
+    // C55 D18: a transition from 12 px down (so a quick change reverses instead of restarting).
+    await expect(alert).toHaveCSS('transition-property', /translate/);
     await expect(page.locator('form')).toHaveAttribute('data-status', 'invalid');
   });
 
@@ -195,7 +208,9 @@ test.describe('changes of shape', () => {
       .getByRole('button', { name: 'Menu', exact: true })
       .click();
     const item = page.getByRole('dialog', { name: 'Site menu' }).locator('nav > ul > li').nth(1);
-    expect(await animationName(item)).toBe('rise');
+    // C55 D18: transitions, the second link 40 ms after the first.
+    await expect(item).toHaveCSS('transition-property', 'translate');
+    await expect(item).toHaveCSS('transition-delay', '0.04s');
   });
 });
 
@@ -645,6 +660,7 @@ test.describe('smooth scrolling', () => {
       await page.goto('/quality');
       await waitForHydration(page);
       await expect.poll(() => smooth(page)).toBe(true);
+      await page.getByText(/^Gates · /).click(); // folded until asked for (C55 D19)
       const scroller = page.locator('main .overflow-x-auto').first();
       await scroller.scrollIntoViewIfNeeded();
       const max = await scroller.evaluate((el) => el.scrollWidth - el.clientWidth);
@@ -822,9 +838,14 @@ test.describe('bugs left from the motion reviews', () => {
       .getByRole('button', { name: 'Menu', exact: true })
       .click();
     const item = page.getByRole('dialog', { name: 'Site menu' }).locator('nav > ul > li').first();
-    expect(
-      await item.evaluate((el) => getComputedStyle(el).getPropertyValue('--arrive-rise').trim()),
-    ).toBe('16px');
+    // C55 D18: they rise as a transition, starting 16 px below.
+    const from = await item.evaluate((el) =>
+      el
+        .getAnimations()
+        .map((a) => (a.effect as KeyframeEffect).getKeyframes()[0]?.translate)
+        .join(),
+    );
+    expect(from).toBe('0px 16px');
   });
 
   test('B7: the CV ring draws its text on its own path, fitted to the circle', async ({ page }) => {

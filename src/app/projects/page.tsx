@@ -36,6 +36,7 @@ export default function ProjectsPage() {
           categories={categories}
           cards={projects.map((project, i) => ({
             slug: project.slug,
+            name: project.name,
             category: project.category,
             text: [project.name, project.hook, project.summary, ...project.stack].join(' '),
             card: <WorkRowBody item={projectItem(project)} index={i} />,

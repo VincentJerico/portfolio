@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ImageResponse } from 'next/og';
+import { BRAND } from './brand-colours';
 
 // Social cards (spec 9, C51): paper and ink, the page title set big, one line, and the name.
 export const OG_SIZE = { width: 1200, height: 630 };
@@ -17,11 +18,11 @@ const fonts = Promise.all([
 
 // Paper theme tokens (src/styles/tokens.css).
 const C = {
-  bg: '#efe9de',
-  border: '#cdc3b1',
-  text: '#20263a',
-  muted: '#4c5163',
-  accent: '#a5341e',
+  bg: BRAND.paper,
+  border: BRAND.line,
+  text: BRAND.ink,
+  muted: BRAND.muted,
+  accent: BRAND.accent,
 };
 
 export async function renderOgImage({

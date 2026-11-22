@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ViewTransition } from 'react';
 import { notFound } from 'next/navigation';
 import { DataTable } from '@/components/content/DataTable';
+import { Disclosure } from '@/components/ui/Disclosure';
 import { DecisionList } from '@/components/content/DecisionList';
 import { DefectTicket } from '@/components/content/DefectTicket';
 import { EvidenceGallery } from '@/components/content/EvidenceGallery';
@@ -139,8 +140,11 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
         <Section id="findings" title="Findings" kicker={`${project.findings.length} findings`}>
           <TicketOpener />
           <div className="flex flex-col gap-6">
-            <FindingsTable findings={project.findings} />
-            <div className="border-t border-line">
+            {/* Each finding also has its own ticket below; the table is the overview, on demand. */}
+            <Disclosure summary={`All findings as a table · ${project.findings.length} rows`}>
+              <FindingsTable findings={project.findings} />
+            </Disclosure>
+            <div className="stagger border-t border-line">
               {project.findings.map((finding) => (
                 <DefectTicket
                   key={finding.id}
@@ -167,12 +171,9 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
         <Section id="data" title="Results and data">
           <div className="flex flex-col gap-6">
             {project.extraTables.map((table) => (
-              <DataTable
-                key={table.title}
-                caption={table.title}
-                columns={table.columns}
-                rows={table.rows}
-              />
+              <Disclosure key={table.title} summary={`${table.title} · ${table.rows.length} rows`}>
+                <DataTable caption={table.title} columns={table.columns} rows={table.rows} />
+              </Disclosure>
             ))}
           </div>
         </Section>
@@ -195,9 +196,16 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
         className="grid gap-6 border-t border-line pt-8 sm:grid-cols-2"
       >
         {prev ? (
-          <Link href={`/projects/${prev.slug}`} className="group flex flex-col gap-1 no-underline">
+          <Link
+            href={`/projects/${prev.slug}`}
+            transitionTypes={['morph']}
+            className="group flex flex-col gap-1 no-underline"
+          >
             <span className="label-mono text-ink-muted">Previous</span>
-            <span className="work-row-name text-ink group-hover:text-accent">{prev.name}</span>
+            {/* The name flies into the report's title, like a project row's (C55 D20). */}
+            <ViewTransition name={`project-title-${prev.slug}`} share="morph" default="none">
+              <span className="work-row-name text-ink group-hover:text-accent">{prev.name}</span>
+            </ViewTransition>
           </Link>
         ) : (
           <span />
@@ -205,10 +213,13 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
         {next && (
           <Link
             href={`/projects/${next.slug}`}
+            transitionTypes={['morph']}
             className="group flex flex-col items-end gap-1 text-right no-underline"
           >
             <span className="label-mono text-ink-muted">Next</span>
-            <span className="work-row-name text-ink group-hover:text-accent">{next.name}</span>
+            <ViewTransition name={`project-title-${next.slug}`} share="morph" default="none">
+              <span className="work-row-name text-ink group-hover:text-accent">{next.name}</span>
+            </ViewTransition>
           </Link>
         )}
       </nav>
