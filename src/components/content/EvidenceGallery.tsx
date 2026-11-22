@@ -107,7 +107,7 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
                   height={image.height}
                   sizes="(min-width: 768px) 45vw, 100vw"
                   onLoad={() => setLoaded((previous) => new Set(previous).add(image.src))}
-                  className="h-auto max-h-80 w-auto max-w-full object-contain"
+                  className="evidence-thumb h-auto max-h-80 w-auto max-w-full object-contain"
                 />
                 <Maximize2
                   aria-hidden="true"
@@ -125,7 +125,7 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
       <dialog
         ref={dialogRef}
         aria-label={current ? `Evidence: ${current.caption ?? current.alt}` : 'Evidence'}
-        className="m-auto max-h-[92dvh] w-[min(96vw,80rem)] max-w-none rounded-[calc(var(--radius-outer)+1px)] border border-line bg-bg p-0 text-ink backdrop:bg-[var(--backdrop)]"
+        className="m-auto max-h-[92dvh] w-[min(96vw,80rem)] max-w-none rounded-[calc(var(--radius-outer)+1px)] border border-line bg-(--layer-2) p-0 text-ink shadow-(--layer-highlight) backdrop:bg-[var(--backdrop)]"
       >
         {current && (
           <figure className="flex flex-col">

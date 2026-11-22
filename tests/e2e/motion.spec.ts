@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '../helpers/test';
+import { sameColour, srgb } from '../helpers/colour';
 import { pointAt } from '../helpers/pointer';
 import { metrics, profile } from '../../src/content';
 import { waitForHydration } from '../helpers/hydration';
@@ -9,20 +10,19 @@ import { waitForHydration } from '../helpers/hydration';
 const animationName = (locator: Locator) =>
   locator.evaluate((el) => getComputedStyle(el).animationName);
 
-test('the paper has a still grain behind the content', async ({ page }) => {
+// C54 moved the grain over the content; 'depth and blending' checks its layer and blend.
+test('the paper has a still grain', async ({ page }) => {
   await page.goto('/');
   const grain = await page.locator('[data-paper-grain]').evaluate((el) => {
     const style = getComputedStyle(el);
     return {
       position: style.position,
-      zIndex: style.zIndex,
       pointerEvents: style.pointerEvents,
       image: style.backgroundImage,
       animation: style.animationName,
     };
   });
   expect(grain.position).toBe('fixed');
-  expect(grain.zIndex).toBe('-1');
   expect(grain.pointerEvents).toBe('none');
   expect(grain.image).toContain('data:image/svg+xml');
   expect(grain.animation).toBe('none');
@@ -868,5 +868,116 @@ test.describe('polish', () => {
     expect(await page.locator('.marquee').evaluate((el) => getComputedStyle(el).maskImage)).toBe(
       'none',
     );
+  });
+});
+
+// C54 T8, T10 (and B6): dark mode depth; the grain over every surface; thumbnails blended on paper.
+test.describe('depth and blending', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  const token = (page: Page, name: string) =>
+    page.evaluate(
+      (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim(),
+      name,
+    );
+
+  test('T8: in the dark theme the top bar and dialogs rise in lighter layers', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.goto('/');
+    const header = await page
+      .locator('[data-site-header]')
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(
+      sameColour(await srgb(page, header), await srgb(page, await token(page, '--surface'))),
+    ).toBe(true);
+    await page.goto('/projects/accessibility-testing');
+    await waitForHydration(page);
+    await page
+      .getByRole('button', { name: /^Enlarge image/ })
+      .first()
+      .click();
+    const dialog = page.getByRole('dialog', { name: /^Evidence/ });
+    await expect(dialog).toBeVisible();
+    const style = await dialog.evaluate((el) => ({
+      bg: getComputedStyle(el).backgroundColor,
+      shadow: getComputedStyle(el).boxShadow,
+    }));
+    expect(
+      sameColour(await srgb(page, style.bg), await srgb(page, await token(page, '--surface-2'))),
+    ).toBe(true);
+    expect(style.shadow).toContain('inset');
+  });
+
+  test('T8: in the light theme the paper stays flat', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.goto('/');
+    const header = await page
+      .locator('[data-site-header]')
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(sameColour(await srgb(page, header), await srgb(page, await token(page, '--bg')))).toBe(
+      true,
+    );
+  });
+
+  for (const [scheme, blend] of [
+    ['light', 'multiply'],
+    ['dark', 'screen'],
+  ] as const) {
+    test(`T10: the grain lies over every surface, blended ${blend} in ${scheme}`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto('/');
+      const grain = await page.locator('[data-paper-grain]').evaluate((el) => ({
+        z: Number(getComputedStyle(el).zIndex),
+        blend: getComputedStyle(el).mixBlendMode,
+        events: getComputedStyle(el).pointerEvents,
+      }));
+      const headerZ = await page
+        .locator('[data-site-header]')
+        .evaluate((el) => Number(getComputedStyle(el).zIndex));
+      expect(grain.z).toBeGreaterThan(headerZ);
+      expect(grain.blend).toBe(blend);
+      expect(grain.events).toBe('none');
+    });
+  }
+
+  test('T10: evidence thumbnails blend into the paper; the full view stays true', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.goto('/projects/accessibility-testing');
+    await waitForHydration(page);
+    const thumb = page.getByRole('button', { name: /^Enlarge image/ }).first();
+    expect(await thumb.locator('img').evaluate((el) => getComputedStyle(el).mixBlendMode)).toBe(
+      'multiply',
+    );
+    await thumb.click();
+    const full = page.getByRole('dialog', { name: /^Evidence/ }).locator('img');
+    await expect(full).toBeVisible();
+    expect(await full.evaluate((el) => getComputedStyle(el).mixBlendMode)).toBe('normal');
+    await page.keyboard.press('Escape');
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.reload();
+    expect(
+      await page
+        .getByRole('button', { name: /^Enlarge image/ })
+        .first()
+        .locator('img')
+        .evaluate((el) => getComputedStyle(el).mixBlendMode),
+    ).toBe('normal');
+  });
+
+  test('T10: print has no grain and no blending', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light', media: 'print' });
+    await page.goto('/projects/accessibility-testing');
+    await expect(page.locator('[data-paper-grain]')).toBeHidden();
+    expect(
+      await page
+        .getByRole('button', { name: /^Enlarge image/ })
+        .first()
+        .locator('img')
+        .evaluate((el) => getComputedStyle(el).mixBlendMode),
+    ).toBe('normal');
   });
 });

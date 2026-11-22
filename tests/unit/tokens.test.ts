@@ -100,3 +100,39 @@ describe('viewport units', () => {
     expect(code.match(/\b\d+(\.\d+)?vh\b/g) ?? []).toEqual([]);
   });
 });
+
+// C54 T10, review focus 1: the grain sits over the text, blended multiply on paper and screen on
+// slate. Even if every grain pixel were pure black on paper (or pure white on slate), at the grain's
+// opacity every text pair keeps its contrast.
+describe.each(['dark', 'light'] as const)('%s theme under the grain', (theme) => {
+  const block =
+    theme === 'light'
+      ? ':root,\n.light,\n.dark .theme-flip'
+      : '.dark,\n:root:not(.dark) .theme-flip';
+  const body = css.slice(css.indexOf(block));
+  const grain = Number(/--grain:\s*([\d.]+)/.exec(body)![1]);
+  const toHex = (rgb: number[]) =>
+    `#${rgb
+      .map((c) =>
+        Math.round(Math.min(1, Math.max(0, c)) * 255)
+          .toString(16)
+          .padStart(2, '0'),
+      )
+      .join('')}`;
+  const worstBackground = (value: string) => {
+    const rgb = toRgb(value);
+    return toHex(
+      theme === 'light' ? rgb.map((c) => c * (1 - grain)) : rgb.map((c) => c + grain * (1 - c)),
+    );
+  };
+  it.each(TOKEN_PAIRS.filter((pair) => pair.min === 4.5 && pair.fg !== 'bg'))(
+    '$fg on $bg stays >= $min',
+    ({ fg, bg, min }) => {
+      const ratio = contrastRatio(themes[theme][fg]!, worstBackground(themes[theme][bg]!));
+      expect(
+        ratio,
+        `${theme}: ${fg} on grained ${bg} is ${ratio.toFixed(2)}:1`,
+      ).toBeGreaterThanOrEqual(min);
+    },
+  );
+});

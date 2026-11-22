@@ -14,7 +14,7 @@ import { ThemeSwitch } from './ThemeSwitch';
 export function SiteHeader() {
   const items = primaryNavItems();
   return (
-    <header data-site-header data-print-hide className="sticky top-0 z-30 bg-bg">
+    <header data-site-header data-print-hide className="sticky top-0 z-30 bg-(--layer-1)">
       <div className="shell flex h-14 items-center justify-between gap-4">
         <Link
           href="/"

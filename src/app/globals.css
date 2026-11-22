@@ -565,12 +565,15 @@
   body {
     isolation: isolate;
   }
+  /* C54: the grain lies over every surface (top bar, rows, Contact band, page sheet), so the paper is one
+     sheet with no seams, blended multiply on paper and screen on slate; it never takes a click. */
   [data-paper-grain] {
     position: fixed;
     inset: 0;
-    z-index: -1;
+    z-index: 50;
     pointer-events: none;
     opacity: var(--grain);
+    mix-blend-mode: var(--grain-blend);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 180px;
   }
@@ -714,6 +717,12 @@
     scale: 0.6;
   }
 
+  /* C54: a thumbnail blends into the paper (white screenshot backgrounds take its tone); the full-size
+     view is never blended, so the evidence stays exactly as captured. */
+  .evidence-thumb {
+    mix-blend-mode: var(--thumb-blend);
+  }
+
   .skeleton {
     position: relative;
     overflow: hidden;
@@ -794,6 +803,8 @@
     --warn: #000000;
     --fail: #000000;
     --shadow: none;
+    --layer-highlight: none;
+    --thumb-blend: normal;
   }
 
   .contact-sheet {

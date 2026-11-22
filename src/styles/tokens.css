@@ -26,7 +26,16 @@
   --shadow: none;
   /* Dialog backdrops: a dim of the page's own ink, never plain black. */
   --backdrop: oklch(0.2726 0.0383 270.9 / 0.45);
-  --grain: 0.05;
+  /* The grain lies over everything, blended multiply on paper (C54); at this opacity even a pure-black
+     grain pixel keeps every text pair at AA (tokens.test). */
+  --grain: 0.035;
+  --grain-blend: multiply;
+  /* Layers: on paper everything is the same flat sheet (C54). */
+  --layer-1: var(--bg);
+  --layer-2: var(--bg);
+  --layer-highlight: none;
+  /* Evidence thumbnails blend into the paper, so white screenshot backgrounds take its tone. */
+  --thumb-blend: multiply;
 }
 
 .dark,
@@ -47,5 +56,11 @@
   --focus-ring: oklch(0.729 0.1696 35.11);
   --shadow: none;
   --backdrop: oklch(0.17 0.02 257 / 0.62);
-  --grain: 0.07;
+  --grain: 0.055;
+  --grain-blend: screen;
+  /* Layers: on slate, what rises gets lighter, with a hairline highlight on its top edge (C54). */
+  --layer-1: var(--surface);
+  --layer-2: var(--surface-2);
+  --layer-highlight: inset 0 1px 0 oklch(1 0 0 / 0.06);
+  --thumb-blend: normal;
 }
