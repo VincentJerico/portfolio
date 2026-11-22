@@ -165,3 +165,13 @@ test.describe('at other default font sizes', { tag: '@chromium-only' }, () => {
     }
   }
 });
+
+test('a tug leaves no ring behind the knob (Vincent, 2026-11-22)', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/about');
+  await page.locator('.pull-cord-button').click();
+  const ring = await page
+    .locator('.cord-knob')
+    .evaluate((el) => getComputedStyle(el, '::after').animationName);
+  expect(ring).toBe('none');
+});

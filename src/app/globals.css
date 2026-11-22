@@ -22,6 +22,8 @@
   --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
   /* C53: a long, soft settle for arrivals and page changes; snap stays for hover and press. */
   --ease-glide: cubic-bezier(0.16, 1, 0.3, 1);
+  /* The page sheet's curve: eases in and lands, with no slow tail left under the top bar. */
+  --ease-sheet: cubic-bezier(0.65, 0, 0.35, 1);
 
   /* Fluid rhythm, 375 to 1440 px: between page blocks, and between home sections. Not named
      "block": Tailwind would turn that into an inline-block width utility. */
@@ -71,11 +73,11 @@
     --dur-fast: 180ms;
     --dur-base: 400ms;
     /* C53: arrivals rise 40 px over 700 ms; a row answers the pointer over 320 ms; a page change's
-       sheet slides up over 700 ms. */
+       sheet slides up over 550 ms (C54). */
     --dur-arrive: 700ms;
     --dur-hover: 320ms;
     --arrive-rise: 40px;
-    --dur-sheet: 700ms;
+    --dur-sheet: 550ms;
     /* A hovered or focused row's nudge, always inside the page's side gutter (1rem, 1.5rem, 2.5rem). */
     --row-nudge: 0.75rem;
   }
@@ -676,15 +678,6 @@
       background: Canvas;
     }
   }
-  .cord-knob::after {
-    content: '';
-    position: absolute;
-    inset: -4px;
-    border: 1px solid var(--accent);
-    border-radius: 50%;
-    opacity: 0;
-    pointer-events: none;
-  }
 
   /* C54: icon strokes match the text beside them, on screen whatever the icon's size: 1.25 px next to
      small mono labels, 1.5 px next to body text and for icon-only controls (.icon-strong). */
@@ -971,7 +964,8 @@
   /* Page headers rise in once, line by line, on load. No opacity: the title paints at once, so LCP
      is unaffected and axe never scans faded text. */
   main header > :not([data-morph-title], :has(.letter), .poster) {
-    animation: rise var(--dur-arrive) var(--ease-glide) backwards;
+    /* Shorter than other arrivals: the whole header is in within 0.7 s (Vincent, 2026-11-22). */
+    animation: rise 450ms var(--ease-glide) backwards;
   }
   /* C53: the home poster's first line slides in from the left, the second from the right. */
   .poster > span:not(.sr-only) {
@@ -992,21 +986,21 @@
   .letter {
     display: inline-block;
     transform-origin: 0 100%;
-    animation: letter 800ms var(--ease-glide) calc(var(--i) * 45ms) backwards;
+    /* 25 ms apart, the stagger capped at 0.2 s, so even a long title is in within 0.7 s. */
+    animation: letter 500ms var(--ease-glide) min(calc(var(--i) * 25ms), 200ms) backwards;
   }
   main header > :nth-child(2) {
-    animation-delay: 80ms;
+    animation-delay: 40ms;
   }
   main header > :nth-child(3) {
-    animation-delay: 160ms;
+    animation-delay: 80ms;
   }
   main header > :nth-child(n + 4) {
-    animation-delay: 240ms;
+    animation-delay: 120ms;
   }
 
   /* C53: the cord settles from a short swing on arrival (one run, under 3 s, then still: WCAG 2.2.2),
-     dips on hover, and a tug stretches it, springs it back and swings it to rest while the knob sends
-     out a ring. */
+     dips on hover, and a tug stretches it, springs it back and swings it to rest. */
   .cord-sway {
     animation: cord-settle 2.4s ease-out 1;
   }
@@ -1020,9 +1014,6 @@
     animation:
       cord-tug 700ms var(--ease-glide),
       cord-swing 1.6s ease-out 280ms;
-  }
-  .pull-cord-tug .cord-knob::after {
-    animation: knob-ring 700ms ease-out 180ms;
   }
 
   /* C52 move 3: About's intro inks in word by word, muted to ink, just after the title's letters. */
@@ -1322,15 +1313,6 @@
     rotate: 2deg;
   }
 }
-@keyframes knob-ring {
-  from {
-    opacity: 0.9;
-  }
-  to {
-    opacity: 0;
-    scale: 2.6;
-  }
-}
 @property --rise {
   syntax: '<length>';
   inherits: false;
@@ -1351,13 +1333,13 @@
    never moves. A project's name morphs from its row into the report title (.morph) in step. */
 ::view-transition-group(.page-enter) {
   background: var(--bg);
-  animation: var(--dur-sheet) var(--ease-glide) both vt-sheet;
+  animation: var(--dur-sheet) var(--ease-sheet) both vt-sheet;
 }
 ::view-transition-new(.page-enter) {
-  animation: var(--dur-sheet) var(--ease-glide) both rise;
+  animation: var(--dur-sheet) var(--ease-sheet) both rise;
 }
 ::view-transition-old(.page-exit) {
-  animation: var(--dur-sheet) var(--ease-glide) both vt-sink;
+  animation: var(--dur-sheet) var(--ease-sheet) both vt-sink;
 }
 ::view-transition-group(.morph) {
   animation-duration: var(--dur-sheet);
@@ -1377,7 +1359,7 @@
 @keyframes vt-sink {
   to {
     translate: 0 -80px;
-    opacity: 0.3;
+    opacity: 0;
   }
 }
 
@@ -1392,17 +1374,25 @@
 }
 
 /* The top bar is its own group, painted above the page groups, so a sliding page never covers it
-   (C53). It never moves; the theme flood's circle covers it like the rest of the page. */
+   (C53). It never moves, and it shows only its live copy: the old snapshot is a still copy, and the
+   cord hanging below the bar would show twice through it while it swings. */
 [data-site-header] {
   view-transition-name: site-header;
 }
 ::view-transition-group(site-header) {
   z-index: 1;
 }
-:active-view-transition-type(theme)::view-transition-old(site-header),
-:active-view-transition-type(theme)::view-transition-new(site-header) {
+::view-transition-old(site-header) {
   animation: none;
-  mix-blend-mode: normal;
+  opacity: 0;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
+/* The theme flood is one snapshot of the whole screen, the bar and its cord included, so the circle
+   reaches the bar exactly when it reaches the page under it. */
+:active-view-transition-type(theme) [data-site-header] {
+  view-transition-name: none;
 }
 
 /* Theme flood (lib/theme-switch.ts): the new theme is revealed by a growing circle animated from

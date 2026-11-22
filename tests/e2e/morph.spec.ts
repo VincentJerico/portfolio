@@ -161,10 +161,16 @@ test.describe('page change', () => {
       .getByRole('link', { name: 'About' })
       .click();
     await expect(page).toHaveURL(/\/about$/);
-    // C53: the sheet takes 0.7 s, so it is seen sliding up.
+    // Vincent, 2026-11-22 ("looks like not finished"): 0.55 s on an ease-in-out that lands, with no
+    // slow tail under the top bar.
     await expect
       .poll(() => sheetAnimations(page))
-      .toEqual(expect.arrayContaining(['vt-sheet 700', 'vt-sink 700']));
+      .toEqual(expect.arrayContaining(['vt-sheet 550', 'vt-sink 550']));
+    expect(
+      await page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue('--ease-sheet').trim(),
+      ),
+    ).toMatch(/^cubic-bezier\(0?\.65, 0, 0?\.35, 1\)$/);
   });
 
   test('under reduced motion a page change does not slide', async ({ page }) => {
@@ -238,11 +244,108 @@ test.describe('the top bar in transitions', () => {
     await expect(page.locator('html')).toHaveClass(/\bdark\b/);
     await expect
       .poll(() => page.evaluate(() => (window as unknown as { __pseudo: string[] }).__pseudo))
-      .toEqual(
-        expect.arrayContaining([
-          '::view-transition-new(root)',
-          '::view-transition-new(site-header)',
-        ]),
-      );
+      .toEqual(['::view-transition-new(root)']);
+  });
+});
+
+// Vincent, 2026-11-22 ("fix all the bugs like in the lamp string, the transition between pages"):
+// recorded frame by frame, the old page showed around the sliding sheet, and the cord showed twice.
+test.describe('page change and theme flood, frame by frame', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  /**
+   * Records, as each view transition becomes ready, the sliding sheet's cover of the screen, the top
+   * bar's name and its old copy's opacity, and any animation on the bar's old or new copy. Written out
+   * in full (no eval), so production's Content-Security-Policy lets it run.
+   */
+  const atReady = (page: Page) =>
+    page.addInitScript(() => {
+      const w = window as unknown as { __ready: unknown[] };
+      w.__ready = [];
+      const start = document.startViewTransition?.bind(document);
+      if (!start) return;
+      document.startViewTransition = ((arg: never) => {
+        const transition = start(arg);
+        transition.ready
+          .then(() => {
+            const sheet = [...document.querySelectorAll<HTMLElement>('body *')].find((el) =>
+              (getComputedStyle(el).viewTransitionClass ?? '').includes('page-enter'),
+            );
+            const bar = document.querySelector('[data-site-header]')!;
+            const barBox = bar.getBoundingClientRect();
+            const box = sheet?.getBoundingClientRect();
+            w.__ready.push({
+              cover: box && {
+                left: box.left <= 0,
+                right: box.right >= innerWidth,
+                top: box.top <= barBox.bottom,
+                bottom: box.bottom >= innerHeight,
+              },
+              barName: getComputedStyle(bar).viewTransitionName,
+              oldBar: getComputedStyle(
+                document.documentElement,
+                '::view-transition-old(site-header)',
+              ).opacity,
+              barAnimations: document
+                .getAnimations()
+                .map((a) => (a.effect as KeyframeEffect | null)?.pseudoElement ?? '')
+                .filter((pseudo) => /-(old|new)\(site-header\)/.test(pseudo)),
+            });
+          })
+          .catch(() => {});
+        return transition;
+      }) as typeof document.startViewTransition;
+    });
+  const ready = (page: Page) =>
+    page.evaluate(() => (window as unknown as { __ready: unknown[] }).__ready);
+  const go = async (page: Page, name: string) => {
+    // A pointer click, not locator.click(): that scrolls the sticky top bar's link into view first.
+    const link = page
+      .locator('[data-site-header] nav[aria-label="Site"]')
+      .getByRole('link', { name });
+    const box = (await link.boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  };
+
+  for (const [from, to, path] of [
+    ['/', 'About', /\/about$/],
+    ['/projects', 'Contact', /\/contact$/],
+  ] as const) {
+    test(`the sliding sheet covers the whole screen under the top bar (${from} to ${to})`, async ({
+      page,
+    }) => {
+      await atReady(page);
+      await page.goto(from);
+      await waitForHydration(page);
+      await go(page, to);
+      await expect(page).toHaveURL(path);
+      await expect
+        .poll(() => ready(page))
+        .toEqual([
+          expect.objectContaining({ cover: { left: true, right: true, top: true, bottom: true } }),
+        ]);
+    });
+  }
+
+  test('a page change shows one top bar, never a fading copy of it', async ({ page }) => {
+    await atReady(page);
+    await page.goto('/projects');
+    await waitForHydration(page);
+    await go(page, 'About');
+    await expect(page).toHaveURL(/\/about$/);
+    await expect
+      .poll(() => ready(page))
+      .toEqual([expect.objectContaining({ oldBar: '0', barAnimations: [] })]);
+  });
+
+  test('the theme flood takes the top bar and its cord along with the page', async ({ page }) => {
+    await atReady(page);
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.goto('/about');
+    await waitForHydration(page);
+    await page.locator('.pull-cord-button').click();
+    await expect(page.locator('html')).toHaveClass(/\bdark\b/);
+    // One snapshot for the whole screen: the cord is never left behind in an old copy of the bar.
+    await expect.poll(() => ready(page)).toEqual([expect.objectContaining({ barName: 'none' })]);
   });
 });

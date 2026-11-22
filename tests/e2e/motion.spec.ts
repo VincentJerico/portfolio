@@ -55,16 +55,30 @@ test.describe('arrivals', () => {
       ),
     ).toEqual(['0', '1', '2', '3', '4']);
     expect(await animationName(letters.first())).toBe('letter');
-    // C53: clearly letter by letter: 45 ms apart, 0.8 s each, on the glide.
-    expect(await letters.nth(4).evaluate((el) => getComputedStyle(el).animationDelay)).toBe(
-      '0.18s',
-    );
+    // Vincent, 2026-11-22 ("the header is too long"): 25 ms apart, 0.5 s each, on the glide.
+    expect(await letters.nth(4).evaluate((el) => getComputedStyle(el).animationDelay)).toBe('0.1s');
     expect(await letters.first().evaluate((el) => getComputedStyle(el).animationDuration)).toBe(
-      '0.8s',
+      '0.5s',
     );
     expect(
       await letters.first().evaluate((el) => getComputedStyle(el).animationTimingFunction),
     ).toBe('cubic-bezier(0.16, 1, 0.3, 1)');
+  });
+
+  test('a page header finishes arriving within 0.7 s, even on the longest title', async ({
+    page,
+  }) => {
+    await page.goto('/resume');
+    const ends = await page.locator('main header').evaluate((header) =>
+      [...header.querySelectorAll('*')]
+        .flatMap((el) => el.getAnimations().filter((a) => 'animationName' in a))
+        .map((a) => {
+          const t = (a.effect as KeyframeEffect).getComputedTiming();
+          return Number(t.endTime);
+        }),
+    );
+    expect(ends.length).toBeGreaterThan(0);
+    expect(Math.max(...ends)).toBeLessThanOrEqual(700);
   });
 
   // The poster's lines stay whole text, so the name is the page's largest paint (LCP budget); split into
@@ -499,7 +513,8 @@ test.describe('one rhythm', () => {
           (el) => `${getComputedStyle(el).animationName} ${getComputedStyle(el).animationDuration}`,
         ),
       );
-    expect(new Set(header)).toEqual(new Set(['rise 0.7s']));
+    // The page header has its own, shorter timing (Vincent, 2026-11-22); its lines share it.
+    expect(new Set(header)).toEqual(new Set(['rise 0.45s']));
     // C53: the glide, and 40 px of travel.
     const label = page.locator('main header > :not(h1)').first();
     expect(await label.evaluate((el) => getComputedStyle(el).animationTimingFunction)).toBe(
