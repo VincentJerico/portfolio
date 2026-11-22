@@ -22,6 +22,8 @@
   --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
   /* C53: a long, soft settle for arrivals and page changes; snap stays for hover and press. */
   --ease-glide: cubic-bezier(0.16, 1, 0.3, 1);
+  /* The page sheet's curve: eases in and lands, with no slow tail left under the top bar. */
+  --ease-sheet: cubic-bezier(0.65, 0, 0.35, 1);
 
   /* Fluid rhythm, 375 to 1440 px: between page blocks, and between home sections. Not named
      "block": Tailwind would turn that into an inline-block width utility. */
@@ -30,6 +32,10 @@
 
   --radius-card: 6px;
   --radius-chip: 4px;
+  /* Concentric radii (C54): a rounded thing inside a rounded thing, inset by --inset, curves with it
+     when the outer radius is the inner one plus the inset. */
+  --radius-inner: 4px;
+  --radius-outer: calc(4px + 0.5rem);
   --shadow-card: var(--shadow);
 }
 
@@ -61,14 +67,17 @@
   }
 
   :root {
+    /* Section heading size, shared with the Contact arrow so its stroke matches the letters (C54). */
+    --h2-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.75rem);
+    --inset: 0.5rem;
     --dur-fast: 180ms;
     --dur-base: 400ms;
     /* C53: arrivals rise 40 px over 700 ms; a row answers the pointer over 320 ms; a page change's
-       sheet slides up over 700 ms. */
+       sheet slides up over 550 ms (C54). */
     --dur-arrive: 700ms;
     --dur-hover: 320ms;
     --arrive-rise: 40px;
-    --dur-sheet: 700ms;
+    --dur-sheet: 550ms;
     /* A hovered or focused row's nudge, always inside the page's side gutter (1rem, 1.5rem, 2.5rem). */
     --row-nudge: 0.75rem;
   }
@@ -101,7 +110,7 @@
     font-variation-settings:
       'opsz' 72,
       'wdth' 85;
-    font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.75rem);
+    font-size: var(--h2-size);
     line-height: 1.05;
     letter-spacing: -0.02em;
   }
@@ -154,7 +163,7 @@
     transition-timing-function: var(--ease-snap);
   }
   a {
-    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+    text-decoration-color: color-mix(in oklch, currentColor 45%, transparent);
   }
   a:hover {
     text-decoration-color: currentColor;
@@ -476,6 +485,17 @@
     /* Out to the viewport's edges exactly, so the grow-in (below) widens visibly all the way. */
     clip-path: inset(0 calc(50% - 50vw));
     padding-block: clamp(4rem, 3rem + 5vw, 8rem);
+    /* The card's side inset and corners as it starts growing: none on phones, where the content runs
+       to the edge and either would clip the heading's first letter (C54); there it grows downward
+       only. */
+    --sheet-x: 0px;
+    --sheet-r: 0px;
+  }
+  @media (width >= 40rem) {
+    .contact-sheet {
+      --sheet-x: 1rem;
+      --sheet-r: 1.5rem;
+    }
   }
   .contact-arrow {
     flex: none;
@@ -487,7 +507,9 @@
   .contact-arrow path {
     fill: none;
     stroke: currentColor;
-    stroke-width: 4;
+    /* The heading's stem (about 0.11 em at weight 750), on screen, whatever the arrow's size (C54). */
+    stroke-width: calc(var(--h2-size) * 0.11);
+    vector-effect: non-scaling-stroke;
     stroke-linecap: square;
     stroke-dasharray: 1;
     stroke-dashoffset: 0;
@@ -543,17 +565,20 @@
     }
   }
 
-  /* C52 move 10: a still paper grain behind the content, never over text. Body is its own stacking
-     context, so the grain sits between its paper colour and everything on it. Screens only. */
+  /* C52 move 10: a still paper grain, screens only. Body is its own stacking context, and the grain
+     (below) blends inside it. */
   body {
     isolation: isolate;
   }
+  /* C54: the grain lies over every surface (top bar, rows, Contact band, page sheet), so the paper is one
+     sheet with no seams, blended multiply on paper and screen on slate; it never takes a click. */
   [data-paper-grain] {
     position: fixed;
     inset: 0;
-    z-index: -1;
+    z-index: 50;
     pointer-events: none;
     opacity: var(--grain);
+    mix-blend-mode: var(--grain-blend);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 180px;
   }
@@ -606,6 +631,11 @@
     align-items: center;
     transform-origin: top center;
   }
+  /* A 1 px halo in the page colour, so the string and knob stay visible where the flipped Contact
+     band passes behind them (C54). */
+  .pull-cord {
+    filter: drop-shadow(0 0 1px var(--bg)) drop-shadow(0 0 1px var(--bg));
+  }
   .cord-line {
     width: 1px;
     height: 10rem;
@@ -634,8 +664,8 @@
   .dark .cord-knob {
     background: var(--accent);
     box-shadow:
-      0 0 12px 2px color-mix(in srgb, var(--accent) 55%, transparent),
-      0 0 36px 8px color-mix(in srgb, var(--accent) 22%, transparent);
+      0 0 12px 2px color-mix(in oklch, var(--accent) 55%, transparent),
+      0 0 36px 8px color-mix(in oklch, var(--accent) 22%, transparent);
   }
   /* Forced colours replace backgrounds, which would erase the string: draw it in the system text
      colour instead. */
@@ -651,14 +681,42 @@
       background: Canvas;
     }
   }
-  .cord-knob::after {
-    content: '';
-    position: absolute;
-    inset: -4px;
-    border: 1px solid var(--accent);
-    border-radius: 50%;
+
+  /* C54: icon strokes match the text beside them, on screen whatever the icon's size: 1.25 px next to
+     small mono labels, 1.5 px next to body text and for icon-only controls (.icon-strong). */
+  svg.lucide {
+    stroke-width: 1.25px;
+  }
+  svg.lucide.icon-strong {
+    stroke-width: 1.5px;
+  }
+  svg.lucide * {
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* C54: two icons in one place swap through blur and scale; only icons, never text. Instant under
+     reduced motion (the global rule shortens every transition). */
+  .icon-swap {
+    display: inline-grid;
+  }
+  .icon-swap > * {
+    grid-area: 1 / 1;
+    transition:
+      opacity var(--dur-fast) var(--ease-snap),
+      filter var(--dur-fast) var(--ease-snap),
+      scale var(--dur-fast) var(--ease-snap);
+  }
+  .icon-swap[data-show='first'] > :nth-child(2),
+  .icon-swap[data-show='second'] > :nth-child(1) {
     opacity: 0;
-    pointer-events: none;
+    filter: blur(4px);
+    scale: 0.6;
+  }
+
+  /* C54: a thumbnail blends into the paper (white screenshot backgrounds take its tone); the full-size
+     view is never blended, so the evidence stays exactly as captured. */
+  .evidence-thumb {
+    mix-blend-mode: var(--thumb-blend);
   }
 
   .skeleton {
@@ -672,9 +730,9 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(
-      90deg,
+      in oklch 90deg,
       transparent,
-      color-mix(in srgb, var(--text) 9%, transparent),
+      color-mix(in oklch, var(--text) 9%, transparent),
       transparent
     );
     translate: -100% 0;
@@ -741,6 +799,8 @@
     --warn: #000000;
     --fail: #000000;
     --shadow: none;
+    --layer-highlight: none;
+    --thumb-blend: normal;
   }
 
   .contact-sheet {
@@ -812,6 +872,13 @@
   }
 }
 /* The poster's lines slide in from opposite sides, each still whole text (the page's largest paint). */
+@keyframes icon-in {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    scale: 0.6;
+  }
+}
 @keyframes poster-left {
   from {
     translate: -6vw 0;
@@ -821,10 +888,6 @@
   from {
     translate: 6vw 0;
   }
-}
-/* A word never breaks between its letters (they are inline blocks while they move). */
-.word {
-  white-space: nowrap;
 }
 
 /* P5: view transitions are motion too. */
@@ -869,6 +932,8 @@
   }
   /* The phone menu's links arrive in turn. */
   dialog[open] nav > ul > li {
+    /* The short rise C52 gave them, not the 40 px page arrivals (C54). */
+    --arrive-rise: 16px;
     animation: rise var(--dur-base) var(--ease-snap) backwards;
   }
   dialog[open] nav > ul > li:nth-child(2) {
@@ -902,7 +967,8 @@
   /* Page headers rise in once, line by line, on load. No opacity: the title paints at once, so LCP
      is unaffected and axe never scans faded text. */
   main header > :not([data-morph-title], :has(.letter), .poster) {
-    animation: rise var(--dur-arrive) var(--ease-glide) backwards;
+    /* Shorter than other arrivals: the whole header is in within 0.7 s (Vincent, 2026-11-22). */
+    animation: rise 450ms var(--ease-glide) backwards;
   }
   /* C53: the home poster's first line slides in from the left, the second from the right. */
   .poster > span:not(.sr-only) {
@@ -915,24 +981,29 @@
   /* C52 move 2, C53: page titles arrive letter by letter, each rising 0.9 em and straightening from
      a 12 degree lean, 45 ms apart. Transform only and nothing starts hidden, so the title still paints
      at once (LCP) and its text is the plain heading text. */
+  /* A word never breaks between its letters while they are inline blocks; elsewhere (reduced motion,
+     print) a long word may break as usual (C54). */
+  .word {
+    white-space: nowrap;
+  }
   .letter {
     display: inline-block;
     transform-origin: 0 100%;
-    animation: letter 800ms var(--ease-glide) calc(var(--i) * 45ms) backwards;
+    /* 25 ms apart, the stagger capped at 0.2 s, so even a long title is in within 0.7 s. */
+    animation: letter 500ms var(--ease-glide) min(calc(var(--i) * 25ms), 200ms) backwards;
   }
   main header > :nth-child(2) {
-    animation-delay: 80ms;
+    animation-delay: 40ms;
   }
   main header > :nth-child(3) {
-    animation-delay: 160ms;
+    animation-delay: 80ms;
   }
   main header > :nth-child(n + 4) {
-    animation-delay: 240ms;
+    animation-delay: 120ms;
   }
 
   /* C53: the cord settles from a short swing on arrival (one run, under 3 s, then still: WCAG 2.2.2),
-     dips on hover, and a tug stretches it, springs it back and swings it to rest while the knob sends
-     out a ring. */
+     dips on hover, and a tug stretches it, springs it back and swings it to rest. */
   .cord-sway {
     animation: cord-settle 2.4s ease-out 1;
   }
@@ -946,9 +1017,6 @@
     animation:
       cord-tug 700ms var(--ease-glide),
       cord-swing 1.6s ease-out 280ms;
-  }
-  .pull-cord-tug .cord-knob::after {
-    animation: knob-ring 700ms ease-out 180ms;
   }
 
   /* C52 move 3: About's intro inks in word by word, muted to ink, just after the title's letters. */
@@ -1015,6 +1083,10 @@
     --arrive-rise: 12px;
     animation: rise var(--dur-base) var(--ease-snap) backwards;
   }
+  /* An icon that arrives on its own (the form's "sent" check) sharpens in from a blur (C54). */
+  .icon-in {
+    animation: icon-in var(--dur-fast) var(--ease-snap) backwards;
+  }
 }
 
 /* On scroll: sections rise into place, list rows and table rows stream in. Final state without
@@ -1044,6 +1116,8 @@
     }
     .marquee {
       view-timeline: --strip block;
+      /* C54: the sliding rows fade out at both edges instead of cutting off. */
+      mask-image: linear-gradient(in oklch to right, transparent, black 6%, black 94%, transparent);
     }
     .marquee-row {
       width: max-content;
@@ -1063,15 +1137,18 @@
     }
     /* C52 moves 5 and 11: the ending grows from a rounded card to full bleed as it scrolls in, its
        arrow draws itself, and the CV ring turns with the page's scroll. */
+    /* Both finish early enough that the end of the page always reaches them, even on a very tall
+       window (C54): the card inside its own entry, the arrow over a fixed 240 px of scroll (its own
+       entry is only its height, too short to see it draw). */
     .contact-sheet {
       animation: sheet linear both;
       animation-timeline: view();
-      animation-range: entry 0% cover 35%;
+      animation-range: entry 0% entry 100%;
     }
     .contact-arrow path {
       animation: draw linear both;
       animation-timeline: --arrow;
-      animation-range: entry 20% cover 40%;
+      animation-range: entry 0% entry 240px;
     }
     .cv-ring svg {
       animation: ring-turn linear both;
@@ -1119,9 +1196,14 @@
   @media screen and (prefers-reduced-motion: no-preference) and (min-width: 768px) {
     .career-track {
       view-timeline: --career block;
+      /* The range starts exactly when the strip pins under the 3.5rem top bar, not at the page's
+         scroll padding, so nothing slides before it pins (C54). */
+      view-timeline-inset: 3.5rem 0;
       height: 260svh;
     }
     .career-sticky {
+      /* C54: the steps fade in and out at the edges as they slide. */
+      mask-image: linear-gradient(in oklch to right, transparent, black 4%, black 96%, transparent);
       position: sticky;
       top: 3.5rem;
       display: flex;
@@ -1176,7 +1258,7 @@
 }
 @keyframes sheet {
   from {
-    clip-path: inset(3rem 1rem round 1.5rem);
+    clip-path: inset(3rem var(--sheet-x) round var(--sheet-r));
   }
   to {
     clip-path: inset(0 calc(50% - 50vw) round 0);
@@ -1234,15 +1316,6 @@
     rotate: 2deg;
   }
 }
-@keyframes knob-ring {
-  from {
-    opacity: 0.9;
-  }
-  to {
-    opacity: 0;
-    scale: 2.6;
-  }
-}
 @property --rise {
   syntax: '<length>';
   inherits: false;
@@ -1263,13 +1336,13 @@
    never moves. A project's name morphs from its row into the report title (.morph) in step. */
 ::view-transition-group(.page-enter) {
   background: var(--bg);
-  animation: var(--dur-sheet) var(--ease-glide) both vt-sheet;
+  animation: var(--dur-sheet) var(--ease-sheet) both vt-sheet;
 }
 ::view-transition-new(.page-enter) {
-  animation: var(--dur-sheet) var(--ease-glide) both rise;
+  animation: var(--dur-sheet) var(--ease-sheet) both rise;
 }
 ::view-transition-old(.page-exit) {
-  animation: var(--dur-sheet) var(--ease-glide) both vt-sink;
+  animation: var(--dur-sheet) var(--ease-sheet) both vt-sink;
 }
 ::view-transition-group(.morph) {
   animation-duration: var(--dur-sheet);
@@ -1279,7 +1352,7 @@
    screen over the full duration instead of arriving at the end. */
 @keyframes vt-sheet {
   from {
-    clip-path: inset(100vh 0 0 0);
+    clip-path: inset(100dvh 0 0 0);
   }
   to {
     clip-path: inset(0);
@@ -1289,7 +1362,7 @@
 @keyframes vt-sink {
   to {
     translate: 0 -80px;
-    opacity: 0.3;
+    opacity: 0;
   }
 }
 
@@ -1304,17 +1377,25 @@
 }
 
 /* The top bar is its own group, painted above the page groups, so a sliding page never covers it
-   (C53). It never moves; the theme flood's circle covers it like the rest of the page. */
+   (C53). It never moves, and it shows only its live copy: the old snapshot is a still copy, and the
+   cord hanging below the bar would show twice through it while it swings. */
 [data-site-header] {
   view-transition-name: site-header;
 }
 ::view-transition-group(site-header) {
   z-index: 1;
 }
-:active-view-transition-type(theme)::view-transition-old(site-header),
-:active-view-transition-type(theme)::view-transition-new(site-header) {
+::view-transition-old(site-header) {
   animation: none;
-  mix-blend-mode: normal;
+  opacity: 0;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
+/* The theme flood is one snapshot of the whole screen, the bar and its cord included, so the circle
+   reaches the bar exactly when it reaches the page under it. */
+:active-view-transition-type(theme) [data-site-header] {
+  view-transition-name: none;
 }
 
 /* Theme flood (lib/theme-switch.ts): the new theme is revealed by a growing circle animated from

@@ -30,7 +30,7 @@ const FIELD_ORDER: ContactField[] = ['name', 'email', 'message'];
 const MESSAGE_MAX = FIELD_LIMITS.message.max;
 
 const CONTROL =
-  'block min-h-11 w-full rounded-chip border border-line bg-surface px-3 py-2 text-ink transition-[border-color,box-shadow] duration-150 hover:border-ink-muted focus-visible:border-accent aria-[invalid=true]:border-fail';
+  'block min-h-11 w-full rounded-chip border border-ink-muted bg-surface px-3 py-2 text-ink transition-[border-color,box-shadow] duration-150 hover:border-ink-muted focus-visible:border-accent aria-[invalid=true]:border-fail';
 
 type FieldControl = HTMLInputElement | HTMLTextAreaElement;
 
@@ -177,7 +177,7 @@ export function ContactForm({ email }: { email: string }) {
           <div role="status" className="text-sm text-ink">
             {!pending && state.status === 'sent' && (
               <p className="reveal-in inline-flex items-center gap-2">
-                <Check aria-hidden="true" className="pop-in size-4 text-pass" />
+                <Check aria-hidden="true" className="icon-in size-4 text-pass" />
                 Message sent. I&apos;ll reply by email.
               </p>
             )}

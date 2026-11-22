@@ -1,4 +1,4 @@
-/* Design tokens (C51, the minimal reset). Paper and ink: the light theme is a warm paper with deep navy
+/* Design tokens (C51, the minimal reset; written in OKLCH since C54). Paper and ink: the light theme is a warm paper with deep navy
    ink and one vermilion accent; the dark theme is the C48 slate with paper-coloured text and a coral
    accent. Paper is the default for no-JS visitors and crawlers (the poster is designed paper-first);
    next-themes adds .light or .dark to <html>.
@@ -9,40 +9,58 @@
 .light,
 .dark .theme-flip {
   color-scheme: light;
-  --bg: #efe9de;
-  --surface: #e9e2d5;
-  --surface-2: #e1d9ca;
-  --secondary: #e9e2d5;
-  --border: #cdc3b1;
-  --text: #20263a;
-  --text-muted: #4c5163;
-  --accent: #a5341e;
-  --pass: #1d6331;
-  --warn: #744b00;
-  --fail: #9f1f2d;
-  --focus-ring: #a5341e;
+  /* OKLCH (C54): lightness, chroma, hue. The page and its two surfaces step down evenly in lightness. */
+  --bg: oklch(0.9357 0.0161 82.79);
+  --surface: oklch(0.9137 0.019 83.06);
+  --surface-2: oklch(0.8917 0.022 83.26);
+  --secondary: oklch(0.9137 0.019 83.06);
+  /* Lines are the ink at low alpha, so they read the same on paper, slate and the grain (C54). */
+  --border: oklch(0.2726 0.0383 270.9 / 0.18);
+  --text: oklch(0.2726 0.0383 270.9);
+  --text-muted: oklch(0.4374 0.0304 272.91);
+  --accent: oklch(0.4898 0.1526 33.01);
+  --pass: oklch(0.4434 0.1058 149.25);
+  --warn: oklch(0.4482 0.0953 73.36);
+  --fail: oklch(0.4605 0.1625 21.25);
+  --focus-ring: oklch(0.4898 0.1526 33.01);
   --shadow: none;
   /* Dialog backdrops: a dim of the page's own ink, never plain black. */
-  --backdrop: rgb(32 38 58 / 0.45);
-  --grain: 0.05;
+  --backdrop: oklch(0.2726 0.0383 270.9 / 0.45);
+  /* The grain lies over everything, blended multiply on paper (C54); at this opacity even a pure-black
+     grain pixel keeps every text pair at AA (tokens.test). */
+  --grain: 0.035;
+  --grain-blend: multiply;
+  /* Layers: on paper everything is the same flat sheet (C54). */
+  --layer-1: var(--bg);
+  --layer-2: var(--bg);
+  --layer-highlight: none;
+  /* Evidence thumbnails blend into the paper, so white screenshot backgrounds take its tone. */
+  --thumb-blend: multiply;
 }
 
 .dark,
 :root:not(.dark) .theme-flip {
   color-scheme: dark;
-  --bg: #151c26;
-  --surface: #1b2430;
-  --surface-2: #222d3b;
-  --secondary: #1b2430;
-  --border: #33435a;
-  --text: #ece4d6;
-  --text-muted: #a9adb8;
-  --accent: #ff7a59;
-  --pass: #5cc27a;
-  --warn: #e0ae48;
-  --fail: #ff8b84;
-  --focus-ring: #ff7a59;
+  /* The page and its two surfaces step up evenly in lightness. */
+  --bg: oklch(0.2243 0.0222 257.29);
+  --surface: oklch(0.2593 0.0262 255.76);
+  --surface-2: oklch(0.2943 0.0299 254.7);
+  --secondary: oklch(0.2593 0.0262 255.76);
+  --border: oklch(0.9214 0.0206 81.78 / 0.2);
+  --text: oklch(0.9214 0.0206 81.78);
+  --text-muted: oklch(0.7478 0.0164 269.93);
+  --accent: oklch(0.729 0.1696 35.11);
+  --pass: oklch(0.7347 0.1416 151.09);
+  --warn: oklch(0.7782 0.1309 82.29);
+  --fail: oklch(0.7617 0.1417 24.55);
+  --focus-ring: oklch(0.729 0.1696 35.11);
   --shadow: none;
-  --backdrop: rgb(10 15 24 / 0.62);
-  --grain: 0.07;
+  --backdrop: oklch(0.17 0.02 257 / 0.62);
+  --grain: 0.055;
+  --grain-blend: screen;
+  /* Layers: on slate, what rises gets lighter, with a hairline highlight on its top edge (C54). */
+  --layer-1: var(--surface);
+  --layer-2: var(--surface-2);
+  --layer-highlight: inset 0 1px 0 oklch(1 0 0 / 0.06);
+  --thumb-blend: normal;
 }

@@ -3,6 +3,7 @@
 import { Check, Copy } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from './Button';
+import { IconSwap } from './IconSwap';
 
 type State = 'idle' | 'copied' | 'failed';
 
@@ -37,11 +38,11 @@ export function CopyButton({ value, label }: { value: string; label: string }) {
   return (
     <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1">
       <Button onClick={copy}>
-        {state === 'copied' ? (
-          <Check key={attempt} aria-hidden="true" className="pop-in size-4 text-pass" />
-        ) : (
-          <Copy aria-hidden="true" className="size-4" />
-        )}
+        <IconSwap
+          show={state === 'copied' ? 'second' : 'first'}
+          first={<Copy aria-hidden="true" className="size-4" />}
+          second={<Check aria-hidden="true" className="size-4 text-pass" />}
+        />
         {label}
       </Button>
       <span role="status" aria-live="polite" className="text-sm text-ink-muted">

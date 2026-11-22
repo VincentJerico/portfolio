@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '../helpers/test';
+import { sameColour, srgb } from '../helpers/colour';
 import { pointAt } from '../helpers/pointer';
 import { metrics, profile } from '../../src/content';
 import { waitForHydration } from '../helpers/hydration';
@@ -9,20 +10,19 @@ import { waitForHydration } from '../helpers/hydration';
 const animationName = (locator: Locator) =>
   locator.evaluate((el) => getComputedStyle(el).animationName);
 
-test('the paper has a still grain behind the content', async ({ page }) => {
+// C54 moved the grain over the content; 'depth and blending' checks its layer and blend.
+test('the paper has a still grain', async ({ page }) => {
   await page.goto('/');
   const grain = await page.locator('[data-paper-grain]').evaluate((el) => {
     const style = getComputedStyle(el);
     return {
       position: style.position,
-      zIndex: style.zIndex,
       pointerEvents: style.pointerEvents,
       image: style.backgroundImage,
       animation: style.animationName,
     };
   });
   expect(grain.position).toBe('fixed');
-  expect(grain.zIndex).toBe('-1');
   expect(grain.pointerEvents).toBe('none');
   expect(grain.image).toContain('data:image/svg+xml');
   expect(grain.animation).toBe('none');
@@ -55,16 +55,30 @@ test.describe('arrivals', () => {
       ),
     ).toEqual(['0', '1', '2', '3', '4']);
     expect(await animationName(letters.first())).toBe('letter');
-    // C53: clearly letter by letter: 45 ms apart, 0.8 s each, on the glide.
-    expect(await letters.nth(4).evaluate((el) => getComputedStyle(el).animationDelay)).toBe(
-      '0.18s',
-    );
+    // Vincent, 2026-11-22 ("the header is too long"): 25 ms apart, 0.5 s each, on the glide.
+    expect(await letters.nth(4).evaluate((el) => getComputedStyle(el).animationDelay)).toBe('0.1s');
     expect(await letters.first().evaluate((el) => getComputedStyle(el).animationDuration)).toBe(
-      '0.8s',
+      '0.5s',
     );
     expect(
       await letters.first().evaluate((el) => getComputedStyle(el).animationTimingFunction),
     ).toBe('cubic-bezier(0.16, 1, 0.3, 1)');
+  });
+
+  test('a page header finishes arriving within 0.7 s, even on the longest title', async ({
+    page,
+  }) => {
+    await page.goto('/resume');
+    const ends = await page.locator('main header').evaluate((header) =>
+      [...header.querySelectorAll('*')]
+        .flatMap((el) => el.getAnimations().filter((a) => 'animationName' in a))
+        .map((a) => {
+          const t = (a.effect as KeyframeEffect).getComputedTiming();
+          return Number(t.endTime);
+        }),
+    );
+    expect(ends.length).toBeGreaterThan(0);
+    expect(Math.max(...ends)).toBeLessThanOrEqual(700);
   });
 
   // The poster's lines stay whole text, so the name is the page's largest paint (LCP budget); split into
@@ -145,7 +159,29 @@ test.describe('changes of shape', () => {
       const button = page.getByRole('button', { name: 'Copy email' });
       await button.click();
       await expect(page.getByRole('status').filter({ hasText: 'Copied' })).toBeVisible();
-      expect(await animationName(button.locator('svg'))).toBe('rise');
+      // C54 T7: the copy icon swaps to a check through blur and scale; the copy icon blurs away.
+      const swap = button.locator('.icon-swap');
+      await expect(swap).toHaveAttribute('data-show', 'second');
+      const icons = swap.locator('svg');
+      await expect
+        .poll(() => icons.nth(1).evaluate((el) => getComputedStyle(el).opacity))
+        .toBe('1');
+      await expect
+        .poll(() => icons.nth(0).evaluate((el) => getComputedStyle(el).opacity))
+        .toBe('0');
+      expect(await icons.nth(0).evaluate((el) => getComputedStyle(el).filter)).toContain('blur');
+      expect(
+        await icons.nth(1).evaluate((el) => getComputedStyle(el).transitionProperty),
+      ).toContain('filter');
+      // Review focus 5: copying again while the check shows leaves exactly one icon showing.
+      await button.click();
+      await expect
+        .poll(() =>
+          icons.evaluateAll(
+            (els) => els.filter((el) => getComputedStyle(el).opacity === '1').length,
+          ),
+        )
+        .toBe(1);
       await expect(page.getByText('Copied to clipboard')).toHaveCount(0, { timeout: 5000 });
     },
   );
@@ -477,7 +513,8 @@ test.describe('one rhythm', () => {
           (el) => `${getComputedStyle(el).animationName} ${getComputedStyle(el).animationDuration}`,
         ),
       );
-    expect(new Set(header)).toEqual(new Set(['rise 0.7s']));
+    // The page header has its own, shorter timing (Vincent, 2026-11-22); its lines share it.
+    expect(new Set(header)).toEqual(new Set(['rise 0.45s']));
     // C53: the glide, and 40 px of travel.
     const label = page.locator('main header > :not(h1)').first();
     expect(await label.evaluate((el) => getComputedStyle(el).animationTimingFunction)).toBe(
@@ -637,5 +674,358 @@ test.describe('smooth scrolling', () => {
     await waitForHydration(page);
     await afterIdle(page);
     expect(await smooth(page)).toBe(false);
+  });
+});
+
+// C54 bugs B1–B4, B8, B9 (the reviews' deferred list).
+test.describe('bugs left from the motion reviews', () => {
+  for (const [width, height] of [
+    [1440, 2400],
+    [1080, 1920],
+  ] as const) {
+    test(`B1: the ending finishes even on a ${width}×${height} window`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await page.goto('/');
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      const contact = page.getByRole('region', { name: 'Contact' });
+      await expect
+        .poll(() => contact.evaluate((el) => getComputedStyle(el).clipPath))
+        .not.toMatch(/round [1-9]/);
+      await expect
+        .poll(() =>
+          contact
+            .locator('.contact-arrow path')
+            .evaluate((el) => parseFloat(getComputedStyle(el).strokeDashoffset)),
+        )
+        .toBe(0);
+    });
+  }
+
+  test('B1: the arrow still draws as it rises, not all at once', async ({ page }) => {
+    await page.goto('/');
+    const arrow = page.getByRole('region', { name: 'Contact' }).locator('.contact-arrow');
+    // 120 px of scroll after the arrow's top crosses the bottom edge: half of its 240 px draw.
+    await arrow.evaluate((el) =>
+      window.scrollTo(0, el.getBoundingClientRect().top + scrollY - innerHeight + 120),
+    );
+    // Both bounds at once: an undrawn arrow (1) already passes the first, before smooth scrolling lands.
+    await expect
+      .poll(() =>
+        arrow.locator('path').evaluate((el) => {
+          const offset = parseFloat(getComputedStyle(el).strokeDashoffset);
+          return offset > 0.3 && offset < 0.7;
+        }),
+      )
+      .toBe(true);
+  });
+
+  test('B2: on a phone the growing ending never clips its heading', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    const contact = page.getByRole('region', { name: 'Contact' });
+    // On a phone the card starts its grow with no side inset and no rounded corners: the content runs
+    // to the edge, and either would clip the heading's first letter (C54, and its corner since).
+    const start = await contact.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return [
+        style.getPropertyValue('--sheet-x').trim(),
+        style.getPropertyValue('--sheet-r').trim(),
+      ];
+    });
+    expect(start).toEqual(['0px', '0px']);
+    // And once the heading is on screen, a point just inside its left edge lands on it.
+    const target = await contact.evaluate((el) => {
+      const heading = el.querySelector('h2')!;
+      const y = Math.round(
+        heading.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.85,
+      );
+      window.scrollTo(0, y);
+      return y;
+    });
+    await expect.poll(() => page.evaluate(() => Math.round(window.scrollY))).toBe(target);
+    await expect
+      .poll(() =>
+        contact.evaluate((el) => {
+          const heading = el.querySelector('h2')!;
+          const box = heading.getBoundingClientRect();
+          const hit = document.elementFromPoint(box.left + 2, box.top + box.height / 2);
+          return hit !== null && heading.contains(hit);
+        }),
+      )
+      .toBe(true);
+  });
+
+  for (const [width, height] of [
+    [1280, 800],
+    [844, 390],
+  ] as const) {
+    test(`B3: the career strip has not moved when it pins at ${width}×${height}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height });
+      await page.goto('/about');
+      await waitForHydration(page);
+      await page.evaluate(() => document.fonts.ready);
+      const track = page.locator('.career-track');
+      // Where the first step sits before the strip is reached, and where it sits as the strip pins (its
+      // top at the 56 px top bar): measured on screen, since the computed translate is a calc().
+      const moved = await track.evaluate(async (el) => {
+        const frame = () =>
+          new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        // The section around the strip also rises as it scrolls in, so one scroll lands short or long:
+        // step until the strip's top really sits where it should.
+        const placeTop = async (y: number) => {
+          for (let i = 0; i < 8; i++) {
+            const delta = el.getBoundingClientRect().top - y;
+            if (Math.abs(delta) < 0.5) return;
+            window.scrollBy(0, delta);
+            await frame();
+          }
+        };
+        const first = el.querySelector('ol > li')!;
+        await placeTop(300);
+        const before = first.getBoundingClientRect().left;
+        await placeTop(56);
+        return first.getBoundingClientRect().left - before;
+      });
+      expect(Math.abs(moved)).toBeLessThanOrEqual(1);
+    });
+  }
+
+  test('B4: under reduced motion a title can break inside a long word', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/about');
+    expect(
+      await page
+        .locator('main header h1 .word')
+        .first()
+        .evaluate((el) => getComputedStyle(el).whiteSpace),
+    ).toBe('normal');
+  });
+
+  test('B8: the cord keeps a halo in the page colour', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+    expect(
+      await page
+        .locator('[data-site-header] [data-pull-cord]')
+        .evaluate((el) => getComputedStyle(el).filter),
+    ).toContain('drop-shadow');
+  });
+
+  test('B9: the phone menu links rise the short way', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await page.goto('/');
+    await waitForHydration(page);
+    await page
+      .locator('[data-site-header]')
+      .getByRole('button', { name: 'Menu', exact: true })
+      .click();
+    const item = page.getByRole('dialog', { name: 'Site menu' }).locator('nav > ul > li').first();
+    expect(
+      await item.evaluate((el) => getComputedStyle(el).getPropertyValue('--arrive-rise').trim()),
+    ).toBe('16px');
+  });
+
+  test('B7: the CV ring draws its text on its own path, fitted to the circle', async ({ page }) => {
+    await page.goto('/');
+    const fit = await page.locator('.cv-ring svg').evaluate((svg) => {
+      const textPath = svg.querySelector('textPath')!;
+      const id = (textPath.getAttribute('href') ?? '').slice(1);
+      const path = svg.querySelector(`[id="${CSS.escape(id)}"]`);
+      return { id, inside: path !== null, fitted: Number(textPath.getAttribute('textLength')) };
+    });
+    expect(fit.id).not.toBe('cv-ring-path');
+    expect(fit.inside).toBe(true);
+    expect(fit.fitted).toBe(Math.round(2 * Math.PI * 80 * 0.99));
+  });
+});
+
+// C54 T1, T5, T6, T9: matched radii, matched icon weight, masked edges.
+test.describe('polish', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  test('T1: an evidence thumbnail and its dialog curve concentric with the button inside', async ({
+    page,
+  }) => {
+    await page.goto('/projects/accessibility-testing');
+    await waitForHydration(page);
+    const thumb = page.getByRole('button', { name: /^Enlarge image/ }).first();
+    const concentric = (outer: string, inner: string) =>
+      thumb.page().evaluate(
+        ([o, i]) => {
+          const a = document.querySelector(o)!;
+          const b = document.querySelector(i)!;
+          const ra = a.getBoundingClientRect();
+          const rb = b.getBoundingClientRect();
+          const inset = Math.min(rb.top - ra.top, ra.right - rb.right);
+          return {
+            outer: parseFloat(getComputedStyle(a).borderTopRightRadius),
+            inner: parseFloat(getComputedStyle(b).borderTopRightRadius),
+            inset,
+          };
+        },
+        [outer, inner] as const,
+      );
+    const t = await concentric('li[id^="evidence-"] button', 'li[id^="evidence-"] button svg');
+    expect(t.outer).toBeCloseTo(t.inner + t.inset, 0);
+    await thumb.click();
+    await expect(page.getByRole('dialog', { name: /^Evidence/ })).toBeVisible();
+    const d = await concentric('dialog[open]', 'dialog[open] button[aria-label="Close image"]');
+    expect(d.outer).toBeCloseTo(d.inner + d.inset, 0);
+  });
+
+  test('T5: icons draw strokes matched to the text beside them', async ({ page }) => {
+    await page.goto('/contact');
+    const stroke = await page
+      .getByRole('button', { name: 'Copy email' })
+      .locator('svg')
+      .first()
+      .evaluate((el) => ({
+        width: getComputedStyle(el).strokeWidth,
+        effect: getComputedStyle(el.firstElementChild!).vectorEffect,
+      }));
+    expect(stroke).toEqual({ width: '1.25px', effect: 'non-scaling-stroke' });
+    await page.goto('/');
+    const arrow = await page.locator('.contact-arrow').evaluate((svg) => {
+      const heading = svg.parentElement!.querySelector('h2')!;
+      const path = svg.querySelector('path')!;
+      return {
+        stroke: parseFloat(getComputedStyle(path).strokeWidth),
+        stem: parseFloat(getComputedStyle(heading).fontSize) * 0.11,
+        effect: getComputedStyle(path).vectorEffect,
+      };
+    });
+    expect(Math.abs(arrow.stroke - arrow.stem)).toBeLessThanOrEqual(0.5);
+    expect(arrow.effect).toBe('non-scaling-stroke');
+  });
+
+  test('T6: the skills strip and the career strip fade out at their edges', async ({ page }) => {
+    await page.goto('/');
+    expect(
+      await page.locator('.marquee').evaluate((el) => getComputedStyle(el).maskImage),
+    ).toContain('linear-gradient');
+    await page.goto('/about');
+    expect(
+      await page.locator('.career-sticky').evaluate((el) => getComputedStyle(el).maskImage),
+    ).toContain('linear-gradient');
+    // Wrapped (reduced motion), nothing is masked, so the first and last skills stay whole.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    expect(await page.locator('.marquee').evaluate((el) => getComputedStyle(el).maskImage)).toBe(
+      'none',
+    );
+  });
+});
+
+// C54 T8, T10 (and B6): dark mode depth; the grain over every surface; thumbnails blended on paper.
+test.describe('depth and blending', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  const token = (page: Page, name: string) =>
+    page.evaluate(
+      (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim(),
+      name,
+    );
+
+  test('T8: in the dark theme the top bar and dialogs rise in lighter layers', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.goto('/');
+    const header = await page
+      .locator('[data-site-header]')
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(
+      sameColour(await srgb(page, header), await srgb(page, await token(page, '--surface'))),
+    ).toBe(true);
+    await page.goto('/projects/accessibility-testing');
+    await waitForHydration(page);
+    await page
+      .getByRole('button', { name: /^Enlarge image/ })
+      .first()
+      .click();
+    const dialog = page.getByRole('dialog', { name: /^Evidence/ });
+    await expect(dialog).toBeVisible();
+    const style = await dialog.evaluate((el) => ({
+      bg: getComputedStyle(el).backgroundColor,
+      shadow: getComputedStyle(el).boxShadow,
+    }));
+    expect(
+      sameColour(await srgb(page, style.bg), await srgb(page, await token(page, '--surface-2'))),
+    ).toBe(true);
+    expect(style.shadow).toContain('inset');
+  });
+
+  test('T8: in the light theme the paper stays flat', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.goto('/');
+    const header = await page
+      .locator('[data-site-header]')
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(sameColour(await srgb(page, header), await srgb(page, await token(page, '--bg')))).toBe(
+      true,
+    );
+  });
+
+  for (const [scheme, blend] of [
+    ['light', 'multiply'],
+    ['dark', 'screen'],
+  ] as const) {
+    test(`T10: the grain lies over every surface, blended ${blend} in ${scheme}`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ colorScheme: scheme });
+      await page.goto('/');
+      const grain = await page.locator('[data-paper-grain]').evaluate((el) => ({
+        z: Number(getComputedStyle(el).zIndex),
+        blend: getComputedStyle(el).mixBlendMode,
+        events: getComputedStyle(el).pointerEvents,
+      }));
+      const headerZ = await page
+        .locator('[data-site-header]')
+        .evaluate((el) => Number(getComputedStyle(el).zIndex));
+      expect(grain.z).toBeGreaterThan(headerZ);
+      expect(grain.blend).toBe(blend);
+      expect(grain.events).toBe('none');
+    });
+  }
+
+  test('T10: evidence thumbnails blend into the paper; the full view stays true', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.goto('/projects/accessibility-testing');
+    await waitForHydration(page);
+    const thumb = page.getByRole('button', { name: /^Enlarge image/ }).first();
+    expect(await thumb.locator('img').evaluate((el) => getComputedStyle(el).mixBlendMode)).toBe(
+      'multiply',
+    );
+    await thumb.click();
+    const full = page.getByRole('dialog', { name: /^Evidence/ }).locator('img');
+    // CI's WebKit draws the morph's snapshots in software and can take several seconds to open it.
+    await expect(full).toBeVisible({ timeout: 15_000 });
+    expect(await full.evaluate((el) => getComputedStyle(el).mixBlendMode)).toBe('normal');
+    await page.keyboard.press('Escape');
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.reload();
+    expect(
+      await page
+        .getByRole('button', { name: /^Enlarge image/ })
+        .first()
+        .locator('img')
+        .evaluate((el) => getComputedStyle(el).mixBlendMode),
+    ).toBe('normal');
+  });
+
+  test('T10: print has no grain and no blending', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light', media: 'print' });
+    await page.goto('/projects/accessibility-testing');
+    await expect(page.locator('[data-paper-grain]')).toBeHidden();
+    expect(
+      await page
+        .getByRole('button', { name: /^Enlarge image/ })
+        .first()
+        .locator('img')
+        .evaluate((el) => getComputedStyle(el).mixBlendMode),
+    ).toBe('normal');
   });
 });

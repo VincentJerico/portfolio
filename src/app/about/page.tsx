@@ -175,7 +175,7 @@ export default function AboutPage() {
             <li
               key={area}
               style={{ '--i': i } as CSSProperties}
-              className="grid grid-cols-[3rem_minmax(0,1fr)] items-baseline gap-x-4 border-b border-line bg-bg py-4"
+              className="grid grid-cols-[3rem_minmax(0,1fr)] items-baseline gap-x-4 border-b border-line bg-(--layer-1) py-4 shadow-(--layer-highlight)"
             >
               <span aria-hidden="true" className="font-mono text-xl text-ink-muted">
                 {String(i + 1).padStart(2, '0')}

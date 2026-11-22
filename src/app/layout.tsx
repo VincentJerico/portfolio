@@ -31,12 +31,16 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         <ThemeProvider>
           <SkipLink />
           <SiteHeader />
-          <main id="main" tabIndex={-1} className="focus:outline-none">
-            <div className="shell pt-6 pb-4 lg:pt-10">
-              <RouteTransition>{children}</RouteTransition>
+          {/* The sheet that slides in on a page change: the page and its footer, full width and at
+              least a screen tall under the top bar, so it covers the old page everywhere. */}
+          <RouteTransition>
+            <div className="flex min-h-[calc(100dvh-3.5rem)] flex-col print:min-h-0">
+              <main id="main" tabIndex={-1} className="flex-1 focus:outline-none">
+                <div className="shell pt-6 pb-4 lg:pt-10">{children}</div>
+              </main>
+              <SiteFooter />
             </div>
-          </main>
-          <SiteFooter />
+          </RouteTransition>
           {/* Last in the body: Chrome can paint before it has parsed the content, and the grain alone
               would then be the first contentful paint, which Lighthouse's LCP estimate punishes. */}
           <div data-paper-grain data-print-hide />

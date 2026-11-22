@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '../helpers/test';
+import { sameColour, srgb } from '../helpers/colour';
 import { pointAt } from '../helpers/pointer';
 import { approvedCaseStudies, projectsInOrder } from '../../src/lib/content';
 import { profile, skills } from '../../src/content';
@@ -168,6 +169,24 @@ test.describe('projects', () => {
     });
   });
 
+  // C54 B10: the CSS hover itself, tested without the pointer helper: under reduced motion there is no
+  // smooth scrolling and no rise, so a plain hover is exact.
+  test.describe('with a mouse, reduced motion', () => {
+    test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+    test("a plain hover opens a row's hook", async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.goto('/');
+      const row = projectsRegion(page).getByRole('listitem').first();
+      await row.getByRole('link').hover();
+      await expect
+        .poll(() =>
+          row.locator('.work-row-hook > p').evaluate((el) => el.getBoundingClientRect().height),
+        )
+        .toBeGreaterThan(10);
+    });
+  });
+
   test.describe('on a touch screen', () => {
     test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
@@ -227,11 +246,13 @@ test.describe('the ending', () => {
     await waitForHydration(page);
     const contact = page.getByRole('region', { name: 'Contact' });
     const bg = () => contact.evaluate((el) => getComputedStyle(el).backgroundColor);
-    expect(await bg()).toBe('rgb(21, 28, 38)');
+    expect(sameColour(await srgb(page, await bg()), [21, 28, 38])).toBe(true);
     // Set by its tokens, never by a colour filter over the page's own.
     expect(await contact.evaluate((el) => getComputedStyle(el).filter)).toBe('none');
     await page.locator('[data-site-header]').getByRole('button', { name: 'Dark theme' }).click();
     await expect(page.locator('html')).toHaveClass(/\bdark\b/);
-    await expect.poll(bg).toBe('rgb(239, 233, 222)');
+    await expect
+      .poll(async () => sameColour(await srgb(page, await bg()), [239, 233, 222]))
+      .toBe(true);
   });
 });
