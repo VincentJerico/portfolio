@@ -723,18 +723,26 @@ test.describe('bugs left from the motion reviews', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
     const contact = page.getByRole('region', { name: 'Contact' });
+    // On a phone the card starts its grow with no side inset and no rounded corners: the content runs
+    // to the edge, and either would clip the heading's first letter (C54, and its corner since).
+    const start = await contact.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return [
+        style.getPropertyValue('--sheet-x').trim(),
+        style.getPropertyValue('--sheet-r').trim(),
+      ];
+    });
+    expect(start).toEqual(['0px', '0px']);
+    // And once the heading is on screen, a point just inside its left edge lands on it.
     const target = await contact.evaluate((el) => {
+      const heading = el.querySelector('h2')!;
       const y = Math.round(
-        el.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.85,
+        heading.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.85,
       );
       window.scrollTo(0, y);
       return y;
     });
-    // Smooth scrolling may still be gliding; measure only once the page is where it was sent.
     await expect.poll(() => page.evaluate(() => Math.round(window.scrollY))).toBe(target);
-    // Hit-testing honours clip-path: if the card's inset clipped the heading's first letter, the
-    // point just inside its left edge would not land on the heading. Polled: WebKit applies a
-    // scroll-linked clip a frame or two after the scroll; with the bug the clip stays at rest.
     await expect
       .poll(() =>
         contact.evaluate((el) => {

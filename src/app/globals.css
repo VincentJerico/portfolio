@@ -485,13 +485,16 @@
     /* Out to the viewport's edges exactly, so the grow-in (below) widens visibly all the way. */
     clip-path: inset(0 calc(50% - 50vw));
     padding-block: clamp(4rem, 3rem + 5vw, 8rem);
-    /* The card's side inset as it starts growing: none on phones, where the content runs to the edge
-       and an inset would clip it (C54). */
+    /* The card's side inset and corners as it starts growing: none on phones, where the content runs
+       to the edge and either would clip the heading's first letter (C54); there it grows downward
+       only. */
     --sheet-x: 0px;
+    --sheet-r: 0px;
   }
   @media (width >= 40rem) {
     .contact-sheet {
       --sheet-x: 1rem;
+      --sheet-r: 1.5rem;
     }
   }
   .contact-arrow {
@@ -1255,7 +1258,7 @@
 }
 @keyframes sheet {
   from {
-    clip-path: inset(3rem var(--sheet-x) round 1.5rem);
+    clip-path: inset(3rem var(--sheet-x) round var(--sheet-r));
   }
   to {
     clip-path: inset(0 calc(50% - 50vw) round 0);
