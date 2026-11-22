@@ -107,7 +107,7 @@ export function SiteMenu({ items, more }: { items: readonly NavItem[]; more: rea
         id={MENU_ID}
         aria-label="Site menu"
         closedby="any"
-        className="m-0 h-dvh max-h-none w-full max-w-none overflow-y-auto bg-(--layer-2) p-0 text-ink shadow-(--layer-highlight) backdrop:bg-[var(--backdrop)] md:hidden"
+        className="m-0 h-dvh max-h-none w-full max-w-none overflow-y-auto bg-(--layer-2) p-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] text-ink shadow-(--layer-highlight) backdrop:bg-[var(--backdrop)] md:hidden"
       >
         <div className="shell flex min-h-full flex-col pb-8">
           <div className="flex h-14 items-center justify-end">

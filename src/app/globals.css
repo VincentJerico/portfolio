@@ -51,6 +51,18 @@
     /* C55 D1: kerning on at every size (browsers may drop it from small text under auto). */
     font-kerning: normal;
   }
+  /* C55 D16: everything that acts on a click shows the pointer. */
+  button:not(:disabled),
+  summary,
+  label[for],
+  [role='button'] {
+    cursor: pointer;
+  }
+  /* C55 D2: labels centre on their cap height, not their line box, where the browser can. */
+  .cv-ring-label,
+  .button-label {
+    text-box: trim-both cap alphabetic;
+  }
   /* C55 D3: numbers that change or line up take tabular figures. */
   .metric-value,
   td,
@@ -207,14 +219,15 @@
   margin-inline: auto;
   width: 100%;
   max-width: 1440px;
-  padding-inline: 1rem;
+  /* C55 D13: never narrower than the device's safe area (a notch in landscape). */
+  padding-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right));
   /* In rem, like Tailwind's sm and lg, so the gutter, the row nudge and the theme switch change
      together whatever the browser's default font size (C53). */
   @media (width >= 40rem) {
-    padding-inline: 1.5rem;
+    padding-inline: max(1.5rem, env(safe-area-inset-left)) max(1.5rem, env(safe-area-inset-right));
   }
   @media (width >= 64rem) {
-    padding-inline: 2.5rem;
+    padding-inline: max(2.5rem, env(safe-area-inset-left)) max(2.5rem, env(safe-area-inset-right));
   }
 }
 
@@ -311,6 +324,14 @@
     text-decoration: none;
     overflow-wrap: anywhere;
   }
+  /* C55 D16: the email's underline draws in on hover or focus, so it reads as a link. */
+  .contact-email {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 0.08em no-repeat;
+    transition: background-size var(--dur-hover) var(--ease-glide);
+  }
+  .contact-email:is(:hover, :focus-visible) {
+    background-size: 100% 0.08em;
+  }
   .contact-email:hover {
     color: var(--accent);
   }
@@ -319,6 +340,9 @@
   .nav-link {
     display: inline-flex;
     min-height: 2.75rem;
+    /* C55 D8: a 44 px target even for a short name like "Work". */
+    min-width: 2.75rem;
+    justify-content: center;
     align-items: center;
     font-family: var(--font-mono);
     font-size: 0.8125rem;
@@ -442,13 +466,34 @@
     display: block;
     height: 0.5rem;
   }
+  /* C55 D4: the hook's room is kept, so opening it never pushes the rows below; it rises into
+     view from under its top edge (clipped, not faded). */
   @media (hover: hover) and (pointer: fine) {
     .work-row-hook {
-      grid-template-rows: 0fr;
+      clip-path: inset(0 0 100% 0);
+      transition:
+        clip-path var(--dur-hover) var(--ease-glide),
+        translate var(--dur-hover) var(--ease-glide);
     }
     .work-row:is(:hover, :focus-within) .work-row-hook {
-      grid-template-rows: 1fr;
+      clip-path: inset(0);
     }
+  }
+  /* C55 D16: the whole row is a link, so an arrow slides in at its end on hover or focus. */
+  .work-row-arrow {
+    position: absolute;
+    top: 1.25rem;
+    right: 0;
+    color: var(--accent);
+    opacity: 0;
+    translate: -0.5rem 0;
+    transition:
+      opacity var(--dur-fast) var(--ease-snap),
+      translate var(--dur-hover) var(--ease-glide);
+  }
+  .work-row:is(:hover, :focus-within) .work-row-arrow {
+    opacity: 1;
+    translate: 0 0;
   }
   .work-row:is(:hover, :focus-within) :is(.work-row-link > span, .work-row-hook, .work-row-num) {
     translate: var(--row-nudge) 0;
@@ -638,7 +683,7 @@
   .pull-cord-hang {
     position: absolute;
     top: -3rem;
-    right: 0.25rem;
+    right: 0;
     display: none;
     pointer-events: none;
   }
@@ -648,12 +693,13 @@
       display: flex;
     }
   }
-  /* 2rem wide: inside the 2.5rem gutter, never over the content beside it, and still a wide target. */
+  /* 2.5rem wide, from the screen edge: the whole side gutter (C55 D8), never over the content. */
   .pull-cord-button {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 2rem;
+    width: 2.5rem;
     border-radius: 0 0 999px 999px;
     pointer-events: auto;
   }
@@ -684,6 +730,27 @@
     transition:
       background-color var(--dur-fast) var(--ease-snap),
       box-shadow var(--dur-base) var(--ease-glide);
+  }
+  /* C55 D16: the cord says what it does, beside the knob, on hover or focus. */
+  .cord-label {
+    position: absolute;
+    top: calc(3rem + 10rem - 0.25rem);
+    right: calc(100% + 0.25rem);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--text);
+    white-space: nowrap;
+    opacity: 0;
+    translate: 0.25rem 0;
+    transition:
+      opacity var(--dur-fast) var(--ease-snap),
+      translate var(--dur-hover) var(--ease-glide);
+    pointer-events: none;
+  }
+  .pull-cord-button:is(:hover, :focus-visible) .cord-label {
+    opacity: 1;
+    translate: 0 0;
   }
   .cord-tip {
     width: 0.375rem;

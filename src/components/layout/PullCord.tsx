@@ -38,6 +38,10 @@ export function PullCord() {
         className="pull-cord-button"
       >
         <span className="sr-only">Dark theme</span>
+        {/* What a pull does, shown on hover or focus (C55 D16); the button's name says it already. */}
+        <span aria-hidden="true" className="cord-label">
+          {hydrated && isDark ? 'Light' : 'Dark'}
+        </span>
         {/* The arrival swing wraps the cord, so a tug (which remounts the cord) never restarts it. */}
         <span aria-hidden="true" className="cord-sway">
           <span key={tug} data-pull-cord className={`pull-cord${tug ? ' pull-cord-tug' : ''}`}>

@@ -1,3 +1,4 @@
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { ViewTransition } from 'react';
 
@@ -62,6 +63,7 @@ export function WorkRowBody({
       <div className="work-row-hook">
         <p>{item.hook}</p>
       </div>
+      <ArrowRight aria-hidden="true" className="work-row-arrow icon-strong size-5" />
     </>
   );
 }

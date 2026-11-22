@@ -123,11 +123,12 @@ test.describe('projects', () => {
     test('a row opens its hook and takes the accent on hover', async ({ page }) => {
       await page.goto('/');
       const row = projectsRegion(page).getByRole('listitem').first();
-      const hook = row.locator('.work-row-hook > p');
-      const height = () => hook.evaluate((el) => el.getBoundingClientRect().height);
-      expect(await height()).toBeLessThan(1);
+      // C55 D4: the hook's room is kept, and the hook is clipped out of sight until the row opens.
+      const hook = row.locator('.work-row-hook');
+      const clip = () => hook.evaluate((el) => getComputedStyle(el).clipPath);
+      expect(await clip()).toBe('inset(0px 0px 100%)');
       await pointAt(page, row.getByRole('link'));
-      await expect.poll(height).toBeGreaterThan(10);
+      await expect.poll(clip).toBe('inset(0px)');
       const accent = await page.evaluate(() => {
         const el = document.createElement('span');
         el.style.color = 'var(--accent)';
@@ -140,7 +141,7 @@ test.describe('projects', () => {
         .poll(() => row.getByRole('link').evaluate((el) => getComputedStyle(el).color))
         .toBe(accent);
       await page.mouse.move(0, 0);
-      await expect.poll(height).toBeLessThan(1);
+      await expect.poll(clip).toBe('inset(0px 0px 100%)');
     });
 
     test('clicking anywhere on a hovered row opens its report', async ({ page }) => {

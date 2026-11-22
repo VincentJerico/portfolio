@@ -1,6 +1,6 @@
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { RouteTransition } from '@/components/layout/RouteTransition';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SmoothScroll } from '@/components/motion/SmoothScroll';
@@ -11,6 +11,9 @@ import { profile } from '@/content';
 import { getEnv } from '@/lib/env';
 import { fontVariables } from '@/lib/fonts';
 import './globals.css';
+
+// C55 D13: the page reaches the screen's edges; the gutters, top bar and menu pad by the safe area.
+export const viewport: Viewport = { viewportFit: 'cover' };
 
 export const metadata: Metadata = {
   metadataBase: new URL(getEnv().NEXT_PUBLIC_SITE_URL),

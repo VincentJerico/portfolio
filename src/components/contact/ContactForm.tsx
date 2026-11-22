@@ -269,18 +269,17 @@ function Field(props: FieldProps) {
         ) : (
           <input {...shared} {...attrs} />
         )}
-        {(error || footer) && (
-          <div className="mt-2 flex items-start justify-between gap-4">
-            {error ? (
-              <p id={errorId} className="reveal-in text-sm text-fail">
-                {error}
-              </p>
-            ) : (
-              <span />
-            )}
-            {footer}
-          </div>
-        )}
+        {/* Always there, one line tall, so an error never moves what follows (C55 D4). */}
+        <div className="mt-2 flex min-h-5 items-start justify-between gap-4">
+          {error ? (
+            <p id={errorId} className="reveal-in text-sm text-fail">
+              {error}
+            </p>
+          ) : (
+            <span />
+          )}
+          {footer}
+        </div>
       </div>
     </div>
   );

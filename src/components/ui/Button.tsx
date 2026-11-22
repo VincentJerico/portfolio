@@ -11,7 +11,7 @@ const VARIANTS: Record<Variant, string> = {
 };
 
 const BASE =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 font-mono text-[0.8125rem] no-underline';
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 font-mono text-[0.8125rem] no-underline [text-box:trim-both_cap_alphabetic]';
 
 interface ButtonLinkProps extends Omit<ComponentProps<'a'>, 'href'> {
   href: string;
