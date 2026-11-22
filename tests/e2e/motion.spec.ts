@@ -145,7 +145,29 @@ test.describe('changes of shape', () => {
       const button = page.getByRole('button', { name: 'Copy email' });
       await button.click();
       await expect(page.getByRole('status').filter({ hasText: 'Copied' })).toBeVisible();
-      expect(await animationName(button.locator('svg'))).toBe('rise');
+      // C54 T7: the copy icon swaps to a check through blur and scale; the copy icon blurs away.
+      const swap = button.locator('.icon-swap');
+      await expect(swap).toHaveAttribute('data-show', 'second');
+      const icons = swap.locator('svg');
+      await expect
+        .poll(() => icons.nth(1).evaluate((el) => getComputedStyle(el).opacity))
+        .toBe('1');
+      await expect
+        .poll(() => icons.nth(0).evaluate((el) => getComputedStyle(el).opacity))
+        .toBe('0');
+      expect(await icons.nth(0).evaluate((el) => getComputedStyle(el).filter)).toContain('blur');
+      expect(
+        await icons.nth(1).evaluate((el) => getComputedStyle(el).transitionProperty),
+      ).toContain('filter');
+      // Review focus 5: copying again while the check shows leaves exactly one icon showing.
+      await button.click();
+      await expect
+        .poll(() =>
+          icons.evaluateAll(
+            (els) => els.filter((el) => getComputedStyle(el).opacity === '1').length,
+          ),
+        )
+        .toBe(1);
       await expect(page.getByText('Copied to clipboard')).toHaveCount(0, { timeout: 5000 });
     },
   );
@@ -769,5 +791,82 @@ test.describe('bugs left from the motion reviews', () => {
     expect(fit.id).not.toBe('cv-ring-path');
     expect(fit.inside).toBe(true);
     expect(fit.fitted).toBe(Math.round(2 * Math.PI * 80 * 0.99));
+  });
+});
+
+// C54 T1, T5, T6, T9: matched radii, matched icon weight, masked edges.
+test.describe('polish', () => {
+  test.use({ viewport: { width: 1280, height: 800 }, isMobile: false, hasTouch: false });
+
+  test('T1: an evidence thumbnail and its dialog curve concentric with the button inside', async ({
+    page,
+  }) => {
+    await page.goto('/projects/accessibility-testing');
+    await waitForHydration(page);
+    const thumb = page.getByRole('button', { name: /^Enlarge image/ }).first();
+    const concentric = (outer: string, inner: string) =>
+      thumb.page().evaluate(
+        ([o, i]) => {
+          const a = document.querySelector(o)!;
+          const b = document.querySelector(i)!;
+          const ra = a.getBoundingClientRect();
+          const rb = b.getBoundingClientRect();
+          const inset = Math.min(rb.top - ra.top, ra.right - rb.right);
+          return {
+            outer: parseFloat(getComputedStyle(a).borderTopRightRadius),
+            inner: parseFloat(getComputedStyle(b).borderTopRightRadius),
+            inset,
+          };
+        },
+        [outer, inner] as const,
+      );
+    const t = await concentric('li[id^="evidence-"] button', 'li[id^="evidence-"] button svg');
+    expect(t.outer).toBeCloseTo(t.inner + t.inset, 0);
+    await thumb.click();
+    await expect(page.getByRole('dialog', { name: /^Evidence/ })).toBeVisible();
+    const d = await concentric('dialog[open]', 'dialog[open] button[aria-label="Close image"]');
+    expect(d.outer).toBeCloseTo(d.inner + d.inset, 0);
+  });
+
+  test('T5: icons draw strokes matched to the text beside them', async ({ page }) => {
+    await page.goto('/contact');
+    const stroke = await page
+      .getByRole('button', { name: 'Copy email' })
+      .locator('svg')
+      .first()
+      .evaluate((el) => ({
+        width: getComputedStyle(el).strokeWidth,
+        effect: getComputedStyle(el.firstElementChild!).vectorEffect,
+      }));
+    expect(stroke).toEqual({ width: '1.25px', effect: 'non-scaling-stroke' });
+    await page.goto('/');
+    const arrow = await page.locator('.contact-arrow').evaluate((svg) => {
+      const heading = svg.parentElement!.querySelector('h2')!;
+      const path = svg.querySelector('path')!;
+      return {
+        stroke: parseFloat(getComputedStyle(path).strokeWidth),
+        stem: parseFloat(getComputedStyle(heading).fontSize) * 0.11,
+        effect: getComputedStyle(path).vectorEffect,
+      };
+    });
+    expect(Math.abs(arrow.stroke - arrow.stem)).toBeLessThanOrEqual(0.5);
+    expect(arrow.effect).toBe('non-scaling-stroke');
+  });
+
+  test('T6: the skills strip and the career strip fade out at their edges', async ({ page }) => {
+    await page.goto('/');
+    expect(
+      await page.locator('.marquee').evaluate((el) => getComputedStyle(el).maskImage),
+    ).toContain('linear-gradient');
+    await page.goto('/about');
+    expect(
+      await page.locator('.career-sticky').evaluate((el) => getComputedStyle(el).maskImage),
+    ).toContain('linear-gradient');
+    // Wrapped (reduced motion), nothing is masked, so the first and last skills stay whole.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    expect(await page.locator('.marquee').evaluate((el) => getComputedStyle(el).maskImage)).toBe(
+      'none',
+    );
   });
 });

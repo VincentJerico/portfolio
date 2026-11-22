@@ -30,6 +30,10 @@
 
   --radius-card: 6px;
   --radius-chip: 4px;
+  /* Concentric radii (C54): a rounded thing inside a rounded thing, inset by --inset, curves with it
+     when the outer radius is the inner one plus the inset. */
+  --radius-inner: 4px;
+  --radius-outer: calc(4px + 0.5rem);
   --shadow-card: var(--shadow);
 }
 
@@ -61,6 +65,9 @@
   }
 
   :root {
+    /* Section heading size, shared with the Contact arrow so its stroke matches the letters (C54). */
+    --h2-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.75rem);
+    --inset: 0.5rem;
     --dur-fast: 180ms;
     --dur-base: 400ms;
     /* C53: arrivals rise 40 px over 700 ms; a row answers the pointer over 320 ms; a page change's
@@ -101,7 +108,7 @@
     font-variation-settings:
       'opsz' 72,
       'wdth' 85;
-    font-size: clamp(1.75rem, 1.4rem + 1.5vw, 2.75rem);
+    font-size: var(--h2-size);
     line-height: 1.05;
     letter-spacing: -0.02em;
   }
@@ -495,7 +502,9 @@
   .contact-arrow path {
     fill: none;
     stroke: currentColor;
-    stroke-width: 4;
+    /* The heading's stem (about 0.11 em at weight 750), on screen, whatever the arrow's size (C54). */
+    stroke-width: calc(var(--h2-size) * 0.11);
+    vector-effect: non-scaling-stroke;
     stroke-linecap: square;
     stroke-dasharray: 1;
     stroke-dashoffset: 0;
@@ -674,6 +683,37 @@
     pointer-events: none;
   }
 
+  /* C54: icon strokes match the text beside them, on screen whatever the icon's size: 1.25 px next to
+     small mono labels, 1.5 px next to body text and for icon-only controls (.icon-strong). */
+  svg.lucide {
+    stroke-width: 1.25px;
+  }
+  svg.lucide.icon-strong {
+    stroke-width: 1.5px;
+  }
+  svg.lucide * {
+    vector-effect: non-scaling-stroke;
+  }
+
+  /* C54: two icons in one place swap through blur and scale; only icons, never text. Instant under
+     reduced motion (the global rule shortens every transition). */
+  .icon-swap {
+    display: inline-grid;
+  }
+  .icon-swap > * {
+    grid-area: 1 / 1;
+    transition:
+      opacity var(--dur-fast) var(--ease-snap),
+      filter var(--dur-fast) var(--ease-snap),
+      scale var(--dur-fast) var(--ease-snap);
+  }
+  .icon-swap[data-show='first'] > :nth-child(2),
+  .icon-swap[data-show='second'] > :nth-child(1) {
+    opacity: 0;
+    filter: blur(4px);
+    scale: 0.6;
+  }
+
   .skeleton {
     position: relative;
     overflow: hidden;
@@ -825,6 +865,13 @@
   }
 }
 /* The poster's lines slide in from opposite sides, each still whole text (the page's largest paint). */
+@keyframes icon-in {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    scale: 0.6;
+  }
+}
 @keyframes poster-left {
   from {
     translate: -6vw 0;
@@ -1031,6 +1078,10 @@
     --arrive-rise: 12px;
     animation: rise var(--dur-base) var(--ease-snap) backwards;
   }
+  /* An icon that arrives on its own (the form's "sent" check) sharpens in from a blur (C54). */
+  .icon-in {
+    animation: icon-in var(--dur-fast) var(--ease-snap) backwards;
+  }
 }
 
 /* On scroll: sections rise into place, list rows and table rows stream in. Final state without
@@ -1060,6 +1111,8 @@
     }
     .marquee {
       view-timeline: --strip block;
+      /* C54: the sliding rows fade out at both edges instead of cutting off. */
+      mask-image: linear-gradient(in oklch to right, transparent, black 6%, black 94%, transparent);
     }
     .marquee-row {
       width: max-content;
@@ -1143,6 +1196,8 @@
       height: 260svh;
     }
     .career-sticky {
+      /* C54: the steps fade in and out at the edges as they slide. */
+      mask-image: linear-gradient(in oklch to right, transparent, black 4%, black 96%, transparent);
       position: sticky;
       top: 3.5rem;
       display: flex;
@@ -1300,7 +1355,7 @@
    screen over the full duration instead of arriving at the end. */
 @keyframes vt-sheet {
   from {
-    clip-path: inset(100vh 0 0 0);
+    clip-path: inset(100dvh 0 0 0);
   }
   to {
     clip-path: inset(0);

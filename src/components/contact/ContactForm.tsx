@@ -177,7 +177,7 @@ export function ContactForm({ email }: { email: string }) {
           <div role="status" className="text-sm text-ink">
             {!pending && state.status === 'sent' && (
               <p className="reveal-in inline-flex items-center gap-2">
-                <Check aria-hidden="true" className="pop-in size-4 text-pass" />
+                <Check aria-hidden="true" className="icon-in size-4 text-pass" />
                 Message sent. I&apos;ll reply by email.
               </p>
             )}

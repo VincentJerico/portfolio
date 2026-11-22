@@ -84,7 +84,7 @@ export function DefectTicket({
           className="mt-4 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold"
         >
           Read {finding.id} in the source report
-          <ExternalLinkIcon aria-hidden="true" className="size-3.5" />
+          <ExternalLinkIcon aria-hidden="true" className="icon-strong size-3.5" />
         </a>
       </div>
     </details>

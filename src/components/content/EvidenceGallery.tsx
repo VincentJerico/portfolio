@@ -95,7 +95,7 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
               <button
                 type="button"
                 onClick={(event) => grow(event.currentTarget, i)}
-                className={`group relative flex min-h-24 items-center justify-center overflow-hidden rounded-[4px] bg-surface-2 ${
+                className={`group relative flex min-h-24 items-center justify-center overflow-hidden rounded-outer bg-surface-2 ${
                   loaded.has(image.src) ? '' : 'skeleton'
                 }`}
               >
@@ -111,7 +111,7 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
                 />
                 <Maximize2
                   aria-hidden="true"
-                  className="absolute top-2 right-2 size-7 rounded-chip bg-bg/80 p-1.5 text-ink opacity-80 group-hover:opacity-100"
+                  className="icon-strong absolute top-(--inset) right-(--inset) size-7 rounded-inner bg-bg/80 p-1.5 text-ink opacity-80 group-hover:opacity-100"
                 />
               </button>
               <figcaption className="px-1 pt-2 text-sm text-ink-muted">
@@ -125,11 +125,11 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
       <dialog
         ref={dialogRef}
         aria-label={current ? `Evidence: ${current.caption ?? current.alt}` : 'Evidence'}
-        className="m-auto max-h-[92dvh] w-[min(96vw,80rem)] max-w-none rounded-card border border-line bg-bg p-0 text-ink backdrop:bg-[var(--backdrop)]"
+        className="m-auto max-h-[92dvh] w-[min(96vw,80rem)] max-w-none rounded-[calc(var(--radius-outer)+1px)] border border-line bg-bg p-0 text-ink backdrop:bg-[var(--backdrop)]"
       >
         {current && (
           <figure className="flex flex-col">
-            <div className="flex items-start justify-between gap-4 border-b border-line px-4 py-2">
+            <div className="flex items-start justify-between gap-4 border-b border-line py-(--inset) pr-(--inset) pl-4">
               <figcaption className="py-2.5 text-sm text-ink-muted">
                 {current.caption ?? current.alt}
               </figcaption>
@@ -137,9 +137,9 @@ export function EvidenceGallery({ images }: { images: readonly EvidenceImage[] }
                 type="button"
                 onClick={shrink}
                 aria-label="Close image"
-                className="inline-flex size-11 shrink-0 items-center justify-center rounded-chip hover:bg-surface-2"
+                className="inline-flex size-11 shrink-0 items-center justify-center rounded-inner hover:bg-surface-2"
               >
-                <X aria-hidden="true" className="size-5" />
+                <X aria-hidden="true" className="icon-strong size-5" />
               </button>
             </div>
             <div className="overflow-auto p-4">

@@ -91,3 +91,12 @@ describe('globals.css', () => {
     expect(notOklch).toEqual([]);
   });
 });
+
+// C54 T9: full-height sizes use the dynamic or small viewport units, never plain vh.
+describe('viewport units', () => {
+  it('uses no plain vh in globals.css', () => {
+    const globals = readFileSync(new URL('../../src/app/globals.css', import.meta.url), 'utf8');
+    const code = globals.replace(/\/\*[\s\S]*?\*\//g, '');
+    expect(code.match(/\b\d+(\.\d+)?vh\b/g) ?? []).toEqual([]);
+  });
+});
