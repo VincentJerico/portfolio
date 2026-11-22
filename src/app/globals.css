@@ -326,7 +326,7 @@
   }
   /* C55 D16: the email's underline draws in on hover or focus, so it reads as a link. */
   .contact-email {
-    background: linear-gradient(currentColor, currentColor) 0 100% / 0 0.08em no-repeat;
+    background: linear-gradient(in oklch, currentColor, currentColor) 0 100% / 0 0.08em no-repeat;
     transition: background-size var(--dur-hover) var(--ease-glide);
   }
   .contact-email:is(:hover, :focus-visible) {
