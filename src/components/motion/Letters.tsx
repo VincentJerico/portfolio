@@ -1,4 +1,5 @@
 import { Fragment, type CSSProperties } from 'react';
+import { TITLE_KERNING } from '@/lib/kerning';
 import { splitLetters } from '@/lib/motion-text';
 
 /**
@@ -14,11 +15,17 @@ export function Letters({ text, start = 0 }: { text: string; start?: number }) {
         <Fragment key={w}>
           {w > 0 && ' '}
           <span className="word">
-            {word.letters.map((letter) => (
+            {word.letters.map((letter, l) => (
               <span
                 key={letter.index}
                 className="letter"
-                style={{ '--i': letter.index } as CSSProperties}
+                style={
+                  {
+                    '--i': letter.index,
+                    // The pair's kerning, which the browser can't apply between separate boxes (C55).
+                    '--k': `${TITLE_KERNING[letter.char + (word.letters[l + 1]?.char ?? '')] ?? 0}em`,
+                  } as CSSProperties
+                }
               >
                 {letter.char}
               </span>

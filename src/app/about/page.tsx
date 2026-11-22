@@ -70,7 +70,7 @@ export default function AboutPage() {
           <RollOnView className="odo-list grid border-t border-line sm:grid-cols-2 lg:grid-cols-5">
             {metrics.map((metric) => (
               <li key={metric.id} className="flex flex-col gap-1 border-b border-line py-4 pr-6">
-                <p className="metric-value text-4xl font-extrabold tracking-tight text-ink [font-variation-settings:'opsz'_96,'wdth'_75]">
+                <p className="metric-value text-4xl font-extrabold tracking-[-0.02em] text-ink [font-variation-settings:'opsz'_96,'wdth'_75]">
                   <Odometer value={metric.value} />
                 </p>
                 <p className="text-sm text-ink">{metric.label}</p>

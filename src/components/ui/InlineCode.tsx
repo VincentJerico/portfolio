@@ -8,7 +8,7 @@ export function InlineCode({ text }: { text: string }) {
         part.code ? (
           <code
             key={i}
-            className="rounded-[3px] bg-surface-2 px-1 py-px font-mono text-[0.875em] text-ink"
+            className="rounded-[3px] bg-surface-2 px-1 py-px font-mono text-[1em] [font-size-adjust:ex-height_0.52] text-ink"
           >
             {part.text}
           </code>
