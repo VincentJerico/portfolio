@@ -8,8 +8,12 @@ function stubBrowser(callsUpdate: boolean) {
   vi.stubGlobal('window', { matchMedia: () => ({ matches: false }) });
   vi.stubGlobal('document', {
     startViewTransition: ({ update }: { update: () => void }) => {
-      if (callsUpdate) queueMicrotask(update);
-      return { finished: new Promise(() => {}), skipTransition: skip };
+      // Like the browser: a throwing update rejects updateCallbackDone, and nothing else hears it.
+      const updateCallbackDone = callsUpdate
+        ? Promise.resolve().then(update)
+        : new Promise<void>(() => {});
+      updateCallbackDone.catch(() => {});
+      return { finished: new Promise(() => {}), updateCallbackDone, skipTransition: skip };
     },
   });
   return { skip };
@@ -41,5 +45,15 @@ describe('morph', () => {
     vi.advanceTimersByTime(MORPH_WATCHDOG_MS * 2);
     expect(update).toHaveBeenCalledTimes(1);
     expect(skip).not.toHaveBeenCalled();
+  });
+
+  it('reports an update that throws instead of swallowing it', async () => {
+    stubBrowser(true);
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    morph(element(), () => {
+      throw new Error('showModal failed');
+    });
+    await vi.runAllTimersAsync();
+    expect(error).toHaveBeenCalledWith(expect.objectContaining({ message: 'showModal failed' }));
   });
 });

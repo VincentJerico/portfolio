@@ -119,6 +119,13 @@ test.describe('test report pages', () => {
   });
 
   test('evidence opens in a dialog that traps focus and returns it', async ({ page }) => {
+    // Once on CI WebKit the dialog stayed shut with nothing in the trace: say why if it happens again.
+    const note = (type: string, description: string) =>
+      test.info().annotations.push({ type, description });
+    page.on('pageerror', (error) => note('page error', error.message));
+    page.on('console', (message) => {
+      if (message.type() === 'error') note('console error', message.text());
+    });
     await page.goto('/projects/accessibility-testing');
     await waitForHydration(page);
     const thumb = page.getByRole('button', { name: /^Enlarge image/ }).first();

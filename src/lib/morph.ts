@@ -38,6 +38,9 @@ export function morph(from: HTMLElement | null | undefined, update: () => HTMLEl
       run();
       transition.skipTransition();
     }, MORPH_WATCHDOG_MS);
+  // A change that fails inside the transition would otherwise vanish with it, and the click would
+  // look like it did nothing. A skipped animation still lands in `finished`, which stays quiet.
+  transition.updateCallbackDone.catch((error: unknown) => console.error(error));
   transition.finished
     .catch(() => {})
     .finally(() => {

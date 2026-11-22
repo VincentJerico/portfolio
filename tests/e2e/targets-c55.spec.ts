@@ -1,5 +1,6 @@
 import { expect, test } from '../helpers/test';
 import { waitForHydration } from '../helpers/hydration';
+import { bringToCentre, pointAt } from '../helpers/pointer';
 
 // C55, Vincent's second list (2026-11-22): layout shift, touch targets, safe areas, affordances.
 
@@ -10,7 +11,7 @@ test.describe('desktop', () => {
     await page.goto('/');
     await waitForHydration(page);
     const rows = page.locator('main .work-row');
-    await rows.nth(1).scrollIntoViewIfNeeded();
+    await bringToCentre(rows.nth(1));
     await page.evaluate(() => {
       const w = window as unknown as { __shift: number };
       w.__shift = 0;
@@ -20,8 +21,9 @@ test.describe('desktop', () => {
       }).observe({ type: 'layout-shift' });
     });
     for (const i of [0, 1, 2]) {
-      const box = (await rows.nth(i).boundingBox())!;
-      await page.mouse.move(box.x + 100, box.y + 20, { steps: 4 });
+      // Centred and settled first, as a person points (C53): on CI WebKit a row still sliding
+      // under a fixed pointer never took the hover.
+      await pointAt(page, rows.nth(i).locator('.work-row-link'));
       await expect
         .poll(() =>
           rows
