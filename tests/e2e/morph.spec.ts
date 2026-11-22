@@ -277,7 +277,8 @@ test.describe('page change and theme flood, frame by frame', () => {
             w.__ready.push({
               cover: box && {
                 left: box.left <= 0,
-                right: box.right >= innerWidth,
+                // The page's width, not the window's: Linux browsers keep a scrollbar beside it.
+                right: box.right >= document.documentElement.clientWidth,
                 top: box.top <= barBox.bottom,
                 bottom: box.bottom >= innerHeight,
               },
