@@ -1,9 +1,9 @@
 {
   "sample": false,
-  "generatedAt": "2026-11-21T09:32:56.477Z",
-  "commit": "0477ae1",
-  "runUrl": "https://github.com/VincentJerico/portfolio/actions/runs/44889434404",
-  "overall": "pass",
+  "generatedAt": "2026-11-22T12:35:09.126Z",
+  "commit": "c1af6f0",
+  "runUrl": "https://github.com/VincentJerico/portfolio/actions/runs/45021966653",
+  "overall": "fail",
   "gates": [
     {
       "gate": "Lint and format",
@@ -32,8 +32,8 @@
     {
       "gate": "End-to-end, accessibility and security headers",
       "tool": "Playwright, axe-core",
-      "result": "pass",
-      "details": "1013 passed, 0 failed, 0 flaky across chromium, mobile-chrome, webkit"
+      "result": "fail",
+      "details": "1093 passed, 1 failed, 3 flaky across chromium, mobile-chrome, webkit"
     },
     {
       "gate": "Lighthouse",
@@ -51,134 +51,134 @@
   "routes": {
     "/": {
       "status": "pass",
-      "durationMs": 4699
+      "durationMs": 5821
     },
     "/projects": {
       "status": "pass",
-      "durationMs": 4115
+      "durationMs": 5529
     },
     "/work": {
       "status": "pass",
-      "durationMs": 3829
+      "durationMs": 4547
     },
     "/about": {
       "status": "pass",
-      "durationMs": 5144
+      "durationMs": 6142
     },
     "/resume": {
       "status": "pass",
-      "durationMs": 4147
+      "durationMs": 5632
     },
     "/contact": {
       "status": "pass",
-      "durationMs": 3632
+      "durationMs": 4317
     },
     "/skills": {
       "status": "pass",
-      "durationMs": 4399
+      "durationMs": 4739
     },
     "/notes": {
       "status": "pass",
-      "durationMs": 6022
+      "durationMs": 6437
     },
     "/quality": {
       "status": "pass",
-      "durationMs": 4228
+      "durationMs": 4876
     },
     "/projects/accessibility-testing": {
       "status": "pass",
-      "durationMs": 4578
+      "durationMs": 5243
     },
     "/projects/security-testing": {
       "status": "pass",
-      "durationMs": 4637
+      "durationMs": 4989
     },
     "/projects/performance-testing": {
       "status": "pass",
-      "durationMs": 4211
+      "durationMs": 4718
     },
     "/projects/api-testing-framework": {
       "status": "pass",
-      "durationMs": 3847
+      "durationMs": 4206
     },
     "/projects/playwright-framework-template": {
       "status": "pass",
-      "durationMs": 3561
+      "durationMs": 4143
     },
     "/projects/taskflow-under-test": {
       "status": "pass",
-      "durationMs": 3869
+      "durationMs": 4418
     },
     "/projects/qa-engineering-journey": {
       "status": "pass",
-      "durationMs": 3715
+      "durationMs": 4118
     },
     "/projects/legatalink": {
       "status": "pass",
-      "durationMs": 3616
+      "durationMs": 4357
     },
     "/work/warehouse-operations-platform": {
       "status": "pass",
-      "durationMs": 3385
+      "durationMs": 3995
     },
     "/work/project-accounting-platform": {
       "status": "pass",
-      "durationMs": 3228
+      "durationMs": 3947
     },
     "/work/retail-operations-platform": {
       "status": "pass",
-      "durationMs": 3103
+      "durationMs": 4021
     },
     "/this-page-does-not-exist": {
       "status": "pass",
-      "durationMs": 3404
+      "durationMs": 4179
     },
     "/notes/selftest-pipeline": {
       "status": "pass",
-      "durationMs": 2764
+      "durationMs": 3067
     }
   },
   "lighthouse": [
     {
       "route": "/",
-      "performance": 100,
+      "performance": 99,
       "accessibility": 100,
       "bestPractices": 100,
       "seo": 100
     },
     {
       "route": "/projects",
-      "performance": 100,
+      "performance": 99,
       "accessibility": 100,
       "bestPractices": 100,
       "seo": 100
     },
     {
       "route": "/projects/accessibility-testing",
-      "performance": 100,
+      "performance": 99,
       "accessibility": 100,
       "bestPractices": 100,
       "seo": 100
     },
     {
       "route": "/about",
-      "performance": 100,
+      "performance": 98,
       "accessibility": 100,
       "bestPractices": 100,
       "seo": 100
     },
     {
       "route": "/resume",
-      "performance": 100,
+      "performance": 99,
       "accessibility": 100,
       "bestPractices": 100,
       "seo": 100
     }
   ],
   "e2e": {
-    "passed": 1013,
-    "failed": 0,
-    "flaky": 0,
+    "passed": 1093,
+    "failed": 1,
+    "flaky": 3,
     "skipped": 0
   }
 }
