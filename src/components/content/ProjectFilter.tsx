@@ -247,7 +247,7 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
               aria-label="Matching projects"
               hidden={!expanded}
               // Over the page, not in its flow: typing never pushes the chips and results down.
-              className="absolute inset-x-0 top-[calc(100%-1.25rem)] z-20 border-b border-line bg-(--layer-2) shadow-(--layer-highlight)"
+              className="absolute inset-x-0 top-[calc(100%-1.25rem)] z-20 border border-ink-muted bg-(--layer-2) px-3 shadow-(--layer-highlight)"
             >
               {matches.map((match, i) => (
                 <li
