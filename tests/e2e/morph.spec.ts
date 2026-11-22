@@ -139,7 +139,8 @@ test.describe('evidence grows into its dialog', () => {
     await waitForHydration(page);
     const thumb = page.getByRole('button', { name: /^Enlarge image/ }).first();
     await thumb.click();
-    await expect(page.getByRole('dialog', { name: /^Evidence/ })).toBeVisible();
+    // CI's WebKit draws the morph's snapshots in software and can take several seconds to open it.
+    await expect(page.getByRole('dialog', { name: /^Evidence/ })).toBeVisible({ timeout: 15_000 });
     await settleTransitions(page); // the page takes no clicks while the grow runs
     await page.getByRole('button', { name: 'Close image' }).click();
     await expect(page.getByRole('dialog', { name: /^Evidence/ })).toBeHidden();
@@ -277,14 +278,13 @@ test.describe('page change and theme flood, frame by frame', () => {
             w.__ready.push({
               cover: box && {
                 left: box.left <= 0,
-                // The page's width, not the window's: Linux browsers keep a scrollbar beside it.
-                // clientWidth is rounded to a whole pixel.
-                right: box.right >= document.documentElement.clientWidth - 1,
+                // The page's own edge, not the window's: Linux browsers keep a scrollbar gutter.
+                right: box.right >= document.body.getBoundingClientRect().right - 0.5,
                 top: box.top <= barBox.bottom,
                 bottom: box.bottom >= innerHeight,
               },
               // Raw numbers, shown in a failure's diff.
-              edges: box && [box.left, box.right, document.documentElement.clientWidth, innerWidth],
+              edges: box && [box.left, box.right, document.body.getBoundingClientRect().right],
               barName: getComputedStyle(bar).viewTransitionName,
               oldBar: getComputedStyle(
                 document.documentElement,

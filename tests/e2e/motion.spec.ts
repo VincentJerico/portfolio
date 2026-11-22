@@ -708,38 +708,43 @@ test.describe('bugs left from the motion reviews', () => {
     await arrow.evaluate((el) =>
       window.scrollTo(0, el.getBoundingClientRect().top + scrollY - innerHeight + 120),
     );
+    // Both bounds at once: an undrawn arrow (1) already passes the first, before smooth scrolling lands.
     await expect
       .poll(() =>
-        arrow.locator('path').evaluate((el) => parseFloat(getComputedStyle(el).strokeDashoffset)),
+        arrow.locator('path').evaluate((el) => {
+          const offset = parseFloat(getComputedStyle(el).strokeDashoffset);
+          return offset > 0.3 && offset < 0.7;
+        }),
       )
-      .toBeGreaterThan(0.3);
-    expect(
-      await arrow
-        .locator('path')
-        .evaluate((el) => parseFloat(getComputedStyle(el).strokeDashoffset)),
-    ).toBeLessThan(0.7);
+      .toBe(true);
   });
 
   test('B2: on a phone the growing ending never clips its heading', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/');
     const contact = page.getByRole('region', { name: 'Contact' });
-    await contact.evaluate((el) =>
-      window.scrollTo(
-        0,
+    const target = await contact.evaluate((el) => {
+      const y = Math.round(
         el.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.85,
-      ),
-    );
-    // Hit-testing honours clip-path: if the card's inset clipped the heading's first letter, the
-    // point just inside its left edge would not land on the heading.
-    const onHeading = await contact.evaluate(async (el) => {
-      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      const heading = el.querySelector('h2')!;
-      const box = heading.getBoundingClientRect();
-      const hit = document.elementFromPoint(box.left + 2, box.top + box.height / 2);
-      return hit !== null && heading.contains(hit);
+      );
+      window.scrollTo(0, y);
+      return y;
     });
-    expect(onHeading).toBe(true);
+    // Smooth scrolling may still be gliding; measure only once the page is where it was sent.
+    await expect.poll(() => page.evaluate(() => Math.round(window.scrollY))).toBe(target);
+    // Hit-testing honours clip-path: if the card's inset clipped the heading's first letter, the
+    // point just inside its left edge would not land on the heading. Polled: WebKit applies a
+    // scroll-linked clip a frame or two after the scroll; with the bug the clip stays at rest.
+    await expect
+      .poll(() =>
+        contact.evaluate((el) => {
+          const heading = el.querySelector('h2')!;
+          const box = heading.getBoundingClientRect();
+          const hit = document.elementFromPoint(box.left + 2, box.top + box.height / 2);
+          return hit !== null && heading.contains(hit);
+        }),
+      )
+      .toBe(true);
   });
 
   for (const [width, height] of [
@@ -988,7 +993,8 @@ test.describe('depth and blending', () => {
     );
     await thumb.click();
     const full = page.getByRole('dialog', { name: /^Evidence/ }).locator('img');
-    await expect(full).toBeVisible();
+    // CI's WebKit draws the morph's snapshots in software and can take several seconds to open it.
+    await expect(full).toBeVisible({ timeout: 15_000 });
     expect(await full.evaluate((el) => getComputedStyle(el).mixBlendMode)).toBe('normal');
     await page.keyboard.press('Escape');
     await page.emulateMedia({ colorScheme: 'dark' });
