@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { contrastRatio, relativeLuminance } from '@/lib/contrast';
+import { contrastRatio, relativeLuminance, toRgb } from '@/lib/contrast';
 import { parseTokens, TOKEN_NAMES, TOKEN_PAIRS } from '@/lib/tokens';
 
 const css = readFileSync(new URL('../../src/styles/tokens.css', import.meta.url), 'utf8');
@@ -11,10 +11,37 @@ describe('tokens.css', () => {
     expect(Object.keys(themes[theme]).sort()).toEqual([...TOKEN_NAMES].sort());
   });
 
+  const sameAs = (value: string | undefined, hex: string) =>
+    toRgb(value!).every((v, i) => Math.abs(v - toRgb(hex)[i]!) <= 1 / 255);
+
   // C51: the poster is designed paper-first, so visitors without JavaScript get the paper theme.
   it('makes paper the no-JS default (C51)', () => {
     expect(css).toMatch(/:root[^{]*\{[^}]*color-scheme:\s*light/);
-    expect(themes.light.bg?.toLowerCase()).toBe('#efe9de');
+    expect(sameAs(themes.light.bg, '#efe9de')).toBe(true);
+  });
+
+  // C54: every colour token is written in OKLCH.
+  it.each(['dark', 'light'] as const)('%s theme is written in OKLCH', (theme) => {
+    const notOklch = Object.entries(themes[theme]).filter(
+      ([, value]) => !value.startsWith('oklch('),
+    );
+    expect(notOklch).toEqual([]);
+  });
+
+  // C54: the page and its two surfaces step evenly in lightness.
+  it.each(['dark', 'light'] as const)('%s surfaces step evenly in lightness', (theme) => {
+    const lightness = (name: 'bg' | 'surface' | 'surface-2') =>
+      Number(/oklch\(\s*([\d.]+)/.exec(themes[theme][name]!)![1]);
+    const first = lightness('surface') - lightness('bg');
+    const second = lightness('surface-2') - lightness('surface');
+    expect(Math.abs(first - second)).toBeLessThanOrEqual(0.002);
+  });
+
+  // C54: lines are the text colour at low alpha, so they read the same on any surface.
+  it.each(['dark', 'light'] as const)('%s border is the text colour at low alpha', (theme) => {
+    const [, lch, alpha] = /oklch\(([^/)]+)\/\s*([\d.]+)\)/.exec(themes[theme].border!) ?? [];
+    expect(lch?.trim()).toBe(/oklch\(([^/)]+)\)/.exec(themes[theme].text!)![1]!.trim());
+    expect(Number(alpha)).toBeLessThanOrEqual(0.25);
   });
 
   // C52: the home ending (.theme-flip) is set in the other theme's tokens, already checked for contrast.
@@ -24,7 +51,7 @@ describe('tokens.css', () => {
   });
 
   it('keeps the dark theme a deep slate rather than near-black (C48)', () => {
-    expect(themes.dark.bg?.toLowerCase()).toBe('#151c26');
+    expect(sameAs(themes.dark.bg, '#151c26')).toBe(true);
   });
 
   // Vincent (C48): no surface or text should read as white or black, not just avoid #fff and #000.
@@ -39,9 +66,10 @@ describe('tokens.css', () => {
   );
 
   it.each(['dark', 'light'] as const)('%s theme uses no pure black or pure white', (theme) => {
-    const pure = Object.entries(themes[theme]).filter(([, value]) =>
-      ['#000', '#000000', '#fff', '#ffffff'].includes(value.toLowerCase()),
-    );
+    const pure = Object.entries(themes[theme]).filter(([, value]) => {
+      const rgb = toRgb(value);
+      return rgb.every((c) => c === 0) || rgb.every((c) => c === 1);
+    });
     expect(pure).toEqual([]);
   });
 });
@@ -50,5 +78,16 @@ describe.each(['dark', 'light'] as const)('%s theme contrast', (theme) => {
   it.each(TOKEN_PAIRS)('$fg on $bg >= $min ($use)', ({ fg, bg, min }) => {
     const ratio = contrastRatio(themes[theme][fg]!, themes[theme][bg]!);
     expect(ratio, `${theme}: ${fg} on ${bg} is ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(min);
+  });
+});
+
+// C54: every gradient and colour mix in the stylesheet interpolates in OKLCH.
+describe('globals.css', () => {
+  const globals = readFileSync(new URL('../../src/app/globals.css', import.meta.url), 'utf8');
+  it('mixes and blends colours in OKLCH', () => {
+    const calls = [...globals.matchAll(/(color-mix|linear-gradient|radial-gradient)\(([^;]*)/g)];
+    expect(calls.length).toBeGreaterThan(0);
+    const notOklch = calls.map((m) => m[0]).filter((call) => !/\bin oklch\b/.test(call));
+    expect(notOklch).toEqual([]);
   });
 });

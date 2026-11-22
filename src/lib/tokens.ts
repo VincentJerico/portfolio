@@ -47,7 +47,9 @@ function readBlock(css: string, selector: string): ThemeTokens {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const block = new RegExp(`(?:^|\\n)\\s*${escaped}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? '';
   const tokens: ThemeTokens = {};
-  for (const [, name, value] of block.matchAll(/--([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,6})\s*;/g)) {
+  for (const [, name, value] of block.matchAll(
+    /--([a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,6}|oklch\([^)]*\))\s*;/g,
+  )) {
     if ((TOKEN_NAMES as readonly string[]).includes(name!)) tokens[name as TokenName] = value!;
   }
   return tokens;

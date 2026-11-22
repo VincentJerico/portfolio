@@ -30,7 +30,7 @@ const FIELD_ORDER: ContactField[] = ['name', 'email', 'message'];
 const MESSAGE_MAX = FIELD_LIMITS.message.max;
 
 const CONTROL =
-  'block min-h-11 w-full rounded-chip border border-line bg-surface px-3 py-2 text-ink transition-[border-color,box-shadow] duration-150 hover:border-ink-muted focus-visible:border-accent aria-[invalid=true]:border-fail';
+  'block min-h-11 w-full rounded-chip border border-ink-muted bg-surface px-3 py-2 text-ink transition-[border-color,box-shadow] duration-150 hover:border-ink-muted focus-visible:border-accent aria-[invalid=true]:border-fail';
 
 type FieldControl = HTMLInputElement | HTMLTextAreaElement;
 

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '../helpers/test';
+import { sameColour, srgb } from '../helpers/colour';
 import { pointAt } from '../helpers/pointer';
 import { approvedCaseStudies, projectsInOrder } from '../../src/lib/content';
 import { profile, skills } from '../../src/content';
@@ -245,11 +246,13 @@ test.describe('the ending', () => {
     await waitForHydration(page);
     const contact = page.getByRole('region', { name: 'Contact' });
     const bg = () => contact.evaluate((el) => getComputedStyle(el).backgroundColor);
-    expect(await bg()).toBe('rgb(21, 28, 38)');
+    expect(sameColour(await srgb(page, await bg()), [21, 28, 38])).toBe(true);
     // Set by its tokens, never by a colour filter over the page's own.
     expect(await contact.evaluate((el) => getComputedStyle(el).filter)).toBe('none');
     await page.locator('[data-site-header]').getByRole('button', { name: 'Dark theme' }).click();
     await expect(page.locator('html')).toHaveClass(/\bdark\b/);
-    await expect.poll(bg).toBe('rgb(239, 233, 222)');
+    await expect
+      .poll(async () => sameColour(await srgb(page, await bg()), [239, 233, 222]))
+      .toBe(true);
   });
 });

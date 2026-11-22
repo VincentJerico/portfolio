@@ -1,4 +1,5 @@
 import { expect, test } from '../helpers/test';
+import { sameColour, srgb } from '../helpers/colour';
 
 test.describe('theme', () => {
   test('follows a light OS preference on first paint without console errors', async ({ page }) => {
@@ -56,6 +57,6 @@ test.describe('theme without JavaScript', () => {
     const bg = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue('--bg').trim().toLowerCase(),
     );
-    expect(bg).toBe('#efe9de');
+    expect(sameColour(await srgb(page, bg), [239, 233, 222])).toBe(true);
   });
 });

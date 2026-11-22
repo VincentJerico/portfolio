@@ -154,7 +154,7 @@
     transition-timing-function: var(--ease-snap);
   }
   a {
-    text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+    text-decoration-color: color-mix(in oklch, currentColor 45%, transparent);
   }
   a:hover {
     text-decoration-color: currentColor;
@@ -647,8 +647,8 @@
   .dark .cord-knob {
     background: var(--accent);
     box-shadow:
-      0 0 12px 2px color-mix(in srgb, var(--accent) 55%, transparent),
-      0 0 36px 8px color-mix(in srgb, var(--accent) 22%, transparent);
+      0 0 12px 2px color-mix(in oklch, var(--accent) 55%, transparent),
+      0 0 36px 8px color-mix(in oklch, var(--accent) 22%, transparent);
   }
   /* Forced colours replace backgrounds, which would erase the string: draw it in the system text
      colour instead. */
@@ -685,9 +685,9 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(
-      90deg,
+      in oklch 90deg,
       transparent,
-      color-mix(in srgb, var(--text) 9%, transparent),
+      color-mix(in oklch, var(--text) 9%, transparent),
       transparent
     );
     translate: -100% 0;

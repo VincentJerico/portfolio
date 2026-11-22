@@ -19,7 +19,10 @@ export async function expectNoViolations(page: Page, testInfo: TestInfo) {
 
 /** Port of isFocusEntirelyObscured() from accessibility-testing (SC 2.4.11, no axe rule). */
 export async function focusEntirelyObscured(page: Page): Promise<boolean> {
-  return page.evaluate(() => {
+  return page.evaluate(async () => {
+    // Let the browser finish scrolling the newly focused element into view first: something truly
+    // hidden stays hidden, but a scroll still in progress is not a defect (C54, seen on CI WebKit).
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const el = document.activeElement;
     if (!el || el === document.body) return false;
     const r = el.getBoundingClientRect();

@@ -107,6 +107,44 @@ test.describe('layout', () => {
     }
   }
 
+  // C54: rules are the ink at low alpha; a form field keeps a solid boundary of at least 3:1.
+  test('rules are see-through ink, and form fields keep a solid boundary', async ({ page }) => {
+    await page.goto('/contact');
+    const rule = await page
+      .locator('main .border-line')
+      .first()
+      .evaluate((el) => getComputedStyle(el).borderTopColor);
+    expect(rule).toMatch(/\/\s*0?\.\d+\)$|,\s*0?\.\d+\)$/);
+    const field = page.locator('form').getByRole('textbox').first();
+    const ratio = await field.evaluate((el) => {
+      // The browser converts any colour (OKLCH included) to sRGB through color-mix; a see-through
+      // boundary is blended over the field's own background before it is measured.
+      const probe = document.createElement('span');
+      document.body.append(probe);
+      const rgba = (css: string) => {
+        probe.style.color = `color-mix(in srgb, ${css} 100%, transparent)`;
+        const value = getComputedStyle(probe).color;
+        const nums = (value.match(/[\d.]+/g) ?? []).map(Number);
+        const srgb = value.startsWith('color(srgb');
+        const [r, g, b] = srgb ? nums.slice(0, 3) : nums.slice(0, 3).map((n) => n / 255);
+        const alpha = nums[3] ?? 1;
+        return [r!, g!, b!, alpha] as const;
+      };
+      const lum = ([r, g, b]: readonly number[]) => {
+        const lin = (v: number) => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+        return 0.2126 * lin(r!) + 0.7152 * lin(g!) + 0.0722 * lin(b!);
+      };
+      const style = getComputedStyle(el);
+      const back = rgba(style.backgroundColor);
+      const [r, g, b, a] = rgba(style.borderTopColor);
+      const edge = [r, g, b].map((c, k) => c * a + back[k]! * (1 - a));
+      const [hi, lo] = [lum(edge), lum(back)].sort((x, y) => y - x);
+      probe.remove();
+      return (hi! + 0.05) / (lo! + 0.05);
+    });
+    expect(ratio).toBeGreaterThanOrEqual(3);
+  });
+
   test('the inline-block utility sets display only, never a width', async ({ page }) => {
     await page.goto('/');
     // A spacing token named "block" once made Tailwind emit inline-block as an inline-size rule.
