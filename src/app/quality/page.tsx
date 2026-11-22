@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { DataTable } from '@/components/content/DataTable';
+import { Disclosure } from '@/components/ui/Disclosure';
 import { Section } from '@/components/content/Section';
 import { StatusChip } from '@/components/ui/StatusChip';
 import type { CSSProperties } from 'react';
@@ -104,13 +105,15 @@ export default function QualityPage() {
                 </a>
               </dd>
             </dl>
-            <DataTable
-              caption="Gates"
-              columns={['Gate', 'Tool', 'Result', 'Details']}
-              rows={report.gates.map((g) => [g.gate, g.tool, g.result.toUpperCase(), g.details])}
-            />
+            <Disclosure summary={`Gates · ${report.gates.length} rows`}>
+              <DataTable
+                caption="Gates"
+                columns={['Gate', 'Tool', 'Result', 'Details']}
+                rows={report.gates.map((g) => [g.gate, g.tool, g.result.toUpperCase(), g.details])}
+              />
+            </Disclosure>
             {report.lighthouse.length > 0 && (
-              <div>
+              <Disclosure summary={`Lighthouse · ${report.lighthouse.length} rows`}>
                 <DataTable
                   caption="Lighthouse (mobile, median of 5 runs)"
                   columns={['Route', 'Performance', 'Accessibility', 'Best practices', 'SEO']}
@@ -122,18 +125,20 @@ export default function QualityPage() {
                     <Score key="s" value={l.seo} />,
                   ])}
                 />
-              </div>
+              </Disclosure>
             )}
             {Object.keys(report.routes).length > 0 && (
-              <DataTable
-                caption="Per-route checks (integrity and axe, Chromium)"
-                columns={['Route', 'Result', 'Duration']}
-                rows={Object.entries(report.routes).map(([route, r]) => [
-                  route,
-                  r.status.toUpperCase(),
-                  `${(r.durationMs / 1000).toFixed(1)} s`,
-                ])}
-              />
+              <Disclosure summary={`Per-route checks · ${Object.keys(report.routes).length} rows`}>
+                <DataTable
+                  caption="Per-route checks (integrity and axe, Chromium)"
+                  columns={['Route', 'Result', 'Duration']}
+                  rows={Object.entries(report.routes).map(([route, r]) => [
+                    route,
+                    r.status.toUpperCase(),
+                    `${(r.durationMs / 1000).toFixed(1)} s`,
+                  ])}
+                />
+              </Disclosure>
             )}
           </div>
         ) : (

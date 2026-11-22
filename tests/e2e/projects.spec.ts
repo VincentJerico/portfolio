@@ -36,7 +36,7 @@ test.describe('projects index', () => {
 
   test('the search field has a boundary that stands out from the page', async ({ page }) => {
     await page.goto('/projects');
-    const search = page.getByRole('searchbox', { name: 'Search projects' });
+    const search = page.getByRole('combobox', { name: 'Search projects' });
     const [edgeCss, bgCss] = await search.evaluate((el) => [
       getComputedStyle(el).borderBottomColor,
       getComputedStyle(document.body).backgroundColor,
@@ -53,7 +53,7 @@ test.describe('projects index', () => {
   }) => {
     await page.goto('/projects');
     const cards = page.locator('main li[data-slug]:not([inert] *)');
-    const search = page.getByRole('searchbox', { name: 'Search projects' });
+    const search = page.getByRole('combobox', { name: 'Search projects' });
     const target = all.find((p) => p.category === 'security')!;
     const byStack = all.filter((p) =>
       [p.name, p.hook, p.summary, ...p.stack].join(' ').toLowerCase().includes('playwright'),

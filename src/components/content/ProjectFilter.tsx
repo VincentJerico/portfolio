@@ -1,9 +1,12 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 interface FilterCard {
   slug: string;
+  /** The project's name, offered in the search's list of matches. */
+  name: string;
   category: string;
   /** Everything a visitor might type to find this project: name, hook, summary, stack. */
   text: string;
@@ -17,6 +20,8 @@ interface ProjectFilterProps {
 }
 
 const ALL = 'all';
+// The search's list of matches stops at six names.
+const MAX_MATCHES = 6;
 // The site's shared motion (C50): the --ease-snap curve, 400 ms to arrive or move, 180 ms to leave.
 const EASE = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
 const ARRIVE = 400;
@@ -148,6 +153,10 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
     () => ALL,
   );
   const [query, setQuery] = useState('');
+  // The combobox (C55 D17): whether its list is open, and which match the arrow keys are on.
+  const [listOpen, setListOpen] = useState(false);
+  const [activeMatch, setActiveMatch] = useState(-1);
+  const router = useRouter();
   const listRef = useRef<HTMLUListElement>(null);
   const ghostsRef = useRef<HTMLDivElement>(null);
   const active = categories.some((c) => c.value === requested) ? requested : ALL;
@@ -159,6 +168,31 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
   );
 
   useResultMotion(listRef, ghostsRef, shown.map((c) => c.slug).join(' '));
+
+  const matches = terms.length > 0 ? shown.slice(0, MAX_MATCHES) : [];
+  const expanded = listOpen && matches.length > 0;
+
+  function onSearchKey(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      if (matches.length === 0) return;
+      event.preventDefault();
+      setListOpen(true);
+      const step = event.key === 'ArrowDown' ? 1 : -1;
+      setActiveMatch((i) => (i + step + matches.length) % matches.length);
+    } else if (event.key === 'Enter' && expanded && activeMatch >= 0) {
+      event.preventDefault();
+      router.push(`/projects/${matches[activeMatch]!.slug}`);
+    } else if (event.key === 'Escape' && expanded) {
+      // The first Escape closes the list; the next one clears the search (not every browser's
+      // search field does that itself).
+      event.preventDefault();
+      setListOpen(false);
+      setActiveMatch(-1);
+    } else if (event.key === 'Escape' && query) {
+      event.preventDefault();
+      setQuery('');
+    }
+  }
 
   function choose(value: string) {
     const url = new URL(window.location.href);
@@ -183,14 +217,55 @@ export function ProjectFilter({ categories, cards }: ProjectFilterProps) {
             <input
               id="project-search"
               type="search"
+              role="combobox"
+              aria-expanded={expanded}
+              aria-controls="project-matches"
+              aria-autocomplete="list"
+              aria-activedescendant={
+                expanded && activeMatch >= 0
+                  ? `project-match-${matches[activeMatch]!.slug}`
+                  : undefined
+              }
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setListOpen(true);
+                setActiveMatch(-1);
+              }}
+              onKeyDown={onSearchKey}
+              onBlur={() => setListOpen(false)}
               aria-describedby="project-search-hint"
               autoComplete="off"
               spellCheck={false}
               enterKeyHint="search"
               className="block min-h-11 w-full border-0 border-b border-ink-muted bg-transparent px-0 py-2 text-lg text-ink hover:border-ink focus-visible:border-accent"
             />
+            {/* Not live: the count below already says how many match, once. */}
+            <ul
+              id="project-matches"
+              role="listbox"
+              aria-label="Matching projects"
+              hidden={!expanded}
+              className="border-b border-line"
+            >
+              {matches.map((match, i) => (
+                <li
+                  key={match.slug}
+                  id={`project-match-${match.slug}`}
+                  role="option"
+                  data-match={match.slug}
+                  aria-selected={i === activeMatch}
+                  // Keeps focus in the field, so the list doesn't close before the choice lands.
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    router.push(`/projects/${match.slug}`);
+                  }}
+                  className="flex min-h-11 cursor-pointer items-center font-mono text-[0.8125rem] text-ink aria-selected:text-accent aria-selected:underline"
+                >
+                  {match.name}
+                </li>
+              ))}
+            </ul>
             <p id="project-search-hint" className="text-sm text-ink-muted">
               By name, tool or result, like Playwright or OWASP.
             </p>

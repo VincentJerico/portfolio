@@ -25,14 +25,16 @@ export function CopyButton({ value, label }: { value: string; label: string }) {
     return () => window.clearTimeout(id);
   }, [state, attempt]);
 
+  // Optimistic (C55 D6): the check shows at once, and swaps back if the clipboard refuses.
   async function copy() {
+    setState('copied');
+    setAttempt((n) => n + 1);
     try {
       await navigator.clipboard.writeText(value);
-      setState('copied');
     } catch {
       setState('failed');
+      setAttempt((n) => n + 1);
     }
-    setAttempt((n) => n + 1);
   }
 
   return (

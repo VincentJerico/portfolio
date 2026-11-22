@@ -918,6 +918,15 @@
     display: none !important;
   }
 
+  /* C55 D19: on paper every disclosure is open, and its toggle is gone. */
+  details::details-content {
+    content-visibility: visible;
+    block-size: auto;
+  }
+  details.disclosure > summary {
+    display: none;
+  }
+
   /* A slightly tighter leading keeps the CV within two A4 pages (resume.spec). */
   html,
   body {

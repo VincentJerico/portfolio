@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ViewTransition } from 'react';
 import { notFound } from 'next/navigation';
 import { DataTable } from '@/components/content/DataTable';
+import { Disclosure } from '@/components/ui/Disclosure';
 import { DecisionList } from '@/components/content/DecisionList';
 import { DefectTicket } from '@/components/content/DefectTicket';
 import { EvidenceGallery } from '@/components/content/EvidenceGallery';
@@ -139,7 +140,10 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
         <Section id="findings" title="Findings" kicker={`${project.findings.length} findings`}>
           <TicketOpener />
           <div className="flex flex-col gap-6">
-            <FindingsTable findings={project.findings} />
+            {/* Each finding also has its own ticket below; the table is the overview, on demand. */}
+            <Disclosure summary={`All findings as a table · ${project.findings.length} rows`}>
+              <FindingsTable findings={project.findings} />
+            </Disclosure>
             <div className="stagger border-t border-line">
               {project.findings.map((finding) => (
                 <DefectTicket
@@ -167,12 +171,9 @@ export default async function ProjectReportPage({ params }: PageProps<'/projects
         <Section id="data" title="Results and data">
           <div className="flex flex-col gap-6">
             {project.extraTables.map((table) => (
-              <DataTable
-                key={table.title}
-                caption={table.title}
-                columns={table.columns}
-                rows={table.rows}
-              />
+              <Disclosure key={table.title} summary={`${table.title} · ${table.rows.length} rows`}>
+                <DataTable caption={table.title} columns={table.columns} rows={table.rows} />
+              </Disclosure>
             ))}
           </div>
         </Section>
