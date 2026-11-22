@@ -1,9 +1,9 @@
 {
   "sample": false,
-  "generatedAt": "2026-11-22T12:35:09.126Z",
-  "commit": "c1af6f0",
-  "runUrl": "https://github.com/VincentJerico/portfolio/actions/runs/45021966653",
-  "overall": "fail",
+  "generatedAt": "2026-11-22T23:16:04.002Z",
+  "commit": "511e0d0",
+  "runUrl": "https://github.com/VincentJerico/portfolio/actions/runs/45081238609",
+  "overall": "pass",
   "gates": [
     {
       "gate": "Lint and format",
@@ -32,8 +32,8 @@
     {
       "gate": "End-to-end, accessibility and security headers",
       "tool": "Playwright, axe-core",
-      "result": "fail",
-      "details": "1093 passed, 1 failed, 3 flaky across chromium, mobile-chrome, webkit"
+      "result": "pass",
+      "details": "1252 passed, 0 failed, 0 flaky across chromium, mobile-chrome, webkit"
     },
     {
       "gate": "Lighthouse",
@@ -51,91 +51,91 @@
   "routes": {
     "/": {
       "status": "pass",
-      "durationMs": 5821
+      "durationMs": 7122
     },
     "/projects": {
       "status": "pass",
-      "durationMs": 5529
+      "durationMs": 5896
     },
     "/work": {
       "status": "pass",
-      "durationMs": 4547
+      "durationMs": 5168
     },
     "/about": {
       "status": "pass",
-      "durationMs": 6142
+      "durationMs": 8064
     },
     "/resume": {
       "status": "pass",
-      "durationMs": 5632
+      "durationMs": 6240
     },
     "/contact": {
       "status": "pass",
-      "durationMs": 4317
+      "durationMs": 5368
     },
     "/skills": {
       "status": "pass",
-      "durationMs": 4739
+      "durationMs": 7195
     },
     "/notes": {
       "status": "pass",
-      "durationMs": 6437
+      "durationMs": 9708
     },
     "/quality": {
       "status": "pass",
-      "durationMs": 4876
+      "durationMs": 6446
     },
     "/projects/accessibility-testing": {
       "status": "pass",
-      "durationMs": 5243
+      "durationMs": 8296
     },
     "/projects/security-testing": {
       "status": "pass",
-      "durationMs": 4989
+      "durationMs": 7555
     },
     "/projects/performance-testing": {
       "status": "pass",
-      "durationMs": 4718
+      "durationMs": 7715
     },
     "/projects/api-testing-framework": {
       "status": "pass",
-      "durationMs": 4206
+      "durationMs": 6165
     },
     "/projects/playwright-framework-template": {
       "status": "pass",
-      "durationMs": 4143
+      "durationMs": 5904
     },
     "/projects/taskflow-under-test": {
       "status": "pass",
-      "durationMs": 4418
+      "durationMs": 6147
     },
     "/projects/qa-engineering-journey": {
       "status": "pass",
-      "durationMs": 4118
+      "durationMs": 5542
     },
     "/projects/legatalink": {
       "status": "pass",
-      "durationMs": 4357
+      "durationMs": 5624
     },
     "/work/warehouse-operations-platform": {
       "status": "pass",
-      "durationMs": 3995
+      "durationMs": 5066
     },
     "/work/project-accounting-platform": {
       "status": "pass",
-      "durationMs": 3947
+      "durationMs": 4969
     },
     "/work/retail-operations-platform": {
       "status": "pass",
-      "durationMs": 4021
+      "durationMs": 5009
     },
     "/this-page-does-not-exist": {
       "status": "pass",
-      "durationMs": 4179
+      "durationMs": 5025
     },
     "/notes/selftest-pipeline": {
       "status": "pass",
-      "durationMs": 3067
+      "durationMs": 4451
     }
   },
   "lighthouse": [
@@ -148,21 +148,21 @@
     },
     {
       "route": "/projects",
-      "performance": 99,
+      "performance": 97,
       "accessibility": 100,
       "bestPractices": 100,
       "seo": 100
     },
     {
       "route": "/projects/accessibility-testing",
-      "performance": 99,
+      "performance": 98,
       "accessibility": 100,
       "bestPractices": 100,
       "seo": 100
     },
     {
       "route": "/about",
-      "performance": 98,
+      "performance": 99,
       "accessibility": 100,
       "bestPractices": 100,
       "seo": 100
@@ -176,9 +176,9 @@
     }
   ],
   "e2e": {
-    "passed": 1093,
-    "failed": 1,
-    "flaky": 3,
+    "passed": 1252,
+    "failed": 0,
+    "flaky": 0,
     "skipped": 0
   }
 }
